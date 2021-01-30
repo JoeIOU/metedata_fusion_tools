@@ -85,7 +85,7 @@ def login():
         session["user"] = re
         logger.warning("user:[{}] login success.".format(user_acc))
         msg = "success"
-        out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, data=data,
+        out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS,rows=0, data=data,
                                          message=msg)
     return json.dumps(out_data)
 
@@ -100,7 +100,7 @@ def logout():
     msg = "logout success!"
     global user_privilege_list
     user_privilege_list = None
-    out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, data=user_acc,
+    out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS,rows=0, data=user_acc,
                                      message=msg)
     return json.dumps(out_data)
 
@@ -131,7 +131,7 @@ def have_privilege(md_entity_id, method):
     global user_privilege_list
     if user_privilege_list is None:
         msg = 'you does not have any privilege ,please login again,or ask the service center for help.'
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT,rows=0, data=None, message=msg)
         logger.warning(output)
         return b_privilege
     if isinstance(md_entity_id, str):
@@ -173,20 +173,20 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
     if user is None:
         msg = 'access service, user does not login ,please login first.'
         logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN,rows=0, data=None, message=msg)
         return output
     global user_privilege_list
     if user_privilege_list is None or len(user_privilege_list) == 0:
         msg = 'access service, user does not have privilege,entity=[{}] ,please login again.'.format(md_entity_id)
         logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT,rows=0, data=None, message=msg)
         return output
     b_privilege = have_privilege(md_entity_id, method)
     if not b_privilege:
         msg = 'you do not have the privilege to access the service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
             md_entity_id)
         logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT,rows=0, data=None, message=msg)
         return output
 
     user_id = None
@@ -221,7 +221,7 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
     except Exception as e:
         msg = 'execute method error,message:%s' % (e)
         logger.error(msg)
-        output = md.exec_output_status(type=method, status=md.DB_EXEC_STATUS_FAIL, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
         return output
 
 
@@ -253,7 +253,7 @@ def find_entity():
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'findEntity,input params[md_entity_id] should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])
         logger.info('find Entity. Params:{}'.format(data))
@@ -269,14 +269,14 @@ def insert_entity():
     if data is None:
         msg = 'insert Entity, input param[md_entity_id] should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
         return json.dumps(re)
 
     md_entity_id = data.get("md_entity_id")
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'insert Entity, input param[md_entity_id] should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_INSERT, data_list=[data])
         logger.info('insert Entity Params:%s' % data)
@@ -311,7 +311,7 @@ def update_entity_batch():
     if data is None:
         msg = 'update Entity Batch, input params should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
         return re
 
     md_entity_id = data.get("md_entity_id")
@@ -326,7 +326,7 @@ def update_entity_common(md_entity_id, data_list, where_list):
     if md_entity_id is None:
         msg = 'update Entity, input param[md_entity_id] should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_UPDATE, data_list=data_list, where_list=where_list)
         logger.info('update Entity Params:{}'.format(data_list))
@@ -349,7 +349,7 @@ def delete_entity():
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'delete Entity, input param[md_entity_id] should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_DELETE, data_list=None, where_list=wh_list)
         logger.info('delete Entity Params:{}'.format(wh_list))
