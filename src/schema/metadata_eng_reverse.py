@@ -2,7 +2,7 @@
 # 数据库反向工程，写入元数据表和字段，以及建立实体外键关系等。
 from config.config import cfg as config
 from mdata import metadata_initialize as mdi
-from mdata import user_mngt as ur
+from privilege import user_mngt as ur
 
 logger = config.logger
 
