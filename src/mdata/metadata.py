@@ -388,3 +388,547 @@ def combine_entity_all_fields(entities, fields, tables, columns, filter_fields=N
 
     logger.info("combine_entity_all_fields_columns:{}".format(list))
     return list
+
+
+# sql执行
+def sql_exec(conn, sql, values):
+    ls = []
+    try:
+        cursor = conn.cursor()
+        if values is not None and len(values) > 0:
+            for item in values:
+                if isinstance(item, dict):
+                    ls.append(tuple(item.values()))
+                else:
+                    continue
+        cursor.executemany(sql, tuple(ls))
+        sql1 = cursor._cursor._executed
+        logger.info('sql_exec:%s,values:%s' % (sql1, ls))
+        return cursor
+    except Exception as e:
+        logger.error('sql_exec error,sql:[%s],message:%s' % (sql, e))
+        raise e
+
+
+# sql执行
+def sql_query(sql, values):
+    ls = []
+    conn = db_md()
+    try:
+        cursor = conn.cursor()
+        if values is not None and len(values) > 0:
+            for item in values:
+                if isinstance(item, dict):
+                    ls.append(tuple(item.values()))
+                else:
+                    continue
+        # cursor.execute(sql, tuple(ls))
+        cursor.executemany(sql, tuple(ls))
+        # 打印
+        sql = cursor._cursor._executed
+        logger.info('sql_query:%s,values:%s' % (sql, ls))
+        re = cursor.fetchall()
+        iRowCount = cursor.rowcount
+        re1 = fetch_record2list(re)
+        return (re1, iRowCount)
+    except Exception as e:
+        logger.error('sql_query error,sql:[%s],message:%s' % (sql, e))
+        raise e
+    finally:
+        conn.close()
+
+
+# 查询结果转换，主要是时间/日期转换为str
+def fetch_record2list(record_list):
+    ls = []
+    if record_list is None:
+        return None
+    if record_list is not None:
+        for item in record_list:
+            itm = {}
+            for key in item.keys():
+                v = item[key]
+                if isinstance(v, datetime.date):
+                    item[key] = str(v)
+                if isinstance(v, datetime.datetime):
+                    item[key] = str(v)
+                # elif isinstance(v, float):
+                #     item[key] = str(v)
+                elif isinstance(v, decimal.Decimal):
+                    item[key] = float(v)
+                else:
+                    continue
+            ls.append(item)
+
+    return ls
+
+
+# 系统字段赋值
+def set_system_fields_values(values_dict, user_id, tenant_id, md_entity_id, is_update=False, is_sys_flag=False):
+    if not is_update:  # 如果不是update，要写入租户ID，实体ID，以及创建人和时间
+        values_dict['tenant_id'] = tenant_id
+        if not is_sys_flag:
+            values_dict['md_entity_id'] = md_entity_id
+        values_dict['create_by'] = user_id
+        values_dict['create_date'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    values_dict['last_update_by'] = user_id
+    values_dict['last_update_date'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    return values_dict
+
+
+def query_execute(user_id, tenant_id, md_entity_id, where_dict):
+    irows = 0
+    if md_entity_id is None or tenant_id is None:
+        msg = 'query_execute,tenant_id or md_entity_id is none'
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    # guid生成
+    where_list_new = []
+    all_fields = get_entity_all_fields(tenant_id, [md_entity_id])
+    if all_fields is None:
+        msg = 'query execute warning:query fields is None.'
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    table_name = None
+    exist_fields = False
+    data_mapping = {}
+    if all_fields is None or len(all_fields) == 0:
+        msg = 'query_execute,all_fields is none'
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    entity_sys_flag = None
+    for field in all_fields:
+        field_name = field.get('md_fields_name')
+        entity_sys_flag = field.get('sys_flag')
+        table_name = field.get('md_tables_name')
+        data_mapping[field.get('md_columns_name')] = field_name
+    select_str = None
+    for key in data_mapping.keys():
+        if select_str is None:
+            select_str = key + " as " + data_mapping[key]
+        else:
+            select_str += "," + key + " as " + data_mapping[key]
+
+    sql = 'SELECT {keys} FROM {table} WHERE '.format(keys=select_str, table=table_name)
+    where_mapping = {}
+    if where_dict is not None and len(where_dict) > 0:
+        for key1 in where_dict.keys():
+            field = None
+            for field in all_fields:
+                field_name1 = field.get('md_fields_name')
+                exist_fields = False
+                is_key = field.get('is_key')
+                if is_key is not None and is_key == 'Y' and KEY_FIELDS_ID == key1:
+                    exist_fields = True
+                    break
+                elif key1 == field_name1:
+                    exist_fields = True
+                    break
+            if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
+                v = where_dict[key1]
+                k = field.get('md_columns_name')
+                where_mapping[k] = v
+
+    where_mapping['tenant_id'] = tenant_id
+    # 数据权限
+    dp_list = dp.query_data_privilege_info(tenant_id, user_id, md_entity_id, const.ENTITY_TYPE_ENTITY)
+    if not entity_sys_flag:
+        where_mapping['md_entity_id'] = md_entity_id
+    where_list_new.append(where_mapping)
+    s1 = None
+    for wh in where_mapping.keys():
+        if s1 is None:
+            s1 = wh + '=%s'
+        else:
+            s1 += ' and ' + wh + '=%s'
+    sql_where = '{param}'.format(param=s1)
+    # 限制查询最大数量1000
+    icount = 1000
+    sql_condition = ""
+    if dp_list is None or len(dp_list) <= 0:
+        logger.warning(
+            "the user[user_id={}] have no privilege of the entity,md_entity_id=[{}]".format(user_id, md_entity_id))
+        icount = 0
+    else:
+        for itm in dp_list:
+            sql_format = itm.get("sql_format")
+            if sql_format is not None and len(sql_format.strip()) > 0:
+                sql_condition += " and " + sql_format
+
+    limit_include = "select * from({sql_include})aaa LIMIT " + str(icount)
+
+    sql += sql_where + sql_condition
+    sql = limit_include.format(sql_include=sql)
+    (re, irows) = sql_query(sql, where_list_new)
+    message = "query success"
+    re = exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_SUCCESS, rows=irows, data=re,
+                            message=message)
+    return re
+
+
+def insert_execute(user_id, tenant_id, md_entity_id, data_list):
+    irows = 0
+    if md_entity_id is None or tenant_id is None:
+        msg = 'insert_execute,tenant_id or md_entity_id is none'
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    # guid生成
+    n = 1
+    if data_list is not None and len(data_list) > 0:
+        n = len(data_list)
+    ids = get_guid(n)
+    data_list_new = []
+    id = ids[0]
+    all_fields = get_entity_all_fields(tenant_id, [md_entity_id])
+    if all_fields is None:
+        msg = 'insert execute warning:query fields is None'
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    table_name = None
+    exist_fields = False
+    data_mapping = {}
+    if isinstance(data_list, list) and len(data_list) > 0:
+        count = 0
+        for data_dict in data_list:
+            id = ids[count]
+            count += 1
+            data_mapping = {}
+            sys_flag = None
+            for field in all_fields:
+                field_name = field.get('md_fields_name')
+                table_name = field.get('md_tables_name')
+                sys_flag = field.get('sys_flag')
+                v = None
+                exist_fields = False
+                if field.get('is_key') == 'Y':  # key关键字赋值，guid
+                    exist_fields = True
+                    v = id
+                else:
+                    for key in data_dict.keys():
+                        if key.upper() == field_name.upper():
+                            v = data_dict[key]
+                            exist_fields = True
+                            break
+                if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
+                    data_mapping[field.get('md_columns_name')] = v
+            b_flag = False
+            if sys_flag is not None and sys_flag == 'Y':
+                b_flag = True
+            # 系统字段赋值
+            set_system_fields_values(data_mapping, user_id, tenant_id, md_entity_id, is_sys_flag=b_flag)
+            data_list_new.append(data_mapping)
+    keys = ', '.join(data_mapping.keys())
+    params = ', '.join(['%s'] * len(data_mapping))
+    if table_name is None:
+        msg = 'user_id={},md_entity_id={},the metadata table name is not exists, please fill in first.'.format(user_id,
+                                                                                                               md_entity_id)
+        logger.error(msg)
+        res = exec_output_status(type=DB_EXEC_TYPE_INSERT, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                 message=msg)
+        return res
+
+    sql = 'INSERT INTO {table}({keys}) VALUES ({values})'.format(table=table_name, keys=keys, values=params)
+    conn = db_md()
+    try:
+        cursor = sql_exec(conn, sql, data_list_new)
+        irows = cursor.rowcount
+        if cursor is not None and cursor.rowcount > 0:
+            message = "insert success,rows={}".format(cursor.rowcount)
+            sStatus = DB_EXEC_STATUS_SUCCESS
+            data = {"entity_id": md_entity_id, "ids": ids}
+            logger.warning("insert entity,user=[{}],entity_id={},data:{}".format(user_id, md_entity_id, data_list_new))
+        else:
+            sStatus = DB_EXEC_STATUS_FAIL
+            message = "insert failed"
+            data = None
+            logger.warning(
+                "insert entity failed,user=[{}],entity_id={},data:{}".format(user_id, md_entity_id,
+                                                                             data_list_new))
+        re = exec_output_status(type=DB_EXEC_TYPE_INSERT, status=sStatus, rows=irows, data=data, message=message)
+        conn.commit()
+        return re
+    except Exception as e:
+        logger.error('sql insert error,sql:[%s],message:%s' % (sql, e))
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
+
+def exec_output_status(type, status, rows, data, message):
+    re = {}
+    re["action"] = type
+    re["status"] = status
+    re["rows"] = rows
+    re["data"] = data
+    re["message"] = message
+    return re
+
+
+def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
+    irows = 0
+    if user_id is None or tenant_id is None or md_entity_id is None:
+        msg = 'update execute warning:user_id,tenant_id,md_entity_id or or more is None,user={},tenant_id={},entity_id={}'.format(
+            user_id, tenant_id, md_entity_id)
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    data_list_new = []
+    where_list_new = []
+    values_new = []
+    all_fields = get_entity_all_fields(tenant_id, [md_entity_id])
+    if all_fields is None:
+        msg = 'update execute warning:query fields is None,user=[{}],entity_id={}'.format(user_id, md_entity_id)
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    table_name = None
+    exist_fields = False
+    data_mapping = {}
+    where_mapping = {}
+    obj_list = []
+    if isinstance(data_list, list) and len(data_list) > 0:
+        i = 0
+        for data_dict in data_list:
+            where = where_list[i]
+            i += 1
+            data_mapping = {}
+            sys_flag = None
+            for field in all_fields:
+                field_name = field.get('md_fields_name')
+                table_name = field.get('md_tables_name')
+                sys_flag = field.get('sys_flag')
+                v = None
+                exist_fields = False
+                for key in data_dict.keys():
+                    if key.upper() == field_name.upper():
+                        v = data_dict[key]
+                        exist_fields = True
+                        break
+                if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
+                    data_mapping[field.get('md_columns_name')] = v
+
+            where_mapping = {}
+            for key1 in where.keys():
+                v = None
+                field = None
+                for field in all_fields:
+                    field_name1 = field.get('md_fields_name')
+                    exist_fields = False
+                    if field.get('is_key') == 'Y' and key1 == KEY_FIELDS_ID:  # key关键字赋值，guid
+                        exist_fields = True
+                        obj_list.append(where.get(key1))
+                        break
+                    if key1.upper() == field_name1.upper():
+                        if field.get('is_key') == 'Y':
+                            obj_list.append(where.get(key1))
+                        exist_fields = True
+                        break
+                if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
+                    v = where.get(key1)
+                    k = field.get('md_columns_name')
+                    where_mapping[k] = v
+            b_flag = False
+            if sys_flag is not None and sys_flag == "Y":
+                b_flag = True
+            # 系统字段赋值
+            set_system_fields_values(data_mapping, user_id, tenant_id, md_entity_id, is_update=True, is_sys_flag=b_flag)
+            where_mapping['tenant_id'] = tenant_id
+            if not b_flag:
+                where_mapping['md_entity_id'] = md_entity_id
+            data_list_new.append(data_mapping)
+            where_list_new.append(where_mapping)
+            new_dict = dict(data_mapping, **where_mapping)
+            values_new.append(new_dict)
+
+    s = None
+    for item in data_mapping.keys():
+        if s is None:
+            s = item + '=%s'
+        else:
+            s += ',' + item + '=%s'
+    sql = 'UPDATE {table} SET {keys}  WHERE '.format(table=table_name, keys=s)
+    s1 = None
+    for wh in where_mapping.keys():
+        if s1 is None:
+            s1 = wh + '=%s'
+        else:
+            s1 += ' and ' + wh + '=%s'
+    sql_where = '{param}'.format(param=s1)
+    sql += sql_where
+    conn = db_md()
+    try:
+        cursor = sql_exec(conn, sql, values_new)
+        irows = cursor.rowcount
+        if cursor is not None and cursor.rowcount > 0:
+            message = "update success,row={},input params{}".format(cursor.rowcount, where_list)
+            sStatus = DB_EXEC_STATUS_SUCCESS
+        else:
+            sStatus = DB_EXEC_STATUS_SUCCESS
+            message = "update rows=0,input params{}".format(where_list)
+            where_mapping = None
+
+        logger.warning(
+            "update entity,user=[{}],entity={},where={},new_values={}".format(user_id, md_entity_id, where_list,
+                                                                              values_new))
+        data = {"entity_id": md_entity_id, "ids": obj_list}
+        re = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=sStatus, rows=irows, data=data,
+                                message=message)
+        conn.commit()
+        return re
+
+    except Exception as e:
+        logger.error('sql update error,sql:[%s],message:%s' % (sql, e))
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
+
+def delete_execute(user_id, tenant_id, md_entity_id, where_list):
+    irows = 0
+    if user_id is None or tenant_id is None or md_entity_id is None:
+        msg = 'delete execute,user_id,tenant_id,md_entity_id or or more is None,user_id={},tenant_id={},entity_id={}'.format(
+            user_id, tenant_id, md_entity_id)
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    where_list_new = []
+    obj_list = []
+    values_new = []
+    all_fields = get_entity_all_fields(tenant_id, [md_entity_id])
+    if all_fields is None:
+        msg = 'delete execute warning:query fields is None,user={},entity_id={}'.format(user_id, md_entity_id)
+        logger.warning(msg)
+        return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
+                                  message=msg)
+    table_name = None
+    exist_fields = False
+    data_mapping = {}
+    where_mapping = {}
+    if isinstance(where_list, list) and len(where_list) > 0:
+        for data_dict in where_list:
+            where = data_dict
+            sys_flag = None
+            for field in all_fields:
+                # field_name = field.get('md_fields_name']
+                table_name = field.get('md_tables_name')
+                sys_flag = field.get('sys_flag')
+                break
+
+            where_mapping = {}
+            for key1 in where.keys():
+                v = None
+                field = None
+                for field in all_fields:
+                    field_name1 = field.get('md_fields_name')
+                    exist_fields = False
+                    if field.get('is_key') == 'Y' and key1 == KEY_FIELDS_ID:  # key关键字赋值，guid
+                        obj_list.append(where.get(key1))
+                        exist_fields = True
+                        break
+                    if key1.upper() == field_name1.upper():
+                        if field.get('is_key') == 'Y':
+                            obj_list.append(where.get(key1))
+                        exist_fields = True
+                        break
+                if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
+                    v = where.get(key1)
+                    where_mapping[field.get('md_columns_name')] = v
+                else:  # 输入的fields不存在,且不是实体key，则不执行
+                    if key1 != "md_entity_id":
+                        msg = "delete_execute,the input field[{}] is not exists".format(key1)
+                        logger.warning(msg)
+                        return msg
+
+            b_flag = False
+            if sys_flag is not None and sys_flag == 'Y':
+                b_flag = True
+            # 系统字段赋值
+            where_mapping['tenant_id'] = tenant_id
+            if not b_flag:
+                where_mapping['md_entity_id'] = md_entity_id
+            where_list_new.append(where_mapping)
+            new_dict = where_mapping
+            values_new.append(new_dict)
+
+    s = None
+    for item in data_mapping.keys():
+        if s is None:
+            s = item + '=%s'
+        else:
+            s += ',' + item + '=%s'
+    sql = 'DELETE FROM {table}  WHERE '.format(table=table_name)
+    s1 = None
+    for wh in where_mapping.keys():
+        if s1 is None:
+            s1 = wh + '=%s'
+        else:
+            s1 += ' and ' + wh + '=%s'
+    sql_where = '{param}'.format(param=s1)
+    sql += sql_where
+    conn = db_md()
+    try:
+        cursor = sql_exec(conn, sql, values_new)
+        irows = cursor.rowcount
+        if cursor is not None and cursor.rowcount > 0:
+            sStatus = DB_EXEC_STATUS_SUCCESS
+            message = "delete success,rows={}".format(cursor.rowcount)
+        else:
+            sStatus = DB_EXEC_STATUS_SUCCESS
+            message = "delete nothing"
+
+        data = {"entity_id": md_entity_id, "ids": obj_list}
+        logger.warning(
+            "delete entity,Status:{},msg:{},user=[{}],entity_id={},data:{}".format(sStatus, message, user_id,
+                                                                                   md_entity_id,
+                                                                                   where_list_new))
+        re = exec_output_status(type=DB_EXEC_TYPE_DELETE, status=sStatus, rows=irows, data=data,
+                                message=message)
+        conn.commit()
+        return re
+
+    except Exception as e:
+        logger.error('sql_delete error,sql:[%s],message:%s' % (sql, e))
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
+
+if __name__ == '__main__':
+    # entity_ids = [30001, 30002, 30003]
+    user = ur.get_user_tenant(1001)
+    user_id = user.get("user_id")
+    tenant_id = user.get("tenant_id")
+
+    # get_entity_all_fields(tenant_id, entity_ids)
+    datas = [{
+        'text_col0': 'kiki-001',
+        'text_col1': 'kiki',
+        'n_col3': 25
+    }, {
+        'text_col0': 'goog-001',
+        'text_col1': 'gogo',
+        'n_col3': 101
+    }]
+    where1 = [{
+        KEY_FIELDS_ID: 1346630691940601856
+    }, {
+        KEY_FIELDS_ID: 1349558259157176321
+    }]
+    wh1 = {
+        KEY_FIELDS_ID: 1349558259157176321
+    }
+    entity_id = 30001
+
+    # re=insert_execute(user_id, tenant_id, entity_id, datas)
+    # re=update_execute(user_id, tenant_id, entity_id, datas, where1)
+    # delete_execute(user_id, tenant_id, entity_id, where1)
+    re = query_execute(user_id, tenant_id, entity_id, wh1)
+    logger.info(re)
