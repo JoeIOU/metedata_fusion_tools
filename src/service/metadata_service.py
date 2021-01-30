@@ -1,9 +1,10 @@
 # #metadata_service.py
 from flask import request, session
 import json
-from mdata import role_privilege as rp, metadata as md
-from mdata import data_view as vw, index_unique as idx
-from mdata import user_mngt as ur
+from privilege import role_privilege as rp
+from mdata import index_unique as idx, metadata as md
+from data import data_view as vw
+from privilege import user_mngt as ur
 from httpserver import httpserver
 from config.config import cfg as config
 from common import constants as const
