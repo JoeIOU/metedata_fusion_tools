@@ -201,18 +201,27 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
         elif method == SERVICE_METHOD_INSERT:
             re = md.insert_execute(user_id, tenant_id, md_entity_id, data_list)
             # 插入索引数据
-            ids = get_index_data_ids(re)
-            idx.insert_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
+            if re is not None:
+                iRows=re.get("rows")
+                if iRows is not None and iRows > 0:
+                    ids = get_index_data_ids(re)
+                    idx.insert_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
         elif method == SERVICE_METHOD_DELETE:
             re = md.delete_execute(user_id, tenant_id, md_entity_id, where_list)
             # 删除索引数据
-            ids = get_index_data_ids(re)
-            idx.delete_index_data(user_id, tenant_id, md_entity_id, where_list, ids)
+            if re is not None:
+                iRows=re.get("rows")
+                if iRows is not None and iRows > 0:
+                    ids = get_index_data_ids(re)
+                    idx.delete_index_data(user_id, tenant_id, md_entity_id, where_list, ids)
         elif method == SERVICE_METHOD_UPDATE:
             re = md.update_execute(user_id, tenant_id, md_entity_id, data_list, where_list)
             # 更新索引数据
-            ids = get_index_data_ids(re)
-            idx.update_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
+            if re is not None:
+                iRows=re.get("rows")
+                if iRows is not None and iRows > 0:
+                    ids = get_index_data_ids(re)
+                    idx.update_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
         elif method == SERVICE_METHOD_VIEW:
             re = vw.query_view(user_id, md_entity_id, where_list[0])
         else:
