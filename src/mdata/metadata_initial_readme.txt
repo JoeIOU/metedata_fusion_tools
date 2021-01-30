@@ -1,0 +1,5 @@
+1.从数据库反向工程，生成表和字段的元数据md_tables和md_columns.
+2.再通过元数据表和字段，生成默认的实体和属性，md_entities和md_fields.
+3.实体关系生成，默认从数据库的表间的外键关系（如果有），跟实体和属性元数据mapping，生成默认实体关系md_enties_rel.
+4.根据生成的实体md_entities，默认生成其CRUD操作权限码，存到entity_privileges.
+5.另外，访问数据范围的权限，根据实体md_entities和属性md_fields来生成data_privileges,data_privilege_field是查询的条件范围设置。
