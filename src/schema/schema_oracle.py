@@ -3,7 +3,7 @@
 from config.config import cfg as config
 from db.db_conn import db_connection_oracle as con_oracle
 from schema import metadata_eng_reverse as mdr
-from mdata import user_mngt as ur
+from privilege import user_mngt as ur
 
 logger = config.logger
 
