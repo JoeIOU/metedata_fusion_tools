@@ -5,7 +5,7 @@
 import time
 import logging
 
-from mdata.exception import InvalidSystemClock
+from common.exception import InvalidSystemClock
 
 # 64位ID的划分
 WORKER_ID_BITS = 5
