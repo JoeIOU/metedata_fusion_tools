@@ -140,7 +140,7 @@ def get_datacenter_worker_id_by_ip():
     datacenter_id = 1
     try:
         ip = get_host_ip()
-        ip2int = lambda x: sum([256 ** j * int(i) for j, i in enumerate(ip.split('.')[::-1])])
+        ip2int = lambda x: sum([256 ** j * int(i) for j, i in enumerate(x.split('.')[::-1])])
         if ip is not None:
             iip = ip2int(ip)
             worker_id = iip % 31
