@@ -4,7 +4,7 @@ import pymysql
 import cx_Oracle as oracle
 # import psycopg2 as pg
 
-# 元数据连接池
+# 元数据mysql连接池
 POOL = PooledDB(
     creator=pymysql,  # 使用链接数据库的模块
     maxconnections=50,  # 连接池允许的最大连接数，0和None表示不限制连接数
@@ -25,7 +25,7 @@ POOL = PooledDB(
     cursorclass=pymysql.cursors.DictCursor,
     charset='utf8'
 )
-# 业务数据连接池
+# mySQL业务数据连接池
 POOL1 = PooledDB(
     creator=pymysql,  # 使用链接数据库的模块
     maxconnections=50,  # 连接池允许的最大连接数，0和None表示不限制连接数
@@ -46,7 +46,7 @@ POOL1 = PooledDB(
     cursorclass=pymysql.cursors.DictCursor,
     charset='utf8'
 )
-# oracle连接池
+# oracle业务数据连接池
 POOL_ORA = PooledDB(
     creator=oracle,  # 使用链接数据库的模块
     maxconnections=5,  # 连接池允许的最大连接数，0和None表示没有限制
@@ -85,13 +85,13 @@ def db_connection_metedata():
     return conn
 
 
-# 业务数据连接池
+# mySQL业务数据连接池
 def db_connection_data():
     conn = POOL1.connection()
     return conn
 
 
-# Oracle连接
+# Oracle业务数据连接池
 def db_connection_oracle():
     # user = "salequery"
     # pwd = "Pr0d1234"
@@ -102,7 +102,7 @@ def db_connection_oracle():
     return conn
 
 
-# PG连接
+# PG业务数据连接池
 # def db_connection_pg():
 #     # 获取数据库连接的方式
 #     conn = POOL_PG.connection()
