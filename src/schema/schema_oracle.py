@@ -74,21 +74,23 @@ def get_table_info(schema, table_name_list):
     if schema is None:
         logger.warning("get_table_info,schema should not be None")
         return None
-    if table_name_list is None:
-        logger.warning("get_table_info,table_name should not be None")
-        return None
     conn = con_oracle()
     cursor = conn.cursor()
-    sql = schema_info_table_sql_format_oracle
+    sql = None
+    if table_name_list is None:
+        sql = schema_info_all_table_sql_format_oracle
+    else:
+        sql = schema_info_table_sql_format_oracle
     params = {}
     params["SCHEMA"] = schema
     str_param = None
-    for item in table_name_list:
-        if str_param is None:
-            str_param = "'" + item + "'"
-        else:
-            str_param += ",'" + item + "'"
-    sql = sql.format(str_param)
+    if table_name_list is not None and len(table_name_list) > 0:
+        for item in table_name_list:
+            if str_param is None:
+                str_param = "'" + item + "'"
+            else:
+                str_param += ",'" + item + "'"
+        sql = sql.format(str_param)
     cursor.execute(sql, params)
     cursor._cursor.rowfactory = makeDictFactory(cursor)
     result = cursor.fetchall()
@@ -106,31 +108,51 @@ def get_table_column_info(schema, table_name_list):
     cursor = conn.cursor()
     sql = schema_info_all_fields_sql_format_oracle
     str_param = None
-    for item in table_name_list:
-        if str_param is None:
-            str_param = "'" + item + "'"
-        else:
-            str_param += ",'" + item + "'"
-    sql = sql.format(str_param)
-    params = {}
-    params["SCHEMA"] = schema
-    cursor.execute(sql, params)
-    cursor._cursor.rowfactory = makeDictFactory(cursor)
-    result = cursor.fetchall()
-    return result
+    result_res = []
+    if table_name_list is not None:
+        iCount = len(table_name_list)
+        size = 100
+        i = 0
+        while True:
+            i += 1
+            i_from = (i - 1) * size
+            i_to = i * size
+            if i_from >= iCount:
+                break
+            if i_to > iCount:
+                i_to = iCount
+            list_split = table_name_list[i_from:i_to]
+            for item in list_split:
+                if str_param is None:
+                    str_param = "'" + item + "'"
+                else:
+                    str_param += ",'" + item + "'"
+            sql = sql.format(str_param)
+            params = {}
+            params["SCHEMA"] = schema
+            cursor.execute(sql, params)
+            cursor._cursor.rowfactory = makeDictFactory(cursor)
+            result = cursor.fetchall()
+            result_res += result
+    return result_res
+
 
 ##1.初始化表和字段信息，反向从数据库
 def reverse_tables_columns(user_id, tenant_id, database_name, schema, tables_list):
     tables = get_table_info(schema, tables_list)
-    columns = get_table_column_info(schema, tables_list)
+    tab_list = []
+    if tables is not None and len(tables) > 0:
+        for tbl in tables:
+            tab_name = tbl.get("TABLE_NAME")
+            tab_list.append(tab_name)
+    columns = get_table_column_info(schema, tab_list)
     re = mdr.intialize_md_tables_from_schema(user_id, tenant_id, database_name, schema, tables, columns)
     return re
 
 
-
 if __name__ == '__main__':
     schema = "SALE_CFG"
-    tables_list = ["CFG_MAIN_SPART_T", "ABC"]
+    tables_list = None  # ["CFG_MAIN_SPART_T", "ABC"]
     # re = get_table_column_info(schema, tables)
 
     # ##insert the metadata of table and columns into meatadata tables
