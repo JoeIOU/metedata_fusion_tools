@@ -3,6 +3,7 @@
 # https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala
 
 import time
+import socket
 import logging
 
 from common.exception import InvalidSystemClock
@@ -28,6 +29,9 @@ SEQUENCE_MASK = -1 ^ (-1 << SEQUENCE_BITS)
 TWEPOCH = 1288834974657
 worker = None
 
+worker_id = None
+datacenter_id = None
+
 
 # logger = logging.getLogger('http.app')
 
@@ -42,7 +46,7 @@ class IdWorker(object):
         初始化
         :param datacenter_id: 数据中心（机器区域）ID
         :param worker_id: 机器ID
-        :param sequence: 其实序号
+        :param sequence: 起始序号
         """
         # sanity check
         if worker_id > MAX_WORKER_ID or worker_id < 0:
@@ -100,9 +104,11 @@ class IdWorker(object):
 
 
 def get_guid(id_num=1):
-    global worker
+    global worker, datacenter_id, worker_id
+    if datacenter_id is None or worker_id is None:
+        datacenter_id, worker_id = get_datacenter_worker_id_by_ip()
     if worker is None:
-        worker = IdWorker(datacenter_id=1, worker_id=1, sequence=0)
+        worker = IdWorker(datacenter_id=datacenter_id, worker_id=worker_id, sequence=0)
     ids = []
     if id_num <= 0:
         id_num = 1
@@ -112,17 +118,51 @@ def get_guid(id_num=1):
     return ids
 
 
+def get_host_ip():
+    """
+    查询本机ip地址
+    :return: ip
+    """
+    ip = "0:0:0:0"
+    s = None
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+
+    return ip
+
+
+def get_datacenter_worker_id_by_ip():
+    worker_id = 1
+    datacenter_id = 1
+    try:
+        ip = get_host_ip()
+        ip2int = lambda x: sum([256 ** j * int(i) for j, i in enumerate(ip.split('.')[::-1])])
+        if ip is not None:
+            iip = ip2int(ip)
+            worker_id = iip % 31
+            datacenter_id = iip % 30
+
+        return datacenter_id, worker_id
+    except Exception as e:
+        return datacenter_id, worker_id
+
+
 if __name__ == '__main__':
     # 测试效率
-    import datetime
-
-    worker = IdWorker(datacenter_id=1, worker_id=1, sequence=0)
-    ids = []
-    start = datetime.datetime.now()
-    for i in range(1000):
-        new_id = worker.get_id()
-        ids.append(new_id)
-    end = datetime.datetime.now()
-    spend_time = end - start
-    print(spend_time, len(ids), len(set(ids)))
+    # import datetime
+    # worker = IdWorker(datacenter_id=1, worker_id=1, sequence=0)
+    # ids = []
+    # start = datetime.datetime.now()
+    # for i in range(100):
+    #     new_id = worker.get_id()
+    #     ids.append(new_id)
+    # end = datetime.datetime.now()
+    # spend_time = end - start
+    # print(spend_time, len(ids), len(set(ids)))
+    # print(ids)
+    ids = get_guid(100)
     print(ids)
