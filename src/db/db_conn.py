@@ -64,19 +64,19 @@ POOL_ORA = PooledDB(
 )
 
 # PG连接池
-# POOL_PG = PooledDB(
-#     creator=pg,  # 使用连接数据库的模块 psycopg2
-#     maxconnections=6,  # 连接池允许的最大连接数，0 和 None 表示不限制连接数
-#     mincached=2,  # 初始化时，链接池中至少创建的空闲的链接，0 表示不创建
-#     maxcached=4,  # 链接池中最多闲置的链接，0 和 None 不限制
-#     blocking=True,  # 连接池中如果没有可用连接后，是否阻塞等待。True，等待；False，不等待然后报错
-#     maxusage=None,  # 一个链接最多被重复使用的次数，None 表示无限制
-#     setsession=[],  # 开始会话前执行的命令列表
-#     host='127.0.0.1',
-#     port='5432',
-#     user='user',
-#     password='123456',
-#     database='test')
+POOL_PG = PooledDB(
+    creator=pg,  # 使用连接数据库的模块 psycopg2
+    maxconnections=6,  # 连接池允许的最大连接数，0 和 None 表示不限制连接数
+    mincached=2,  # 初始化时，链接池中至少创建的空闲的链接，0 表示不创建
+    maxcached=4,  # 链接池中最多闲置的链接，0 和 None 不限制
+    blocking=True,  # 连接池中如果没有可用连接后，是否阻塞等待。True，等待；False，不等待然后报错
+    maxusage=None,  # 一个链接最多被重复使用的次数，None 表示无限制
+    setsession=[],  # 开始会话前执行的命令列表
+    host='127.0.0.1',
+    port='5432',
+    user='postgres',
+    password='123456',
+    database='test')
 
 
 # 元数据连接池
@@ -103,10 +103,10 @@ def db_connection_oracle():
 
 
 # PG业务数据连接池
-# def db_connection_pg():
-#     # 获取数据库连接的方式
-#     conn = POOL_PG.connection()
-#     return conn
+def db_connection_pg():
+    # 获取数据库连接的方式
+    conn = POOL_PG.connection()
+    return conn
 
 
 if __name__ == '__main__':
