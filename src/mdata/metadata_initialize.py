@@ -41,6 +41,42 @@ SQL_QUERY_ENTITY_FORMAT = """
             AND tt.md_tables_name in %s
             """
 
+SQL_QUERY_ENTITY_REL_FORMAT = """
+            SELECT DISTINCT r.md_entity_rel_id,
+                e.md_entity_id frm_md_entity_id,
+                e.md_entity_code frm_md_entity_code,
+                e.md_entity_name frm_md_entity_name,
+                f.md_fields_id frm_md_fields_id,
+                f.md_fields_name  frm_md_fields_name,
+                e1.md_entity_id to_md_entity_id,
+                e1.md_entity_code to_md_entity_code,
+                e1.md_entity_name to_md_entity_name,
+                f1.md_fields_id to_md_fields_id,
+                f1.md_fields_name  to_md_fields_name
+            FROM md_entities_rel r
+            INNER JOIN  md_entities e on e.md_entity_id=r.from_entity_id
+            INNER JOIN md_fields f ON f.md_entity_id = e.md_entity_id
+            AND f.tenant_id = e.tenant_id and f.md_fields_id=r.from_field_id
+            INNER JOIN  md_entities e1 on e1.md_entity_id=r.to_entity_id
+            INNER JOIN md_fields f1 ON f1.md_entity_id = e1.md_entity_id
+            AND f1.tenant_id = e1.tenant_id and f1.md_fields_id=r.to_field_id
+            WHERE
+                e.tenant_id = %s
+               AND (e.md_entity_code in %s or e1.md_entity_code in %s)
+             """
+
+
+# 查询实体关系信息
+def query_entity_rel_by_entity(tenant_id, entity_codes):
+    sql = SQL_QUERY_ENTITY_REL_FORMAT
+    if entity_codes is None:
+        logger.warning("query_entity_rel_by_entity,entity_names should not be None")
+        return None
+    conn = db_md()
+    cursor = conn.cursor()
+    cursor.execute(sql, args=(tenant_id, entity_codes, entity_codes))
+    result = cursor.fetchall()
+    return result
 
 def query_entity_by_tenant(tenant_id, table_names):
     sql = SQL_QUERY_ENTITY_FORMAT
