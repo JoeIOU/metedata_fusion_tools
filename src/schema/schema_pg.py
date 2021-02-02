@@ -3,7 +3,6 @@
 from config.config import cfg as config
 from db.db_conn import db_connection_pg as con_pg
 from schema import metadata_eng_reverse as mdr
-import psycopg2
 from privilege import user_mngt as ur
 
 logger = config.logger
