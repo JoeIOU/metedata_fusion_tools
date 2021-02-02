@@ -42,7 +42,7 @@ SQL_QUERY_ENTITY_FORMAT = """
             """
 
 SQL_QUERY_ENTITY_REL_FORMAT = """
-            SELECT DISTINCT r.md_entity_rel_id,
+            SELECT DISTINCT r.md_entity_rel_id,r.rel_type,r.md_entity_rel_desc,
                 e.md_entity_id frm_md_entity_id,
                 e.md_entity_code frm_md_entity_code,
                 e.md_entity_name frm_md_entity_name,
