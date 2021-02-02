@@ -1,5 +1,5 @@
 # ####schema_oracle.py
-# MySql数据库表反向工程，生成元数据存入表。
+# Oracle数据库表反向工程，生成元数据存入表。
 from config.config import cfg as config
 from db.db_conn import db_connection_oracle as con_oracle
 from schema import metadata_eng_reverse as mdr
