@@ -4,6 +4,7 @@ from config.config import cfg as config
 from db.db_conn import db_connection_metedata as db_md
 from mdata import metadata as md
 from privilege import user_mngt as ur
+from model import model_graph as mg
 
 logger = config.logger
 # 数据表映射关系表名和字段元数据表名
@@ -41,7 +42,7 @@ SQL_QUERY_ENTITY_FORMAT = """
             AND tt.md_tables_name in %s
             """
 
-SQL_QUERY_ENTITY_REL_FORMAT = """
+SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
             SELECT DISTINCT r.md_entity_rel_id,r.rel_type,r.md_entity_rel_desc,
                 e.md_entity_id frm_md_entity_id,
                 e.md_entity_code frm_md_entity_code,
@@ -61,22 +62,26 @@ SQL_QUERY_ENTITY_REL_FORMAT = """
             INNER JOIN md_fields f1 ON f1.md_entity_id = e1.md_entity_id
             AND f1.tenant_id = e1.tenant_id and f1.md_fields_id=r.to_field_id
             WHERE
-                e.tenant_id = %s
-               AND (e.md_entity_code in %s or e1.md_entity_code in %s)
+                e.tenant_id = %s               
              """
+SQL_QUERY_ENTITY_REL_FORMAT = SQL_QUERY_ENTITY_ALL_REL_FORMAT + " AND (e.md_entity_code in %s or e1.md_entity_code in %s)"
 
 
 # 查询实体关系信息
 def query_entity_rel_by_entity(tenant_id, entity_codes):
-    sql = SQL_QUERY_ENTITY_REL_FORMAT
     if entity_codes is None:
-        logger.warning("query_entity_rel_by_entity,entity_names should not be None")
-        return None
+        sql = SQL_QUERY_ENTITY_ALL_REL_FORMAT
+    else:
+        sql = SQL_QUERY_ENTITY_REL_FORMAT
     conn = db_md()
     cursor = conn.cursor()
-    cursor.execute(sql, args=(tenant_id, entity_codes, entity_codes))
+    if entity_codes is None:
+        cursor.execute(sql, args=(tenant_id))
+    else:
+        cursor.execute(sql, args=(tenant_id, entity_codes, entity_codes))
     result = cursor.fetchall()
     return result
+
 
 def query_entity_by_tenant(tenant_id, table_names):
     sql = SQL_QUERY_ENTITY_FORMAT
@@ -260,15 +265,103 @@ def insert_metadata_entities_rel(user_id, tenant_id, entities_rel):
     return re
 
 
+def graph_data_mapping(entiies_rel_list):
+    list_entity = []
+    list_rel = []
+    if entiies_rel_list is not None:
+        for item in entiies_rel_list:
+            rel_id = item.get("md_entity_rel_id")
+            rel_type = item.get("rel_type")
+            rel_desc = item.get("md_entity_rel_desc")
+            frm_md_entity_id = item.get("frm_md_entity_id")
+            frm_md_entity_code = item.get("frm_md_entity_code")
+            frm_md_entity_name = item.get("frm_md_entity_name")
+            frm_md_fields_id = item.get("frm_md_fields_id")
+            frm_md_fields_name = item.get("frm_md_fields_name")
+            to_md_entity_id = item.get("to_md_entity_id")
+            to_md_entity_code = item.get("to_md_entity_code")
+            to_md_entity_name = item.get("to_md_entity_name")
+            to_md_fields_id = item.get("to_md_fields_id")
+            to_md_fields_name = item.get("to_md_fields_name")
+            rel_dict = {}
+            rel_dict["label"] = rel_type
+            rel_dict["name"] = rel_desc
+            rel_dict["relation_id"] = rel_id
+            rel_dict["relation_desc"] = rel_desc
+            rel_dict["relation_type"] = rel_type
+            rel_dict["from_entity_id"] = frm_md_entity_id
+            rel_dict["from_entity_name"] = frm_md_entity_name
+            rel_dict["from_entity_code"] = frm_md_entity_code
+            rel_dict["from_fields_id"] = frm_md_fields_id
+            rel_dict["from_fields_name"] = frm_md_fields_name
+            rel_dict["to_entity_id"] = to_md_entity_id
+            rel_dict["to_entity_name"] = to_md_entity_name
+            rel_dict["to_entity_code"] = to_md_entity_code
+            rel_dict["to_fields_id"] = to_md_fields_id
+            rel_dict["to_fields_name"] = to_md_fields_name
+            list_rel.append(rel_dict)
+            entity_dict = {}
+            entity_dict["label"] = frm_md_entity_code
+            entity_dict["name"] = frm_md_entity_code
+            entity_dict["entity_id"] = frm_md_entity_id
+            entity_dict["entity_code"] = frm_md_entity_code
+            entity_dict["entity_name"] = frm_md_entity_name
+            if not is_entity_in_list("entity_id", frm_md_entity_id, list_entity):
+                list_entity.append(entity_dict)
+            entity_dict = {}
+            entity_dict["label"] = to_md_entity_code
+            entity_dict["name"] = to_md_entity_code
+            entity_dict["entity_id"] = to_md_entity_id
+            entity_dict["entity_code"] = to_md_entity_code
+            entity_dict["entity_name"] = to_md_entity_name
+            if not is_entity_in_list("entity_id", to_md_entity_id, list_entity):
+                list_entity.append(entity_dict)
+    return list_entity, list_rel
+
+
+def is_entity_in_list(key, value, entity_list):
+    flag = False
+    if key is None:
+        return True
+    if entity_list is None or len(entity_list) <= 0:
+        return flag
+    for item in entity_list:
+        if item.get(key) == value:
+            flag = True
+            break
+
+    return flag
+
+
+# 初始化数据模型关系模型图数据库
+def ini_entity_model_graph(tenant_id, entity_codes):
+    # entity_codes = ["md_entities"]
+    result = query_entity_rel_by_entity(tenant_id, entity_codes)
+    entitie_model_list, rel_list = graph_data_mapping(result)
+    # mg.create_unique_index(mg.DATA_ENTITY,"entity_id")
+    mg.create_object_from_metadata(entitie_model_list)
+    mg.create_object_rel_from_metadata(rel_list)
+    return (entitie_model_list, rel_list)
+
+
 if __name__ == '__main__':
     # [{"entity_code":"table_name"}]
     entity_list = [{"entity_code": "Contract", "table_name": "data_t"}, {"entity_code": "BoQ", "table_name": "data_t"}]
-    user = ur.get_user("test1")
+    user = ur.get_user("admin")
     user_id = user.get("user_id")
     tenant_id = user.get("tenant_id")
     # 从数据库反向工程，初始化表和字段元数据
     # re = initialize_md_entities_from_tables(user_id, tenant_id, entity_list)
     tables = ["t001"]
     # 查询指定租户的所有实体和对应主键。
-    re = query_entity_by_tenant(tenant_id, tables)
-    logger.info("query all tables ,re={}".format(re))
+    # re = query_entity_by_tenant(tenant_id, tables)
+    # logger.info("query all tables ,re={}".format(re))
+
+    # entity_codes = ["md_entities"]
+    # re = query_entity_rel_by_entity(tenant_id, entity_codes)
+    # logger.info("query_entity_rel_by_entity ,re={}".format(re))
+    
+    # entity_codes = ["tenants", "md_columns"]
+    entity_codes = None
+    re = ini_entity_model_graph(tenant_id, entity_codes)
+    logger.info("ini_entity_model_graph ,re={}".format(re))
