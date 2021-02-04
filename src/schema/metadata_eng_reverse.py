@@ -115,6 +115,9 @@ def intialize_md_tables_from_schema(user_id, tenant_id, database_name, schema, t
         row = {}
         table_name = item.get("TABLE_NAME")
         table_desc = item.get("TABLE_COMMENT")
+        schema1 = item.get("TABLE_SCHEMA")
+        if schema1 is not None and len(schema1) >= 0:
+            schema = schema1
         if table_desc is None or len(table_desc) <= 0:
             table_desc = table_name
         row["md_tables_name"] = table_name
