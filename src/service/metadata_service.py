@@ -206,7 +206,14 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
                 iRows=re.get("rows")
                 if iRows is not None and iRows > 0:
                     ids = get_index_data_ids(re)
-                    idx.insert_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
+                    ids_list = ids2_where(ids)
+                    try:
+                        idx.insert_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
+                    except Exception as ex:
+                        # 插入有异常，如唯一键重复等，则删除回滚。
+                        re = md.delete_execute(user_id, tenant_id, md_entity_id, ids_list)
+                        idx.delete_index_data(user_id, tenant_id, md_entity_id, where_list, ids)
+                        raise ex
         elif method == SERVICE_METHOD_DELETE:
             re = md.delete_execute(user_id, tenant_id, md_entity_id, where_list)
             # 删除索引数据
@@ -234,6 +241,16 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
         output = md.exec_output_status(type=method, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
         return output
 
+ 
+def ids2_where(ids):
+    if ids is None:
+        return None
+    id_list = []
+    for id in ids:
+        d = {}
+        d[md.KEY_FIELDS_ID] = id
+        id_list.append(d)
+    return id_list
 
 # 视图查询
 @app.route(domain_root + '/services/queryView', methods=['POST', 'GET'])
