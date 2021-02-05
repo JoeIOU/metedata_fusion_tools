@@ -8,14 +8,19 @@ logger = config.logger
 
 
 # 从数据库表约束关系，反向工程生成，初始化元数据实体
-def intialize_entity_rel_from_schema(user_id, tenant_id, schema, const_list):
+def intialize_entity_rel_from_schema(user_id, tenant_id, schema, const_list, input_flag=False):
     if schema is None:
         logger.info("intialize_entity_rel_from_schema,schema should not be NULL.")
         return None
     if const_list is None:
         logger.info("intialize_entity_rel_from_schema,constraint should not be NULL.")
         return None
-    t_list = get_tables_from_constraint(const_list)
+    if input_flag:  # 外部输入整理好的rel关系
+        t_list = const_list
+        result = mdi.insert_metadata_entities_rel(user_id, tenant_id, t_list)
+        return result
+    else:
+        t_list = get_tables_from_constraint(const_list)
     result_list = []
     if t_list is not None and len(t_list) > 0:
         iCount = len(t_list)
@@ -126,7 +131,7 @@ def intialize_md_tables_from_schema(user_id, tenant_id, database_name, schema, t
         row["schema_code"] = schema
         tables.append(row)
     logger.info("get_table_column_info,re={}".format(columns_list))
-    columns=[]
+    columns = []
     for item in columns_list:
         column = {}
         table_name = item.get("TABLE_NAME")
@@ -143,7 +148,7 @@ def intialize_md_tables_from_schema(user_id, tenant_id, database_name, schema, t
         # column[""] = item.get("COLUMN_TYPE")
         is_null = item.get("IS_NULLABLE")
         is_null_flag = "Y"
-        if is_null is not None and (is_null == "NO" or is_null == "N" ):
+        if is_null is not None and (is_null == "NO" or is_null == "N"):
             is_null_flag = "N"
         column["is_cols_null"] = is_null_flag
         column["md_tables_id"] = table_name
