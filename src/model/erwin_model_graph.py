@@ -40,6 +40,7 @@ def read_erwin_file(filename, rel_only=False):
         (schema, table_name, table_comment, tables_dict) = generate_Tables(scObj)
         if tables_dict is not None:
             all_table_list.append(tables_dict)
+        logger.info("table mapping done,table_name={}".format(table_name))
         # 获取该Entity的所有Attribute对象
         scAttrObjects = scSession.ModelObjects.Collect(scObj, 'Attribute', 1)
         # 获取该Entity的所有key对象
@@ -50,13 +51,13 @@ def read_erwin_file(filename, rel_only=False):
             if pk is not None and pk == 'PK':
                 sckeys = scSession.ModelObjects.Collect(sckeyObject, 'Key_Group_Member', 1)
                 if sckeys is not None:
-                    key_list = generate_key_list(sckeys, table_name, table_comment)
+                    key_list = generate_key_list(schema, sckeys, table_name, table_comment)
         all_columns_list += generate_attributes(scAttrObjects, schema, table_name, table_comment, key_list, rel_only)
 
     return all_table_list, all_columns_list
 
 
-def generate_key_list(sckeys, table_name, table_comment):
+def generate_key_list(schema, sckeys, table_name, table_comment):
     global all_key_list
     key_list = []
     for key in sckeys:
@@ -178,6 +179,7 @@ def generate_Tables(scObj):
 def generate_attributes(scAttrObjects, schema, table_name, table_comment, key_list, rel_only=False):
     global all_rel_ref_list
     columns_list = []
+    fields_list = []
     is_null = None
     for scAttrObj in scAttrObjects:
         col_dict = {}
@@ -190,14 +192,23 @@ def generate_attributes(scAttrObjects, schema, table_name, table_comment, key_li
             continue
         data_type, is_key, long_Id = None, None, None
         try:
-            if scAttrObj.Properties('Parent_Attribute_Ref') is not None:
-                parent_attr_ref = scAttrObj.Properties('Parent_Attribute_Ref').Value
-                parent_rel_ref = scAttrObj.Properties('Parent_Relationship_Ref').Value
-                rel_ref = generate_rel_infos(table_name, scAttrName, parent_rel_ref, parent_attr_ref)
-                all_rel_ref_list.append(rel_ref)
-                if rel_only:
-                    continue
+            if rel_only:
+                if scAttrObj.Properties('Parent_Attribute_Ref') is not None:
+                    parent_attr_ref = scAttrObj.Properties('Parent_Attribute_Ref').Value
+                    parent_rel_ref = scAttrObj.Properties('Parent_Relationship_Ref').Value
+                    rel_ref = generate_rel_infos(table_name, scAttrName, parent_rel_ref, parent_attr_ref)
+                    all_rel_ref_list.append(rel_ref)
+                    if rel_only:
+                        continue
+        except:
+            parent_attr_ref = ""
+
+        try:
             scAttrDefineName = scAttrObj.Properties('Definition').Value
+        except:
+            scAttrDefineName = ""
+
+        try:
             data_type = scAttrObj.Properties('Physical_Data_Type').Value
             # long_Id = scAttrObj.Properties('Long_Id').Value
             if data_type is None or len(data_type.strip()) <= 0:
@@ -210,7 +221,10 @@ def generate_attributes(scAttrObjects, schema, table_name, table_comment, key_li
                         break
             is_null = scAttrObj.Properties('Null_Option_Type').Value
         except Exception as ex:
-            scAttrDefineName = ''
+            data_type = ""
+            is_null = "Y"
+            is_key = ""
+            logger.info("generate_attributes exception,{}".format(ex))
             # 对象名赋值
         # scAttrObj.Properties('Physical_Name').Value = scAttrName
         col_dict["TABLE_SCHEMA"] = schema
@@ -229,6 +243,8 @@ def generate_attributes(scAttrObjects, schema, table_name, table_comment, key_li
         col_dict["IS_NULLABLE"] = is_null_flag
         col_dict["COLUMN_KEY"] = is_key
         columns_list.append(col_dict)
+        fields_list.append(scAttrName)
+    logger.info("fields mapping done,table_name={},fied_name_list={}".format(table_name, fields_list))
 
     return columns_list
 
@@ -276,7 +292,7 @@ def reverse_tables_columns(user_id, tenant_id, database_name, schema, file_name)
 ##2.初始化实体关系，反向从数据库的外键关系（前提：entity和fields等元数据已经生成）
 def reverse_constraint(user_id, tenant_id, schema, file_name):
     const_list = generate_relationship(file_name)
-    re = mdr.intialize_entity_rel_from_schema(user_id, tenant_id, schema, const_list,True)
+    re = mdr.intialize_entity_rel_from_schema(user_id, tenant_id, schema, const_list, True)
     return re
 
 
@@ -287,9 +303,10 @@ if __name__ == '__main__':
     schema = "SALE_LTC"
     database_name = "DG_EFINDB"
     # tables_list = ['roles']
-    # file_name = "D:\WorkDir\项目工作\合同中心\Contract_New202003.erwin"
-    file_name = "D:\WorkDir\Contract_New1.erwin"
-    # re = reverse_tables_columns(user_id, tenant_id, database_name, schema, file_name)
-    # logger.info("all tables in[{}],re={}".format(schema, re))
+    file_name = "D:\WorkDir\项目工作\合同中心\Contract_New202003.erwin"
+    # file_name = "D:\WorkDir\Contract_New1.erwin"
+    re = reverse_tables_columns(user_id, tenant_id, database_name, schema, file_name)
+    logger.info("all tables in[{}],re={}".format(schema, re))
+    # erwin的外键关系转成元数据实体关系。
     re = reverse_constraint(user_id, tenant_id, schema, file_name)
     logger.info("all rels in[{}],re={}".format(schema, re))
