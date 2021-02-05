@@ -670,7 +670,10 @@ def exec_output_status(type, status, rows, data, message):
     return re
 
 
-def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
+def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn=None):
+    commit_flag = True
+    if conn is not None:
+        commit_flag = False
     irows = 0
     if user_id is None or tenant_id is None or md_entity_id is None:
         msg = 'update execute warning:user_id,tenant_id,md_entity_id or or more is None,user={},tenant_id={},entity_id={}'.format(
@@ -795,7 +798,8 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
         data = {"entity_id": md_entity_id, "ids": obj_list}
         re = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=sStatus, rows=irows, data=data,
                                 message=message)
-        conn.commit()
+        if commit_flag:
+             conn.commit()
         return re
 
     except Exception as e:
