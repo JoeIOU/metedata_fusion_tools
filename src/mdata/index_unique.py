@@ -108,16 +108,31 @@ def get_mapping_table_fields(mapping_type, unique_flag):
     return mapping_code, value_field
 
 
-def exec_index_action(user_id, tenant_id, new_data_list, delete_only=False):
+def gen_index_mapping(tenant_id, data_list):
     index_list = query_index_all_type_list(tenant_id)
     classify_dict = {}
-    for item in new_data_list:
+    for item in data_list:
         unique_flag = item.get("unique_flag")
         mapping_type = item.get("mapping_type")
         # 删除非元数据存储字段信息，避免影响保存动作
         item.pop("mapping_type")
         item.pop("unique_flag")
-        mapping_code, value_field = get_mapping_table_fields(mapping_type, unique_flag)
+        if unique_flag == "Y":
+            mapping_code, value_field = get_mapping_table_fields(mapping_type, unique_flag)
+            for itm in index_list:
+                code = itm.get("md_entity_code")
+                if code == mapping_code:
+                    entity_id = itm.get("md_entity_id")
+                    obj_list = classify_dict.get(str(entity_id))
+                    if obj_list is None:
+                        tmp_li = []
+                        tmp_li.append(item)
+                        classify_dict[str(entity_id)] = tmp_li
+                    else:
+                        obj_list.append(item)
+                    break
+        # 不管索引，还是唯一索引，都在index对应的表有存记录。
+        mapping_code, value_field = get_mapping_table_fields(mapping_type, "N")
         for itm in index_list:
             code = itm.get("md_entity_code")
             if code == mapping_code:
@@ -130,6 +145,11 @@ def exec_index_action(user_id, tenant_id, new_data_list, delete_only=False):
                 else:
                     obj_list.append(item)
                 break
+    return classify_dict
+
+
+def exec_index_action(user_id, tenant_id, new_data_list, delete_only=False):
+    classify_dict = gen_index_mapping(tenant_id, new_data_list)
     re = None
     for key in classify_dict.keys():
         if key is not None:
