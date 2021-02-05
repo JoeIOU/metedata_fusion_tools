@@ -807,7 +807,8 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
         conn.rollback()
         raise e
     finally:
-        conn.close()
+        if commit_flag:
+            conn.close()
 
 
 def delete_execute(user_id, tenant_id, md_entity_id, where_list):
