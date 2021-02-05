@@ -714,6 +714,7 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
                     data_mapping[field.get('md_columns_name')] = v
 
             where_mapping = {}
+            is_key_fields_in_where = False
             for key1 in where.keys():
                 v = None
                 field = None
@@ -723,10 +724,12 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
                     if field.get('is_key') == 'Y' and key1 == KEY_FIELDS_ID:  # key关键字赋值，guid
                         exist_fields = True
                         obj_list.append(where.get(key1))
+                        is_key_fields_in_where = True
                         break
                     if key1.upper() == field_name1.upper():
                         if field.get('is_key') == 'Y':
                             obj_list.append(where.get(key1))
+                            is_key_fields_in_where = True
                         exist_fields = True
                         break
                 if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
@@ -737,11 +740,11 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
             if sys_flag is not None and sys_flag == "Y":
                 b_flag = True
             # wehere条件为空，则不允许操作
-            if where_mapping is None or len(where_mapping) <= 0:
+            if where_mapping is None or len(where_mapping) <= 0 or not is_key_fields_in_where:
                 kk = None
                 if where is not None:
                     kk = where.keys()
-                msg = "uppdate_execute,the input fields[{}] is NULL or not match the fields of the entity={},by user={}.".format(
+                msg = "uppdate_execute,the input condition fields[{}] is NULL or not Key Fields in the Condition or not match the fields of the entity={},by user={}.".format(
                     kk,
                     md_entity_id, user_id)
                 res = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=DB_EXEC_STATUS_FAIL, rows=0,
