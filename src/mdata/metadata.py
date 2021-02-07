@@ -29,7 +29,7 @@ def get_md_entities(tenant_id, md_entity_ids):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id in %s"
+    sql = "select distinct * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id in %s"
     cursor.execute(sql, args=(tenant_id, md_entity_ids,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
@@ -45,7 +45,7 @@ def get_md_entities_by_code(tenant_id, md_entity_codes):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_code in %s"
+    sql = "select distinct * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_code in %s"
     cursor.execute(sql, args=(tenant_id, md_entity_codes,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
@@ -61,7 +61,7 @@ def get_md_entities_id_by_code(md_entity_codes):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select md_entity_id,md_entity_code,md_tables_id from md_entities where active_flag='Y' and md_entity_code in %s"
+    sql = "select distinct md_entity_id,md_entity_code,md_tables_id from md_entities where active_flag='Y' and md_entity_code in %s"
     cursor.execute(sql, args=(md_entity_codes,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
@@ -77,7 +77,7 @@ def get_md_entities_by_name(tenant_id, md_entity_names):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_name in %s"
+    sql = "select distinct * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_name in %s"
     cursor.execute(sql, args=(tenant_id, md_entity_names,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
@@ -122,7 +122,7 @@ def get_md_tables(tenant_id, md_table_ids):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_tables where active_flag='Y'and (tenant_id=%s or public_flag='Y') and  md_tables_id in %s"
+    sql = "select distinct * from md_tables where active_flag='Y'and (tenant_id=%s or public_flag='Y') and  md_tables_id in %s"
     cursor.execute(sql, args=(tenant_id, md_table_ids,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
@@ -138,7 +138,7 @@ def get_md_tables_by_name(tenant_id, md_table_names):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_tables where active_flag='Y' and (tenant_id=%s or public_flag='Y')and  md_tables_name in %s"
+    sql = "select distinct * from md_tables where active_flag='Y' and (tenant_id=%s or public_flag='Y')and  md_tables_name in %s"
     cursor.execute(sql, args=(tenant_id, md_table_names,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
@@ -154,7 +154,7 @@ def get_md_columns(tenant_id, md_table_id):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_columns where active_flag='Y' and (tenant_id=%s or public_flag='Y') and  md_tables_id =%s"
+    sql = "select distinct * from md_columns where active_flag='Y' and (tenant_id=%s or public_flag='Y') and  md_tables_id =%s"
     cursor.execute(sql, args=(tenant_id, md_table_id,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
@@ -199,7 +199,7 @@ def get_md_key_columns(md_table_ids):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_columns where active_flag='Y' and is_key='Y' and  md_tables_id in %s)"
+    sql = "select * from md_columns where active_flag='Y' and is_key='Y' and  md_tables_id in %s"
     cursor.execute(sql, args=(md_table_ids,))
     result = cursor.fetchall()
     result = fetch_record2list(result)
