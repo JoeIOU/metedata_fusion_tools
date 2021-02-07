@@ -74,12 +74,14 @@ def generate_key_list(schema, sckeys, table_name, table_comment):
     return key_list
 
 
+
 def generate_relationship(file_name):
     global all_rel_ref_list, all_key_list
     read_erwin_file(file_name, True)
     if all_rel_ref_list is None or all_key_list is None:
         return None
     rel_list = []
+    rel_key_list = []
     table_names = []
     for key in all_key_list:
         key_table_name = key.get("TABLE_NAME")
@@ -113,13 +115,21 @@ def generate_relationship(file_name):
                     continue
                 entity_dict1 = {}
                 entity_dict1["rel_type"] = "1:N"
+                frm_f = frm_field.get("md_fields_id")
+                to_f = to_field.get("md_fields_id")
                 entity_dict1["to_entity_id"] = to_field.get("md_entity_id")
-                entity_dict1["to_field_id"] = to_field.get("md_fields_id")
+                entity_dict1["to_field_id"] = to_f
                 entity_dict1["from_entity_id"] = frm_field.get("md_entity_id")
-                entity_dict1["from_field_id"] = frm_field.get("md_fields_id")
+                entity_dict1["from_field_id"] = frm_f
                 rel_name = to_field.get("md_entity_name") + " AND " + frm_field.get("md_entity_name") + " RELATION"
                 entity_dict1["md_entity_rel_desc"] = rel_name
                 entity_dict1["active_flag"] = "Y"
+                s1 = str(frm_f) if frm_f is not None else ""
+                s2 = "-" + str(to_f) if to_f is not None else ""
+                s = s1 + s2
+                if rel_key_list is not None and rel_key_list.count(s) > 0:
+                    continue
+                rel_key_list.append(s)
                 rel_list.append(entity_dict1)
                 logger.info("generate entity relation from erwin,rel_name={}".format(rel_name))
                 break
