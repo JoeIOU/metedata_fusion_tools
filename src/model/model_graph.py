@@ -121,6 +121,38 @@ def create_relation(graph):
     rr = r1 | r2 | r3
     graph.create(rr)
 
+    
+# 查询2个节点间的关系（10层内关系）
+def query_relation_between_entity(graph, node_label1, node_label2):
+    if graph is None or node_label1 is None or node_label2 is None:
+        return None
+    cql = "match data=(na:{})-[*1..10]-(nb:{}) return data".format(node_label1, node_label2)
+    nm = graph.run(cql)
+    data = nm.data()
+    logger.info("query_relation_between_entity,result:{}".format(data))
+    return data
+
+
+# 查询某个节点间的关系（1层内关系）
+def query_relation_by_node_label(graph, node_label):
+    if graph is None or node_label is None:
+        return None
+    cql = "match data=(m:{})-[*1]-(n) return data".format(node_label)
+    nm = graph.run(cql)
+    data = nm.data()
+    logger.info("query_relation_by_node_label,result:{}".format(data))
+    return data
+
+
+# 3个字母以上名称模糊查询所有节点
+def query_all_node_by_name(graph, node_name):
+    if graph is None or node_name is None or len(node_name) < 3:
+        return None
+    cql = "match (n) where n.name =~'(?i).*{}.*' return n".format(node_name)
+    nm = graph.run(cql)
+    data = nm.data()
+    logger.info("query_all_node_by_name,result:{}".format(data))
+    return data
 
 if __name__ == "__main__":
     # create_object(graph)
@@ -130,13 +162,10 @@ if __name__ == "__main__":
     # re = create_object_from_metadata(graph, entity_list)
 
     # re = create_object(graph, label="ABC", name="test", age=120,gendar="M")
-    i = 0
-    nm = NodeMatcher(graph)
-    while True:
-        i += 1
-        if i > 10:
-            break
-        a1 = nm.match("User").first()
-        # if a1 is not None:
-        #     graph.delete(a1)
+    
+    # data = query_relation_between_entity(graph, "SALE_CONTRACT_T", "SALE_CFG_BOQ_T")
+    # logger.info("query_relation_between_entity,result:{}".format(data))
+
+    data = query_all_node_by_name(graph, "cfg")
+    # logger.info("query_all_node_like_label,result:{}".format(data))
     pass
