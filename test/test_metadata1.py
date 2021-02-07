@@ -45,6 +45,7 @@ def test_md():
     re = md.query_execute(user_id, tenant_id, entity_id, wh1)
     assert re is not None
 
+
 def test_metadata_initial():
     # [{"entity_code":"table_name"}]
     entity_list = [{"entity_code": "Contract", "table_name": "data_t"}, {"entity_code": "BoQ", "table_name": "data_t"},
@@ -75,7 +76,10 @@ def test_view():
     logger.info('view result:{}'.format(qr))
     assert qr is not None
 
-def test_erwin_ini():
+
+
+# 从erwin反向生成表的元数据
+def test_erwin_table_ini():
     user = ur.get_user("isales")
     user_id = user.get("user_id")
     tenant_id = user.get("tenant_id")
@@ -85,18 +89,40 @@ def test_erwin_ini():
     file_name = "D:\WorkDir\项目工作\合同中心\Contract_New202003.erwin"
     # file_name = "D:\WorkDir\Contract_New1.erwin"
     re = emg.reverse_tables_columns(user_id, tenant_id, database_name, schema, file_name)
-    assert re is not None
     logger.info("all tables in[{}],re={}".format(schema, re))
+    assert re is not None
 
 
+# 从table生成默认ertity元数据
+def test_entity_ini_from_tables():
+    entity_list = [{"entity_code": "Contract", "table_name": "data_t"}, {"entity_code": "BoQ", "table_name": "data_t"}]
+    user = ur.get_user("isales")
+    user_id = user.get("user_id")
+    tenant_id = user.get("tenant_id")
+
+    # 从数据库反向工程，初始化表和字段元数据
+    re = mdi.initialize_md_entities_from_tables(user_id, tenant_id, entity_list)
+    return re
+
+
+# 从erwin生成实体关系
+def test_erwin_entity_relation_ini():
+    user = ur.get_user("isales")
+    user_id = user.get("user_id")
+    tenant_id = user.get("tenant_id")
+    schema = "SALE_LTC"
+    database_name = "DG_EFINDB"
+    # tables_list = ['roles']
+    file_name = "D:\WorkDir\项目工作\合同中心\Contract_New202003.erwin"
     # erwin的外键关系转成元数据实体关系。
-    # re = emg.reverse_constraint(user_id, tenant_id, schema, file_name)
-    # logger.info("all rels in[{}],re={}".format(schema, re))
-    # assert re is not None
-
+    re = emg.reverse_constraint(user_id, tenant_id, schema, file_name)
+    logger.info("all rels in[{}],re={}".format(schema, re))
+    assert re is not None
 
 
 test_md()
 test_view()
 test_metadata_initial()
-test_erwin_ini()
+test_erwin_table_ini()
+test_entity_ini_from_tables()
+test_erwin_entity_relation_ini()
