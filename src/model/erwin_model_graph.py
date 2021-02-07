@@ -121,6 +121,7 @@ def generate_relationship(file_name):
                 entity_dict1["md_entity_rel_desc"] = rel_name
                 entity_dict1["active_flag"] = "Y"
                 rel_list.append(entity_dict1)
+                logger.info("generate entity relation from erwin,rel_name={}".format(rel_name))
                 break
     return rel_list
 
