@@ -179,7 +179,9 @@ def ini_entities(user_id, tenant_id, new_entity_code, table_dict, is_sys_flag):
         name = code
     if new_entity_code is not None and len(new_entity_code.strip()) > 0:
         code = new_entity_code.strip()
-        name = code
+    if name is not None and len(name) > 100:
+        name = name.strip()
+        name = name[:100]
     entity_dict["md_entity_name"] = name
     entity_dict["md_entity_code"] = code
     entity_dict["md_entity_name_en"] = code
