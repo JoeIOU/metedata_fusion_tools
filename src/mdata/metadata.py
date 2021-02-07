@@ -32,7 +32,7 @@ def get_md_entities(tenant_id, md_entity_ids):
     sql = "select distinct * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id in %s"
     cursor.execute(sql, args=(tenant_id, md_entity_ids,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("get_md_entities,entitire:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -48,7 +48,7 @@ def get_md_entities_by_code(tenant_id, md_entity_codes):
     sql = "select distinct * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_code in %s"
     cursor.execute(sql, args=(tenant_id, md_entity_codes,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_entities:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -64,7 +64,7 @@ def get_md_entities_id_by_code(md_entity_codes):
     sql = "select distinct md_entity_id,md_entity_code,md_tables_id from md_entities where active_flag='Y' and md_entity_code in %s"
     cursor.execute(sql, args=(md_entity_codes,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_entitire_ids:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -80,7 +80,7 @@ def get_md_entities_by_name(tenant_id, md_entity_names):
     sql = "select distinct * from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_name in %s"
     cursor.execute(sql, args=(tenant_id, md_entity_names,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_entitire:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -96,7 +96,7 @@ def get_md_fields(tenant_id, md_entity_id):
     sql = "select * from md_fields where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id=%s"
     cursor.execute(sql, args=(tenant_id, md_entity_id,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_fields:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -125,7 +125,7 @@ def get_md_tables(tenant_id, md_table_ids):
     sql = "select distinct * from md_tables where active_flag='Y'and (tenant_id=%s or public_flag='Y') and  md_tables_id in %s"
     cursor.execute(sql, args=(tenant_id, md_table_ids,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_tables:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -141,7 +141,7 @@ def get_md_tables_by_name(tenant_id, md_table_names):
     sql = "select distinct * from md_tables where active_flag='Y' and (tenant_id=%s or public_flag='Y')and  md_tables_name in %s"
     cursor.execute(sql, args=(tenant_id, md_table_names,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_tables by Name:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -157,7 +157,7 @@ def get_md_columns(tenant_id, md_table_id):
     sql = "select distinct * from md_columns where active_flag='Y' and (tenant_id=%s or public_flag='Y') and  md_tables_id =%s"
     cursor.execute(sql, args=(tenant_id, md_table_id,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_columns:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -202,7 +202,7 @@ def get_md_key_columns(md_table_ids):
     sql = "select * from md_columns where active_flag='Y' and is_key='Y' and  md_tables_id in %s"
     cursor.execute(sql, args=(md_table_ids,))
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_columns:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -232,7 +232,7 @@ def get_md_entities_rel(tenant_id, from_entity_ids, to_entity_ids):
         return None
     cursor.execute(sql, args=arg)
     result = cursor.fetchall()
-    result = fetch_record2list(result)
+    result = data_type_convert(result)
     logger.info("md_entitire_rel:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
@@ -429,7 +429,7 @@ def sql_query(sql, values):
         logger.info('sql_query:%s,values:%s' % (sql, ls))
         re = cursor.fetchall()
         iRowCount = cursor.rowcount
-        re1 = fetch_record2list(re)
+        re1 = data_type_convert(re)
         return (re1, iRowCount)
     except Exception as e:
         logger.error('sql_query error,sql:[%s],message:%s' % (sql, e))
@@ -439,7 +439,7 @@ def sql_query(sql, values):
 
 
 # 查询结果转换，主要是时间/日期转换为str
-def fetch_record2list(record_list):
+def data_type_convert(record_list):
     ls = []
     if record_list is None:
         return None
