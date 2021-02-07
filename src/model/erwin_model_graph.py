@@ -105,9 +105,9 @@ def generate_relationship(file_name):
                 item["REF_TABLE_NAME"] = key_table_name
                 item["REF_TABLE_COMMENT"] = key_table_comment
                 item["REF_COLUMN_NAME"] = key_name
-                entity_fields_from = entity_dict[key_table_name]
+                entity_fields_from = entity_dict.get(key_table_name)
                 frm_field = get_entity_field_by_name(entity_fields_from, key_name)
-                entity_fields_to = entity_dict[table_name]
+                entity_fields_to = entity_dict.get(table_name)
                 to_field = get_entity_field_by_name(entity_fields_to, col_name)
                 if frm_field is None or to_field is None:
                     continue
