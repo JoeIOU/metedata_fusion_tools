@@ -119,6 +119,16 @@ def test_erwin_entity_relation_ini():
     logger.info("all rels in[{}],re={}".format(schema, re))
     assert re is not None
 
+# 从元数据实体关系生成Neo4j图数据库
+def test_entity_relation_2_neo4j():
+    user = ur.get_user("isales")
+    user_id = user.get("user_id")
+    tenant_id = user.get("tenant_id")
+    # Noe4j模型关系初始化
+    entity_codes = None
+    re = mdi.ini_entity_model_graph(tenant_id, entity_codes)
+    logger.info("ini_entity_model_graph ,re={}".format(re))
+    return re
 
 test_md()
 test_view()
@@ -126,3 +136,4 @@ test_metadata_initial()
 test_erwin_table_ini()
 test_entity_ini_from_tables()
 test_erwin_entity_relation_ini()
+test_entity_relation_2_neo4j()
