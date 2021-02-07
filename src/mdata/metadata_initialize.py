@@ -175,7 +175,7 @@ def ini_entities(user_id, tenant_id, new_entity_code, table_dict, is_sys_flag):
     entity_dict = {}
     name = table.get("md_tables_desc")
     code = table.get("md_tables_name")
-    if name is None or len(name) <= 0:
+    if name is None or len(name.strip()) <= 0:
         name = code
     if new_entity_code is not None and len(new_entity_code.strip()) > 0:
         code = new_entity_code.strip()
