@@ -192,6 +192,7 @@ def ini_entities(user_id, tenant_id, new_entity_code, table_dict, is_sys_flag):
         entity_dict["sys_flag"] = "N"
     entity_list.append(entity_dict)
     re = md.insert_execute(user_id, tenant_id, md_entity_id, entity_list)
+    logger.info("insert entity success,name={}".format(code))
     return re
 
 
