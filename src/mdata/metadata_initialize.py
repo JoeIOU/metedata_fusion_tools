@@ -305,7 +305,7 @@ def graph_data_mapping(entiies_rel_list):
             list_rel.append(rel_dict)
             entity_dict = {}
             entity_dict["label"] = frm_md_entity_code
-            entity_dict["name"] = frm_md_entity_code
+            entity_dict["name"] = frm_md_entity_name
             entity_dict["entity_id"] = frm_md_entity_id
             entity_dict["entity_code"] = frm_md_entity_code
             entity_dict["entity_name"] = frm_md_entity_name
@@ -313,7 +313,7 @@ def graph_data_mapping(entiies_rel_list):
                 list_entity.append(entity_dict)
             entity_dict = {}
             entity_dict["label"] = to_md_entity_code
-            entity_dict["name"] = to_md_entity_code
+            entity_dict["name"] = to_md_entity_name
             entity_dict["entity_id"] = to_md_entity_id
             entity_dict["entity_code"] = to_md_entity_code
             entity_dict["entity_name"] = to_md_entity_name
