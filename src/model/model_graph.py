@@ -73,7 +73,7 @@ def create_object_rel_from_metadata(entity_rel_list):
         if node1 is None or node2 is None:
             continue
         properties = item
-        node1_vs_node2 = Relationship(node1, rel_type, node2, **properties)
+        node1_vs_node2 = Relationship(node1, "{}({})".format(rel_type,to_md_fields_name), node2, **properties)
         ls_obj.append(node1_vs_node2)
         ii += 1
         if ii >= 100:
