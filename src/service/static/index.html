@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <title>Neo4j Model</title>
+    <link rel="stylesheet" href="static/css/neo4jd3.min.css?v=0.0.1">
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
+</head>
+
+<body>
+<div role="navigation" class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6 col-md-6">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <form role="search" class="navbar-form" id="search">
+                            <div class="form-group">
+                                <input type="text" value="" placeholder="Input Model Name"
+                                       class="form-control" name="search">
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input name="flag_input" type="radio" value="0" checked/>All
+                                    <input name="flag_input" type="radio" value="1"/>Child
+                                    <input name="flag_input" type="radio" value="2"/>Father
+                                </label>
+                            </div>
+                            <button class="btn btn-default" type="submit">Search</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            <div class="navbar-header col-sm-6 col-md-6">
+                <!--                <div class="logo-well">-->
+                <!--                    <a href="https://neo4j.com/developer/get-started">-->
+                <!--                        <img src=""-->
+                <!--                             alt="Neo4j Graph Database for DataModel" id="logo">-->
+                <!--                    </a>-->
+                <!--                </div>-->
+                <div class="navbar-brand">
+                    <div class="brand">Data Model Show</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Search Results</div>
+            <table id="results" class="table table-striped table-hover">
+                <thead style="display: block;weight:100%;">
+                <tr>
+                    <th width="350">Entity Name</th>
+                    <th width="150">Entity ID</th>
+                    <th width="250">Comments</th>
+                </tr>
+                </thead>
+                <tbody style="display: block;weight:100%; height: 150px;overflow-y: scroll;">
+                </tbody>
+            </table>
+        </div>
+        <div class="panel panel-default">
+                    <h5>&nbsp;Relationship:</h5>
+            <h5><b>
+                <div class="panel-heading" id="title">Details</div>
+            </b></h5>
+            <div class="row">
+                <div class="col-sm-2 col-md-2">
+                    <img src="/static/imgs/001.png" class="well" id="poster"/>
+                </div>
+                <div class="col-md-10 col-sm-10">
+                    <div style="display: block;weight:90%;height:220px;overflow-y:scroll;border:1">
+                        <ul id="crew">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading"><h5>Entity Relationship Chart</h5></div>
+            <div class="row" style="overflow-y:scroll;weight:100%;height:500px;">
+                <div class="col-md-12" style="height: 500px">
+                    <div style="height: 500px" id="neo4jd3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Scripts -->
+<script src="/static/js/jquery-1.11.1.min.js"></script>
+<script src="/static/js/d3.min.js?v=1.0.1"></script>
+<script src="/static/js/neo4jd3.js?v=1.0.1"></script>
+<script src="/static/js/graph.js?v=1.0.1"></script>
+</body>
+</html>
