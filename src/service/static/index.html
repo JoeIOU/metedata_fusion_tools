@@ -16,12 +16,24 @@
 <div role="navigation" class="navbar navbar-default navbar-static-top">
     <div class="container">
         <div class="row">
-            <div class="col-sm-6 col-md-6">
+            <div class="navbar-header col-sm-4 col-md-4">
+                <div class="navbar-brand">
+                    <div class="brand">Data Model Show</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="row">
                 <ul class="nav navbar-nav">
                     <li>
                         <form role="search" class="navbar-form" id="search">
                             <div class="form-group">
-                                <input type="text" value="" placeholder="Input Model Name"
+                               &nbsp; <input type="text" value="" placeholder="Input Entity Name"
                                        class="form-control" name="search">
                             </div>
                             <div class="radio">
@@ -36,24 +48,6 @@
                     </li>
                 </ul>
             </div>
-            <div class="navbar-header col-sm-6 col-md-6">
-                <!--                <div class="logo-well">-->
-                <!--                    <a href="https://neo4j.com/developer/get-started">-->
-                <!--                        <img src=""-->
-                <!--                             alt="Neo4j Graph Database for DataModel" id="logo">-->
-                <!--                    </a>-->
-                <!--                </div>-->
-                <div class="navbar-brand">
-                    <div class="brand">Data Model Show</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="panel panel-default">
             <div class="panel-heading">Search Results</div>
             <table id="results" class="table table-striped table-hover">
                 <thead style="display: block;weight:100%;">
@@ -86,8 +80,24 @@
         </div>
     </div>
     <div class="col-md-6">
+
         <div class="panel panel-default">
-            <div class="panel-heading"><h5>Entity Relationship Chart</h5></div>
+            <div  class="row">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <form role="search1" class="navbar-form" id="search1">
+                            <div class="form-group">
+                                &nbsp;From:<input type="text" value="" placeholder="Input Entity Name"
+                                       class="form-control" name="search1">
+                                To:<input type="text" value="" placeholder="Input Another Entity Name"
+                                       class="form-control" name="search2">
+                            </div>
+                            <button class="btn btn-default" type="submit">Find Relationship Path</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            <div class="panel-heading">Entity Relationship Chart</div>
             <div class="row" style="overflow-y:scroll;weight:100%;height:500px;">
                 <div class="col-md-12" style="height: 500px">
                     <div style="height: 500px" id="neo4jd3"></div>
