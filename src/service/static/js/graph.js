@@ -46,6 +46,11 @@ function relation_show(data){
             $.get("/relation/" + encodeURIComponent(title)+"/"+ encodeURIComponent(flag),
                     function (data) {
                         if (!data) return;
+                        rel_list(data);
+                    }, "json");
+            return false;
+        }
+        function rel_list(data){
                         $("#title").text(data.title);
                         $("#poster").attr("src","/static/imgs/001.png");
                         const $list = $("#crew").empty();
@@ -56,10 +61,7 @@ function relation_show(data){
                             $list.append($("<li>" + "Nothing"+ "</li>"));
                             }
                         });
-                    }, "json");
-            return false;
         }
-
         function showGraph(title,flag) {
             $.get("/graph/" + encodeURIComponent(title)+"/"+ encodeURIComponent(flag),
                     function (data) {
@@ -84,8 +86,20 @@ function relation_show(data){
                     }, "json");
             return false;
         }
+        function search1() {
+            var query=$("#search1").find("input[name=search1]").val();
+            var query1=$("#search1").find("input[name=search2]").val();
+            var flag_input=$('input[name="flag_input"]:checked').val();
+            $.get("/search_shortest_path?q=" + encodeURIComponent(query)+"&to="+encodeURIComponent(query1),
+                    function (data) {
+                        if (!data || data.length == 0) return;
+                        relation_show(data);
+                    }, "json");
+            return false;
+        }
 
     $(function () {
 
         $("#search").submit(search);
+        $("#search1").submit(search1);
     })
