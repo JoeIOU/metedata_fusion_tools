@@ -35,6 +35,19 @@ def serialize_model(model):
     }
 
 
+def serialize_model_path(model):
+    release = model['entity_id']
+    s_ver = ""
+    if release is not None:
+        s_ver = str(release)
+    return {
+        'id': model['id'],
+        'title': model['entity_code'],
+        'name': model['name'],
+        'released': s_ver
+    }
+
+
 def serialize_cast(cast):
     return {
         'REL_TABLE': cast[0],
@@ -83,6 +96,27 @@ def get_search():
                         mimetype="application/json")
 
 
+@app.route("/search_shortest_path")
+def search_shortest_path():
+    try:
+        q = request.args["q"]
+        to = request.args["to"]
+    except KeyError:
+        return []
+    else:
+        # q_str = "(?i).*" + q + ".*"
+        cql = "MATCH (p1:ENTITY {label:'%s'}),(p2:ENTITY{label:'%s'}),p=shortestpath((p1)-[*..10]-(p2))RETURN p" % (
+            q, to)
+        result = graph.run(cql)
+        nodes, relationships = relationship_mapping(result)
+        data = combine_data(nodes, relationships)
+        logger.info("search_shortest_path,graph data:{}".format(data))
+        return Response(dumps(data), mimetype="application/json")
+        #
+        # return Response(dumps([serialize_model_path(record['p']) for record in result]),
+        #                 mimetype="application/json")
+
+
 def query_graph_rel(medel_name, sfrom, sto):
     if sfrom is None:
         sfrom = ""
@@ -90,24 +124,48 @@ def query_graph_rel(medel_name, sfrom, sto):
         sto = ""
     cql = "MATCH p=(n:ENTITY{name:'%s'})%s-[r]-%s(m) RETURN p LIMIT 100" % (medel_name, sfrom, sto)
     result = graph.run(cql)
+    # nodes = []
+    # relationships = []
+    # id_list = []
+    # if result is not None:
+    #     for res in result:
+    #         for paths in res:
+    #             logger.info(paths)
+    #             relationship = paths.relationships[0]
+    #             d_start, is_exist = node2dict(paths.start_node, id_list)
+    #             if not is_exist and d_start is not None:
+    #                 nodes.append(d_start)
+    #             d_end, is_exist = node2dict(paths.end_node, id_list)
+    #             if not is_exist and d_end is not None:
+    #                 nodes.append(d_end)
+    #             d_rel = relationship2dict(relationship)
+    #             if d_rel is not None:
+    #                 relationships.append(d_rel)
+    #             logger.info("relation_info:{},{},{}".format(d_start, d_rel, d_end))
+    # return nodes, relationships
+    return relationship_mapping(result)
+
+
+def relationship_mapping(path):
+    if path is None:
+        return None, None
     nodes = []
     relationships = []
     id_list = []
-    if result is not None:
-        for res in result:
+    if path is not None:
+        for res in path:
             for paths in res:
                 logger.info(paths)
-                relationship = paths.relationships[0]
-                d_start, is_exist = node2dict(paths.start_node, id_list)
-                if not is_exist and d_start is not None:
-                    nodes.append(d_start)
-                d_end, is_exist = node2dict(paths.end_node, id_list)
-                if not is_exist and d_end is not None:
-                    nodes.append(d_end)
-                d_rel = relationship2dict(relationship)
-                if d_rel is not None:
-                    relationships.append(d_rel)
-                logger.info("relation_info:{},{},{}".format(d_start, d_rel, d_end))
+                for node in paths.nodes:
+                    d_start, is_exist = node2dict(node, id_list)
+                    if not is_exist and d_start is not None:
+                        nodes.append(d_start)
+                relationship_list = paths.relationships
+                for relationship in relationship_list:
+                    d_rel = relationship2dict(relationship)
+                    if d_rel is not None:
+                        relationships.append(d_rel)
+        logger.info("relation_info:{},{}".format(nodes, relationships))
     return nodes, relationships
 
 
