@@ -67,13 +67,16 @@ def create_object_rel_from_metadata(entity_rel_list):
         to_md_entity_code = item.get("to_entity_code")
         to_md_fields_id = item.get("to_fields_id")
         to_md_fields_name = item.get("to_fields_name")
+        rel_type_new = "{}({})".format(rel_type, to_md_fields_name)
+        item["relation_type"] = rel_type_new
+        item["label"] = rel_type_new
 
         node1 = nm.match(frm_md_entity_code, name=frm_md_entity_code).first()
         node2 = nm.match(to_md_entity_code, name=to_md_entity_code).first()
         if node1 is None or node2 is None:
             continue
         properties = item
-        node1_vs_node2 = Relationship(node1, "{}({})".format(rel_type,to_md_fields_name), node2, **properties)
+        node1_vs_node2 = Relationship(node1, rel_type_new, node2, **properties)
         ls_obj.append(node1_vs_node2)
         ii += 1
         if ii >= 100:
