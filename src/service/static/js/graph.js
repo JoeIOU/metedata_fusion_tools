@@ -81,6 +81,7 @@ function relation_show(data){
             $.get("/search?q=" + encodeURIComponent(query),
                     function (data) {
                         const t = $("table#results tbody").empty();
+                        t.css("cursor","pointer");
                         if (!data || data.length == 0) return;
                         data.forEach(function (movie) {
                             $("<tr><td class='movie'>" + movie.title + "</td><td>" + movie.released + "</td><td>" + movie.name + "</td></tr>").appendTo(t)
