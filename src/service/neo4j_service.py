@@ -104,7 +104,6 @@ def search_shortest_path():
     except KeyError:
         return []
     else:
-        # q_str = "(?i).*" + q + ".*"
         cql = "MATCH (p1:ENTITY {label:'%s'}),(p2:ENTITY{label:'%s'}),p=shortestpath((p1)-[*..10]-(p2))RETURN p" % (
             q, to)
         result = graph.run(cql)
@@ -168,7 +167,7 @@ def node2dict(node, id_list):
     d = {}
     if id_list is None:
         id_list = []
-    id = 0
+    id = "0"
     label = []
     is_exists = True
     properties = {}
@@ -176,7 +175,10 @@ def node2dict(node, id_list):
         if field is not None and field == "label":
             label.append(node[field])
         if field is not None and field == "entity_id":
-            id = str(node[field])
+            properties["_id"] = str(node[field])
+            oid = node[field]
+            s = node["entity_name"]
+            id = gen_new_id(oid, s)
         if field is not None and (field == "entity_id" or field == "entity_code" or field == "entity_name"):
             continue
         properties[field] = str(node[field])
@@ -190,6 +192,17 @@ def node2dict(node, id_list):
     return d, is_exists
 
 
+def gen_new_id(old_id, name):
+    id = ""
+    if id is not None:
+        id = str(old_id)
+    if id is not None and len(id) > 3:
+        id = id[len(id) - 3:]
+    s = name
+    id = s + "(" + id + ")"
+    return id
+
+
 def relationship2dict(relationship):
     d = {}
     id = 0
@@ -199,9 +212,13 @@ def relationship2dict(relationship):
         if field is not None and field == "relation_type":
             type = relationship[field]
         if field is not None and field == "from_entity_id":
-            from_id = str(relationship[field])
+            oid = str(relationship[field])
+            s = relationship["from_entity_name"]
+            from_id = gen_new_id(oid, s)
         if field is not None and field == "to_entity_id":
-            to_id = str(relationship[field])
+            oid = str(relationship[field])
+            s = relationship["to_entity_name"]
+            to_id = gen_new_id(oid, s)
         if field is not None and field == "relation_id":
             id = str(relationship[field])
         if field is not None and (field == "id" or field == "name" or field == "label" or
@@ -214,9 +231,6 @@ def relationship2dict(relationship):
     d["type"] = type
     d["startNode"] = from_id
     d["endNode"] = to_id
-    # d["source"]=from_id
-    # d["target"]=to_id
-    # d["linknum"]=1
     d["properties"] = properties
     return d
 
