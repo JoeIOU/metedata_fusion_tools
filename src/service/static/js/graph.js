@@ -89,6 +89,8 @@ function relation_show(data){
                         });
                         showModel(data[0].title,flag_input);
                         showGraph(data[0].title,flag_input);
+                        var row=$("table#results tbody tr:eq(0)");
+                        highlight_row(row);
                     }, "json");
             return false;
         }
