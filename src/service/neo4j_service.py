@@ -184,7 +184,7 @@ def node2dict(node, id_list):
         properties[field] = str(node[field])
     d["id"] = id
     d["labels"] = label
-    d["title"] = label
+    # d["title"] = label
     d["properties"] = properties
     if id_list.count(id) <= 0:
         id_list.append(id)
