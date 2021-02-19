@@ -132,7 +132,7 @@ def relationship_mapping(path):
     if path is not None:
         for res in path:
             for paths in res:
-                logger.info(paths)
+                logger.info("path:{}".format(paths))
                 for node in paths.nodes:
                     d_start, is_exist = node2dict(node, id_list)
                     if not is_exist and d_start is not None:
