@@ -112,9 +112,6 @@ def search_shortest_path():
         data = combine_data(nodes, relationships)
         logger.info("search_shortest_path,graph data:{}".format(data))
         return Response(dumps(data), mimetype="application/json")
-        #
-        # return Response(dumps([serialize_model_path(record['p']) for record in result]),
-        #                 mimetype="application/json")
 
 
 def query_graph_rel(medel_name, sfrom, sto):
@@ -124,25 +121,6 @@ def query_graph_rel(medel_name, sfrom, sto):
         sto = ""
     cql = "MATCH p=(n:ENTITY{name:'%s'})%s-[r]-%s(m) RETURN p LIMIT 100" % (medel_name, sfrom, sto)
     result = graph.run(cql)
-    # nodes = []
-    # relationships = []
-    # id_list = []
-    # if result is not None:
-    #     for res in result:
-    #         for paths in res:
-    #             logger.info(paths)
-    #             relationship = paths.relationships[0]
-    #             d_start, is_exist = node2dict(paths.start_node, id_list)
-    #             if not is_exist and d_start is not None:
-    #                 nodes.append(d_start)
-    #             d_end, is_exist = node2dict(paths.end_node, id_list)
-    #             if not is_exist and d_end is not None:
-    #                 nodes.append(d_end)
-    #             d_rel = relationship2dict(relationship)
-    #             if d_rel is not None:
-    #                 relationships.append(d_rel)
-    #             logger.info("relation_info:{},{},{}".format(d_start, d_rel, d_end))
-    # return nodes, relationships
     return relationship_mapping(result)
 
 
