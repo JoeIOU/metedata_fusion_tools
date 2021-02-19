@@ -70,6 +70,11 @@ function relation_show(data){
                     }, "json");
             return false;
         }
+        function highlight_row(row){
+                row.addClass('success')      //为选中项添加高亮
+                .siblings().removeClass('success')//去除其他项的高亮形式
+                .end();
+        }
         function search() {
             var query=$("#search").find("input[name=search]").val();
             var flag_input=$('input[name="flag_input"]:checked').val();
@@ -79,7 +84,7 @@ function relation_show(data){
                         if (!data || data.length == 0) return;
                         data.forEach(function (movie) {
                             $("<tr><td class='movie'>" + movie.title + "</td><td>" + movie.released + "</td><td>" + movie.name + "</td></tr>").appendTo(t)
-                                    .click(function() { showModel($(this).find("td.movie").text(),flag_input);showGraph($(this).find("td.movie").text(),flag_input);})
+                                    .click(function() { showModel($(this).find("td.movie").text(),flag_input);showGraph($(this).find("td.movie").text(),flag_input);highlight_row($(this));})
                         });
                         showModel(data[0].title,flag_input);
                         showGraph(data[0].title,flag_input);
