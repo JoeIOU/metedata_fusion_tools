@@ -525,7 +525,11 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
                     exist_fields = True
                     break
                 elif key1 == field_name1:
-                    exist_fields = True
+                    # 排除实体表md_entities的实体ID=md_entity_id为输入查询条件。
+                    if table_name == 'md_entities' and key1 == 'md_entity_id':
+                        exist_fields = False
+                    else:
+                        exist_fields = True
                     break
             if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
                 v = where_dict[key1]
