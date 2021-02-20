@@ -1,0 +1,542 @@
+{
+	"info": {
+		"_postman_id": "e8c4cc67-c323-4aec-99ab-00464b82d993",
+		"name": "test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "login",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/login?user_account=test1&user_name=Joe.Lin",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"login"
+					],
+					"query": [
+						{
+							"key": "user_account",
+							"value": "test1"
+						},
+						{
+							"key": "user_name",
+							"value": "Joe.Lin"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "query",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findEntity?id=1346641783622340609&md_entity_id=30015",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findEntity"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1346641783622340609"
+						},
+						{
+							"key": "md_entity_id",
+							"value": "30015"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "query_user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findEntity?md_entity_id=30015",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findEntity"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1348844049557229568",
+							"disabled": true
+						},
+						{
+							"key": "md_entity_id",
+							"value": "30015"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "insert",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "md_entity_id",
+							"value": "30001",
+							"type": "text"
+						},
+						{
+							"key": "test_fields",
+							"value": "aaaa",
+							"type": "text"
+						},
+						{
+							"key": "test_fields1",
+							"value": "1dwqdwdwq",
+							"type": "text"
+						},
+						{
+							"key": "test_fields2",
+							"value": "200",
+							"type": "text"
+						},
+						{
+							"key": "test_fields3",
+							"value": "2021-01-01 12:00:00",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/insertEntity",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"insertEntity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "insert_user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "md_entity_id",
+							"value": "30025",
+							"type": "text"
+						},
+						{
+							"key": "user_name",
+							"value": "Mark",
+							"type": "text"
+						},
+						{
+							"key": "account_number",
+							"value": "Mark001",
+							"type": "text"
+						},
+						{
+							"key": "branch_id",
+							"value": "1000",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/insertEntity",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"insertEntity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "md_entity_id",
+							"value": "30001",
+							"type": "text"
+						},
+						{
+							"key": "test_fields",
+							"value": "美丽001",
+							"type": "text"
+						},
+						{
+							"key": "test_fields1",
+							"value": "真是太",
+							"type": "text"
+						},
+						{
+							"key": "test_fields2",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "test_fields3",
+							"value": "2021-01-01 12:00:01",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/updateEntity?__obj_id__=1353956569045405696",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"updateEntity"
+					],
+					"query": [
+						{
+							"key": "__obj_id__",
+							"value": "1353956569045405696"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update_user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "md_entity_id",
+							"value": "30025",
+							"type": "text"
+						},
+						{
+							"key": "user_name",
+							"value": "Mark",
+							"type": "text"
+						},
+						{
+							"key": "account_number",
+							"value": "mark100",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/updateEntity?user_id=1348892817107324928",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"updateEntity"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1348892817107324928"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update_batch",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"md_entity_id\":30025,\"data\":[{\"user_name\":\"test01\"},{\"user_name\":\"test02\"}],\"where\":[{\"user_id\":1348844049557229568},{\"user_id\":1348892817107324928}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/updateEntityBatch",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"updateEntityBatch"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "__obj_id__",
+							"value": "1353988934199283712",
+							"type": "text"
+						},
+						{
+							"key": "md_entity_id",
+							"value": "30001",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/deleteEntity",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"deleteEntity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user_id",
+							"value": "1348889862480203776",
+							"type": "text"
+						},
+						{
+							"key": "md_entity_id",
+							"value": "30025",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/deleteEntity",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"deleteEntity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "view",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"view_id\":50001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/queryView",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"queryView"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "view metadata",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"view_id\":50002,\"teant_name_label\": \"%租户%\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/queryView",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"queryView"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
+
