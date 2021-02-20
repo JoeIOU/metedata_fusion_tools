@@ -8,7 +8,8 @@
     <meta name="description" content="">
     <title>Neo4j Model</title>
     <link rel="stylesheet" href="static/css/neo4jd3.min.css?v=0.0.1">
-    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <!--    <link rel="stylesheet" href="static/css/bootstrap.min.css">-->
     <link rel="stylesheet" href="static/css/font-awesome.min.css">
 </head>
 
@@ -33,8 +34,8 @@
                     <li>
                         <form role="search" class="navbar-form" id="search">
                             <div class="form-group">
-                               &nbsp; <input type="text" value="" placeholder="Input Entity Name"
-                                       class="form-control" name="search">
+                                &nbsp; <input type="text" value="" placeholder="Input Entity Name"
+                                              class="form-control" name="search">
                             </div>
                             <div class="radio">
                                 <label>
@@ -62,7 +63,7 @@
             </table>
         </div>
         <div class="panel panel-default">
-                    <h5>&nbsp;Relationship:</h5>
+            <h5>&nbsp;Relationship:</h5>
             <h5><b>
                 <div class="panel-heading" id="title">Details</div>
             </b></h5>
@@ -82,15 +83,15 @@
     <div class="col-md-6">
 
         <div class="panel panel-default">
-            <div  class="row">
+            <div class="row">
                 <ul class="nav navbar-nav">
                     <li>
                         <form role="search1" class="navbar-form" id="search1">
                             <div class="form-group">
                                 &nbsp;From:<input type="text" value="" placeholder="Input Entity Name"
-                                       class="form-control" name="search1">
+                                                  class="form-control" name="search1">
                                 To:<input type="text" value="" placeholder="Input Another Entity Name"
-                                       class="form-control" name="search2">
+                                          class="form-control" name="search2">
                             </div>
                             <button class="btn btn-default" type="submit">Find Relationship Path</button>
                         </form>
@@ -109,7 +110,7 @@
 
 
 <!-- Scripts -->
-<script src="/static/js/jquery-1.11.1.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="/static/js/d3.min.js?v=1.0.1"></script>
 <script src="/static/js/neo4jd3.js?v=1.0.1"></script>
 <script src="/static/js/graph.js?v=1.0.1"></script>
