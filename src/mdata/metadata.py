@@ -535,7 +535,8 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     where_mapping['tenant_id'] = tenant_id
     # 数据权限
     dp_list = dp.query_data_privilege_info(tenant_id, user_id, md_entity_id, const.ENTITY_TYPE_ENTITY)
-    if not entity_sys_flag:
+    # 假如系统表，则查询时不做实体ID限制，否则，则要增加。
+    if entity_sys_flag is not None and entity_sys_flag == "N":
         where_mapping['md_entity_id'] = md_entity_id
     where_list_new.append(where_mapping)
     s1 = None
