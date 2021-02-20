@@ -176,18 +176,19 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN,rows=0, data=None, message=msg)
         return output
-    global user_privilege_list
+    global user_privilege_list    
     if user_privilege_list is None or len(user_privilege_list) == 0:
-        msg = 'access service, user does not have privilege,entity=[{}] ,please login again.'.format(md_entity_id)
+        msg = 'access service, user({}) does not have privilege,entity=[{}] ,please login again.'.format(
+            user.get("account_number"), md_entity_id)
         logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT,rows=0, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         return output
     b_privilege = have_privilege(md_entity_id, method)
     if not b_privilege:
-        msg = 'you do not have the privilege to access the service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
-            md_entity_id)
+        msg = '{},you do not have the privilege to access the service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
+            user.get("account_number"), md_entity_id)
         logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT,rows=0, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         return output
 
     user_id = None
