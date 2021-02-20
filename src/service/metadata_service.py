@@ -117,8 +117,7 @@ def get_login_user():
         else:
             tenant_id = user.get("tenant_id")
             user_id = user.get("user_id")
-            if user_privilege_list is None:
-                user_privilege_list = rp.query_user_privilege_by_userid(tenant_id, user_id)
+            user_privilege_list = rp.query_user_privilege_by_userid(tenant_id, user_id)
     return user
 
 
