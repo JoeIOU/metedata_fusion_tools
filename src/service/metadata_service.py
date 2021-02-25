@@ -22,6 +22,8 @@ SERVICE_METHOD_DELETE = "Delete"
 SERVICE_METHOD_GET = "Query"
 SERVICE_METHOD_VIEW = "ViewQuery"
 user_privilege_list = None
+# 全局实体元数据ID。
+GLOBAL_ENTITY_ID="$_ENTITY_ID"
 
 
 def request_parse(req):
@@ -276,7 +278,7 @@ def query_view():
 def find_entity():
     # 入参：{"abc":"123"}
     data = request_parse(request)
-    md_entity_id = data.get("md_entity_id")
+    md_entity_id = data.get(GLOBAL_ENTITY_ID)
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'findEntity,input params[md_entity_id] should not be None.'
         logger.warning(msg)
@@ -299,7 +301,7 @@ def insert_entity():
         re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
         return json.dumps(re)
 
-    md_entity_id = data.get("md_entity_id")
+    md_entity_id = data.get(GLOBAL_ENTITY_ID)
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'insert Entity, input param[md_entity_id] should not be None.'
         logger.warning(msg)
@@ -320,7 +322,7 @@ def update_entity():
         wh_dict = json.loads(json.dumps(wh_dict))
     wh_list = []
     wh_list.append(wh_dict)
-    md_entity_id = data.get("md_entity_id")
+    md_entity_id = data.get(GLOBAL_ENTITY_ID)
     ls_data = []
     if isinstance(data, list):
         ls_data = data
@@ -341,7 +343,7 @@ def update_entity_batch():
         re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
         return re
 
-    md_entity_id = data.get("md_entity_id")
+    md_entity_id = data.get(GLOBAL_ENTITY_ID)
     where_list = data.get("where")
     data_list = data.get("data")
     re = update_entity_common(md_entity_id, data_list, where_list)
@@ -372,7 +374,7 @@ def delete_entity():
         wh_list = wh_dict
     else:
         wh_list.append(wh_dict)
-    md_entity_id = wh_dict.get("md_entity_id")
+    md_entity_id = wh_dict.get(GLOBAL_ENTITY_ID)
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'delete Entity, input param[md_entity_id] should not be None.'
         logger.warning(msg)
