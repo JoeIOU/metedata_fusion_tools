@@ -51,7 +51,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/findEntity?id=1346641783622340609&md_entity_id=30015",
+					"raw": "http://127.0.0.1:8888/md/services/findEntity?id=1346641783622340609&$_ENTITY_ID=30015",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -71,7 +71,7 @@
 							"value": "1346641783622340609"
 						},
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30015"
 						}
 					]
@@ -85,7 +85,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/findEntity?md_entity_id=30015",
+					"raw": "http://127.0.0.1:8888/md/services/findEntity?$_ENTITY_ID=30015",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -106,7 +106,7 @@
 							"disabled": true
 						},
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30015"
 						}
 					]
@@ -123,7 +123,7 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30001",
 							"type": "text"
 						},
@@ -177,7 +177,7 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30025",
 							"type": "text"
 						},
@@ -237,7 +237,7 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30001",
 							"type": "text"
 						},
@@ -308,7 +308,7 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30025",
 							"type": "text"
 						},
@@ -367,7 +367,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"md_entity_id\":30025,\"data\":[{\"user_name\":\"test01\"},{\"user_name\":\"test02\"}],\"where\":[{\"user_id\":1348844049557229568},{\"user_id\":1348892817107324928}]}",
+					"raw": "{\"$_ENTITY_ID\":30025,\"data\":[{\"user_name\":\"test01\"},{\"user_name\":\"test02\"}],\"where\":[{\"user_id\":1348844049557229568},{\"user_id\":1348892817107324928}]}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -407,7 +407,7 @@
 							"type": "text"
 						},
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30001",
 							"type": "text"
 						}
@@ -446,7 +446,7 @@
 							"type": "text"
 						},
 						{
-							"key": "md_entity_id",
+							"key": "$_ENTITY_ID",
 							"value": "30025",
 							"type": "text"
 						}
