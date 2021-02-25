@@ -279,8 +279,8 @@ def find_entity():
     # 入参：{"abc":"123"}
     data = request_parse(request)
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
-    if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'findEntity,input params[md_entity_id] should not be None.'
+    if md_entity_id is None or len(md_entity_id) <= 0:        
+        msg = 'findEntity,input entity params[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
         re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
@@ -296,14 +296,14 @@ def insert_entity():
     # 入参：{"abc":"123"}
     data = request_parse(request)
     if data is None:
-        msg = 'insert Entity, input param[md_entity_id] should not be None.'
+        msg = 'insert Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
         re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
         return json.dumps(re)
 
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'insert Entity, input param[md_entity_id] should not be None.'
+        msg = 'insert Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
         re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
@@ -353,7 +353,7 @@ def update_entity_batch():
 # 更新数据的方法，支持单个或多个对象更新，要求同一个实体的。
 def update_entity_common(md_entity_id, data_list, where_list):
     if md_entity_id is None:
-        msg = 'update Entity, input param[md_entity_id] should not be None.'
+        msg = 'update Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
         re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
@@ -376,7 +376,7 @@ def delete_entity():
         wh_list.append(wh_dict)
     md_entity_id = wh_dict.get(GLOBAL_ENTITY_ID)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'delete Entity, input param[md_entity_id] should not be None.'
+        msg = 'delete Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
         re = md.exec_output_status(type=SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
