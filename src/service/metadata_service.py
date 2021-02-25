@@ -282,8 +282,8 @@ def find_entity():
         logger.warning(msg)
         re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])
-        logger.info('find Entity. Params:{}'.format(data))
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])        
+        logger.info('find Entity. Params:{},result:{}'.format(data,re))
 
     return json.dumps(re)
 
