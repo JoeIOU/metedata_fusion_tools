@@ -237,6 +237,7 @@ ALTER TABLE md_tables ADD UNIQUE  md_tables_unique01 (tenant_id,database_id,md_t
 CREATE TABLE  IF NOT EXISTS `md_columns` (
   `md_columns_id` bigint(20) NOT NULL COMMENT '元数据-数据表列ID',
   `tenant_id` BIGINT(20) NOT NULL comment '租户ID',
+  `md_tables_id` bigint(20) NOT NULL COMMENT '元数据数据表ID',
   `md_columns_name` varchar(200) NOT NULL COMMENT '元数据-数据列名称',
   `md_columns_type` varchar(200) NOT NULL COMMENT '元数据表列类型，如：text，int，date，bool等',
   `md_columns_length` int(11) COMMENT '数据属性字段长度',
@@ -260,7 +261,6 @@ CREATE TABLE  IF NOT EXISTS `md_columns` (
   `date_column2` datetime COMMENT '预留日期字段2',
   `date_column3` datetime COMMENT '预留日期字段3',
   `active_flag` char(1) NOT NULL DEFAULT 'Y' COMMENT '有效标识，Y有效，N无效',
-  `md_tables_id` bigint(20) NOT NULL COMMENT '元数据数据表ID',
   `create_by` bigint(20) NOT NULL COMMENT '创建人ID，对用用户ID',
   `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
   `last_update_by` bigint(20) NOT NULL COMMENT '最后更新人ID，对用用户ID',
