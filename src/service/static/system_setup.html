@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Entity Setup</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<div id="app">
+    <el-row>
+        <el-col span="24">
+            <template>
+                <el-tabs v-model="activity" type="card" @tab-click="handleClick">
+                    <el-tab-pane label="元数据管理" name="metadata" style="width:100%;height:650px" checked>
+                        <iframe src="/static/entity_setup.html" style="width:100%;height:100%;border:0"></iframe>
+                    </el-tab-pane>
+                    <el-tab-pane label="租户管理" name="tenant">租户管理</el-tab-pane>
+                    <el-tab-pane label="组织管理" name="branch">组织管理，企业分支机构或部门管理</el-tab-pane>
+                    <el-tab-pane label="用户管理" name="users">用户管理</el-tab-pane>
+                    <el-tab-pane label="角色管理" name="roles">角色管理</el-tab-pane>
+                    <el-tab-pane label="群组管理" name="group">群组管理</el-tab-pane>
+                    <el-tab-pane label="权限管理" name="privilege">权限管理，数据和功能权限</el-tab-pane>
+                    <el-tab-pane label="视图管理" name="view">视图管理，数据view创建和维护，多表join等</el-tab-pane>
+                    <el-tab-pane label="服务管理" name="service">服务管理，服务定义、注册，服务编排</el-tab-pane>
+                    <el-tab-pane label="规则管理" name="rule">规则管理，业务校验和逻辑处理规则</el-tab-pane>
+                    <el-tab-pane label="流程管理" name="process">流程管理，业务流程和活动编排</el-tab-pane>
+                    <el-tab-pane label="UI管理" name="ui">UI界面管理，页面可配置，页面模板设计</el-tab-pane>
+                </el-tabs>
+            </template>
+        </el-col>
+    </el-row>
+</div>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+  //主要内容
+  var app = new Vue({
+    el: "#app",
+    data() {
+      return {
+        activity: 'metadata'
+      };
+    },
+    methods: {
+      handleClick(tab, event) {
+        console.log(tab, event);
+      }
+    }
+   });
+
+</script>
+</body>
+
+</html>
