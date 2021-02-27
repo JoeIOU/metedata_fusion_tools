@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vue.js Edition</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        .el-table-add-row {
+            margin-top: 10px;
+            width: 100%;
+            height: 34px;
+            border: 1px dashed #c1c1cd;
+           border-radius: 3px;
+            cursor: pointer;
+            justify-content: center;
+            display: flex;
+            line-height: 34px;
+        }
+         .bg-purple-light {
+            background: #e5e9f2;
+         }
+
+        .el-dropdown {
+            vertical-align: top;
+          }
+        .el-dropdown + .el-dropdown {
+            margin-left: 15px;
+          }
+        .el-icon-arrow-down {
+            font-size: 12px;
+          }
+          .el-table__body-wrapper::-webkit-scrollbar{
+             /*width: 0;宽度为0隐藏*/
+            width: 2px;
+          }
+         .el-table__body-wrapper::-webkit-scrollbar-thumb{
+            border-radius: 2px;
+            height: 50px;
+            background: #eee;
+          }
+         .el-table__body-wrapper::-webkit-scrollbar-track{
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+            background: rgba(0,0,0,0.4);
+         }
+
+
+
+    </style>
+</head>
+<body>
+<template>
+</template>
+<div id="app1">
+    <el-row>
+        <el-col span="12">
+            <div class="grid-content bg-purple-light">Select Entity:
+                <el-select v-model="select1" placeholder="请选择实体" @change="handleClick">
+                    <el-option
+                            v-for="item in options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                </el-select>
+                Entity ID:
+                <el-input id="entity_name" v-model="entity_name" prefix-icon="el-icon-search" style="width:150px"
+                          placeholder="Input Entity ID"></el-input>
+                <el-button type="primary" @click="queryData()">Search Data</el-button>
+            </div>
+        </el-col>
+        <el-col span="12">
+            <div>
+                <div class="grid-content bg-purple-light">
+                    Others:
+                    <el-input id="entity_name1" v-model="entity_name1" prefix-icon="el-icon-search" style="width:200px"
+                              placeholder="Input Entity Name"></el-input>
+                    <el-dropdown @command="handleCommand">
+                        <el-button type="primary">
+                            下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
+                        </el-button>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item command="a">黄金糕</el-dropdown-item>
+                            <el-dropdown-item command="b">狮子头</el-dropdown-item>
+                            <el-dropdown-item command="c">螺蛳粉</el-dropdown-item>
+                            <el-dropdown-item command="d" disabled>双皮奶</el-dropdown-item>
+                            <el-dropdown-item command="e" divided>蚵仔煎</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </div>
+            </div>
+        </el-col>
+    </el-row>
+</div>
+</br>
+<div id="app">
+    <el-row>
+        <el-col span="24">
+            <div>Entity Details:</div>
+            <el-table size="mini" :data="master_user.data.slice((currentPage-1)*pagesize,currentPage*pagesize)" border
+                      highlight-current-row style="max-height:500px;overflow-y:auto;"
+                      :header-cell-style="{'background-color': '#dddddd','color': 'rgb(0, 0, 0)','border-bottom': '1px rgb(200, 200, 200) solid'}">
+                <el-table-column type="index" label="No."></el-table-column>
+                <el-table-column v-for="(v,i) in master_user.columns" :prop="v.field" :label="v.title"
+                                 :width="v.width">
+                    <template slot-scope="scope">
+                            <span v-if="scope.row.isSet">
+                                <el-input size="mini" placeholder="Input Something" v-model="master_user.sel[v.field]">
+                                </el-input>
+                            </span>
+                        <span v-else>{{scope.row[v.field]}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Operation" width="150">
+                    <template slot-scope="scope">
+                            <span class="el-tag el-tag--info el-tag--mini" style="cursor: pointer;"
+                                  @click="pwdChange(scope.row,scope.$index,true)">
+                                {{scope.row.isSet?'Save':"Update"}}
+                            </span>
+                        <span v-if="!scope.row.isSet" class="el-tag el-tag--danger el-tag--mini" style="cursor: pointer;"
+                              @click="pwdChange(scope.row,scope.$index,false)">
+                                Delete
+                            </span>
+                        <span v-else class="el-tag  el-tag--mini" style="cursor: pointer;"
+                              @click="pwdChange(scope.row,scope.$index,false)">
+                                Cancel
+                            </span>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <div class="pagination">
+                <el-pagination
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page="currentPage"
+                        :page-sizes="[10, 20, 50, 100]"
+                        :page-size="pagesize"
+                        layout="total, sizes,prev, pager, next"
+                        :total="master_user.data.length"
+                        prev-text="上一页"
+                        next-text="下一页">
+                </el-pagination>
+            </div>
+        </el-col>
+    </el-row>
+</div>
+<!-- import Vue before Element -->
+<!--<script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>-->
+<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+<script src="/static/js/metadata.js"></script>
+</body>
+
+</html>
