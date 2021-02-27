@@ -1,13 +1,15 @@
 # #metadata_service.py
-from flask import request, session
+from flask import request, session, Response
 import json
-from privilege import role_privilege as rp
-from mdata import index_unique as idx, metadata as md
+from mdata import metadata as md
+from privilege import role_privilege as rp, user_mngt as ur
+from mdata import index_unique as idx
 from data import data_view as vw
-from privilege import user_mngt as ur
 from httpserver import httpserver
 from config.config import cfg as config
 from common import constants as const
+
+# from db.db_conn import db_connection_metedata as db_md
 
 logger = config.logger
 domain_root = '/md'
@@ -23,7 +25,7 @@ SERVICE_METHOD_GET = "Query"
 SERVICE_METHOD_VIEW = "ViewQuery"
 user_privilege_list = None
 # 全局实体元数据ID。
-GLOBAL_ENTITY_ID="$_ENTITY_ID"
+GLOBAL_ENTITY_ID = "$_ENTITY_ID"
 
 
 def request_parse(req):
@@ -88,9 +90,9 @@ def login():
         session["user"] = re
         logger.warning("user:[{}] login success.".format(user_acc))
         msg = "success"
-        out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS,rows=0, data=data,
-                                         message=msg)
-    return json.dumps(out_data)
+        out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
+                                         data=data, message=msg)
+    return Response(json.dumps(out_data), mimetype='application/json')
 
 
 @app.route(domain_root + "/logout", methods=['GET'])
@@ -103,9 +105,9 @@ def logout():
     msg = "logout success!"
     global user_privilege_list
     user_privilege_list = None
-    out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS,rows=0, data=user_acc,
-                                     message=msg)
-    return json.dumps(out_data)
+    out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
+                                     data=user_acc, message=msg)
+    return Response(json.dumps(out_data), mimetype='application/json')
 
 
 def get_login_user():
@@ -115,7 +117,7 @@ def get_login_user():
         user = session.get("user")
         if user is None:
             user_privilege_list = None
-            logger.warning("the user does not login,please login.")
+            logger.warning("the user does not login,please login first.")
         else:
             tenant_id = user.get("tenant_id")
             user_id = user.get("user_id")
@@ -125,7 +127,16 @@ def get_login_user():
 
 @app.route(domain_root + '/user', methods=['GET'])
 def get_userinfo():
-    return json.dumps(get_login_user())
+    re = get_login_user()
+    msg = "success"
+    if re is None:
+        msg = "there is no one login,please login first."
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status="401", rows=0,
+                                   data=None, message=msg)
+    else:
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=1,
+                                   data=re, message=msg)
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 def have_privilege(md_entity_id, method):
@@ -133,7 +144,7 @@ def have_privilege(md_entity_id, method):
     global user_privilege_list
     if user_privilege_list is None:
         msg = 'you does not have any privilege ,please login again,or ask the service center for help.'
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT,rows=0, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         logger.warning(output)
         return b_privilege
     if isinstance(md_entity_id, str):
@@ -163,7 +174,7 @@ def have_privilege(md_entity_id, method):
 
 def get_index_data_ids(data):
     ids = None
-    if data is not None:  # 插入索引数据
+    if data is not None:
         d = data.get("data")
         if d is not None and d.get("ids") is not None:
             ids = d.get("ids")
@@ -175,9 +186,9 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
     if user is None:
         msg = 'access service, user does not login ,please login first.'
         logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN,rows=0, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN, rows=0, data=None, message=msg)
         return output
-    global user_privilege_list    
+    global user_privilege_list
     if user_privilege_list is None or len(user_privilege_list) == 0:
         msg = 'access service, user({}) does not have privilege,entity=[{}] ,please login again.'.format(
             user.get("account_number"), md_entity_id)
@@ -205,7 +216,7 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
             re = md.insert_execute(user_id, tenant_id, md_entity_id, data_list)
             # 插入索引数据
             if re is not None:
-                iRows=re.get("rows")
+                iRows = re.get("rows")
                 if iRows is not None and iRows > 0:
                     ids = get_index_data_ids(re)
                     ids_list = ids2_where(ids)
@@ -220,7 +231,7 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
             re = md.delete_execute(user_id, tenant_id, md_entity_id, where_list)
             # 删除索引数据
             if re is not None:
-                iRows=re.get("rows")
+                iRows = re.get("rows")
                 if iRows is not None and iRows > 0:
                     ids = get_index_data_ids(re)
                     idx.delete_index_data(user_id, tenant_id, md_entity_id, where_list, ids)
@@ -228,7 +239,7 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
             re = md.update_execute(user_id, tenant_id, md_entity_id, data_list, where_list)
             # 更新索引数据
             if re is not None:
-                iRows=re.get("rows")
+                iRows = re.get("rows")
                 if iRows is not None and iRows > 0:
                     ids = get_index_data_ids(re)
                     idx.update_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
@@ -240,10 +251,10 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
     except Exception as e:
         msg = 'execute method error,message:%s' % (e)
         logger.error(msg)
-        output = md.exec_output_status(type=method, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
+        output = md.exec_output_status(type=method, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None, message=msg)
         return output
 
- 
+
 def ids2_where(ids):
     if ids is None:
         return None
@@ -253,6 +264,7 @@ def ids2_where(ids):
         d[md.KEY_FIELDS_ID] = id
         id_list.append(d)
     return id_list
+
 
 # 视图查询
 @app.route(domain_root + '/services/queryView', methods=['POST', 'GET'])
@@ -270,7 +282,7 @@ def query_view():
     re = sql_execute_method(view_id, SERVICE_METHOD_VIEW, data_list=None, where_list=[data])
 
     logger.info('view result:{}'.format(re))
-    return json.dumps(re)
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 # 实体详情查询
@@ -279,15 +291,15 @@ def find_entity():
     # 入参：{"abc":"123"}
     data = request_parse(request)
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
-    if md_entity_id is None or len(md_entity_id) <= 0:        
+    if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'findEntity,input entity params[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])        
-        logger.info('find Entity. Params:{},result:{}'.format(data,re))
-
-    return json.dumps(re)
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])
+        logger.info('find Entity. Params:{},result:{}'.format(data, re))
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 # 实体插入Insert
@@ -298,18 +310,20 @@ def insert_entity():
     if data is None:
         msg = 'insert Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
         return json.dumps(re)
 
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'insert Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
     else:
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_INSERT, data_list=[data])
         logger.info('insert Entity Params:%s' % data)
-    return json.dumps(re)
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 # 单个实体更新，通过request.args输入单个对象的id，name等参数,body输入更新的信息
@@ -329,7 +343,7 @@ def update_entity():
     else:
         ls_data.append(data)
     re = update_entity_common(md_entity_id, ls_data, wh_list)
-    return json.dumps(re)
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 # 批量实体更新，通过where和data list两个json 数据输入格式：{md_entity_id:12345,data:[{},{}],where:[{},{}]}
@@ -340,14 +354,15 @@ def update_entity_batch():
     if data is None:
         msg = 'update Entity Batch, input params should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
         return re
 
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
     where_list = data.get("where")
     data_list = data.get("data")
     re = update_entity_common(md_entity_id, data_list, where_list)
-    return json.dumps(re)
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 # 更新数据的方法，支持单个或多个对象更新，要求同一个实体的。
@@ -355,7 +370,8 @@ def update_entity_common(md_entity_id, data_list, where_list):
     if md_entity_id is None:
         msg = 'update Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
     else:
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_UPDATE, data_list=data_list, where_list=where_list)
         logger.info('update Entity Params:{}'.format(data_list))
@@ -378,11 +394,12 @@ def delete_entity():
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'delete Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL,rows=0, data=None, message=msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
     else:
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_DELETE, data_list=None, where_list=wh_list)
         logger.info('delete Entity Params:{}'.format(wh_list))
-    return json.dumps(re)
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 if __name__ == '__main__':
