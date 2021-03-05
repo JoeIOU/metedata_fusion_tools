@@ -47,49 +47,26 @@
          }
 
 
-
     </style>
 </head>
 <body>
-<template>
-</template>
 <div id="app1">
     <el-row>
         <el-col span="12">
-            <div class="grid-content bg-purple-light">Select Entity:
+            <div class="grid-content bg-purple-light">
+                <span class="demonstration">Select Entity: </span>
                 <el-select v-model="select1" placeholder="请选择实体" @change="handleClick">
                     <el-option
                             v-for="item in options"
                             :key="item.value"
                             :label="item.label"
-                            :value="item.value">
+                            :value="{ value: item.value, label: item.label }">
                     </el-option>
                 </el-select>
-                Entity ID:
-                <el-input id="entity_name" v-model="entity_name" prefix-icon="el-icon-search" style="width:150px"
-                          placeholder="Input Entity ID"></el-input>
-                <el-button type="primary" @click="queryData()">Search Data</el-button>
             </div>
         </el-col>
         <el-col span="12">
             <div>
-                <div class="grid-content bg-purple-light">
-                    Others:
-                    <el-input id="entity_name1" v-model="entity_name1" prefix-icon="el-icon-search" style="width:200px"
-                              placeholder="Input Entity Name"></el-input>
-                    <el-dropdown @command="handleCommand">
-                        <el-button type="primary">
-                            下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
-                        </el-button>
-                        <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item command="a">黄金糕</el-dropdown-item>
-                            <el-dropdown-item command="b">狮子头</el-dropdown-item>
-                            <el-dropdown-item command="c">螺蛳粉</el-dropdown-item>
-                            <el-dropdown-item command="d" disabled>双皮奶</el-dropdown-item>
-                            <el-dropdown-item command="e" divided>蚵仔煎</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                </div>
             </div>
         </el-col>
     </el-row>
@@ -103,30 +80,88 @@
                       highlight-current-row style="max-height:500px;overflow-y:auto;"
                       :header-cell-style="{'background-color': '#dddddd','color': 'rgb(0, 0, 0)','border-bottom': '1px rgb(200, 200, 200) solid'}">
                 <el-table-column type="index" label="No."></el-table-column>
-                <el-table-column v-for="(v,i) in master_user.columns" :prop="v.field" :label="v.title"
+                <el-table-column v-for="(v,i) in master_user.columns" :prop="v.field" :label="v.title" :type="v.type"
                                  :width="v.width">
                     <template slot-scope="scope">
-                            <span v-if="scope.row.isSet">
-                                <el-input size="mini" placeholder="Input Something" v-model="master_user.sel[v.field]">
+                        <span v-if="scope.row.isSet">
+                            <span v-if="v.type=='datetime' || v.type=='timestamp'">
+                                <el-date-picker size="mini" style="width:180px"
+                                                v-model="master_user.sel[v.field]"
+                                                type="datetime" format="yyyy-MM-dd HH:mm:ss"
+                                                value-format="yyyy-MM-dd HH:mm:ss"
+                                                placeholder="选择日期和时间">
+                                </el-date-picker>
+                            </span>
+                            <span v-else-if="v.type=='date'">
+                                <el-date-picker size="mini" style="width:180px"
+                                                v-model="master_user.sel[v.field]"
+                                                type="date"
+                                                value-format="yyyy-MM-dd"
+                                                placeholder="选择日期">
+                                </el-date-picker>
+                            </span>
+                            <span v-else-if="v.type=='bigint' ||v.type=='int'">
+<!--                                <el-input-number size="mini" v-model="master_user.sel[v.field]" :controls="false"-->
+                                <!--                                                 step-strictly></el-input-number>-->
+                                <el-input type="number" v-model="master_user.sel[v.field]" :rows="1" size="mini"
+                                          placeholder="Input Number"
+                                          style="width:120px" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="20"
+                                          show-word-limit>
                                 </el-input>
                             </span>
+                            <span v-else-if="v.type=='float' ||v.type=='numeric'">
+                                <el-input-number size="mini" v-model="master_user.sel[v.field]" :precision="8"
+                                                 :controls="false"></el-input-number>
+                            </span>
+                            <span v-else="scope.row.isSet">
+                                <el-input type="textarea" :rows="1" size="mini" placeholder="Input Something"
+                                          v-model="master_user.sel[v.field]">
+                                </el-input>
+                            </span>
+                        </span>
                         <span v-else>{{scope.row[v.field]}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="Operation" width="150">
+                <el-table-column label="Operation" width="110">
                     <template slot-scope="scope">
-                            <span class="el-tag el-tag--info el-tag--mini" style="cursor: pointer;"
-                                  @click="pwdChange(scope.row,scope.$index,true)">
-                                {{scope.row.isSet?'Save':"Update"}}
-                            </span>
-                        <span v-if="!scope.row.isSet" class="el-tag el-tag--danger el-tag--mini" style="cursor: pointer;"
+                        <span class="el-tag el-tag--info el-tag--mini" style="cursor: pointer;"
+                              @click="pwdChange(scope.row,scope.$index,true)">
+                                <span v-if="scope.row.isSet">
+                                    <el-tooltip placement="top">
+		                                <div slot="content">Save</div>
+                                            <i class="el-icon-check"></i>
+                                    </el-tooltip>
+                                </span>
+                                <span v-else>
+                                    <el-tooltip placement="top">
+		                                <div slot="content">Edit</div>
+                                            <i class="el-icon-edit"></i>
+                                    </el-tooltip>
+                                 </span>
+                            <!--                                {{scope.row.isSet?'Save':"Update"}}-->
+                        </span>
+                        <span v-if="!scope.row.isSet" class="el-tag el-tag--danger el-tag--mini"
+                              style="cursor: pointer;"
                               @click="pwdChange(scope.row,scope.$index,false)">
-                                Delete
-                            </span>
+                                    <el-tooltip placement="top">
+		                                <div slot="content">Delete</div>
+                                        <i class="el-icon-delete"></i>
+                                    </el-tooltip>
+                        </span>
                         <span v-else class="el-tag  el-tag--mini" style="cursor: pointer;"
                               @click="pwdChange(scope.row,scope.$index,false)">
-                                Cancel
-                            </span>
+                                    <el-tooltip placement="top">
+		                                <div slot="content">Cancel</div>
+                                        <i class="el-icon-refresh"></i>
+                                    </el-tooltip>
+                        </span>
+                        <span class="el-tag el-tag--info el-tag--mini" style="cursor: pointer;"
+                              @click="openDialog(scope.row,scope.$index)">
+                                    <el-tooltip placement="top">
+		                                <div slot="content">Detail</div>
+                                        <i class="el-icon-edit-outline"></i>
+                                    </el-tooltip>
+                        </span>
                     </template>
                 </el-table-column>
             </el-table>
@@ -144,6 +179,67 @@
                 </el-pagination>
             </div>
         </el-col>
+    </el-row>
+
+    <el-row>
+        <!-- Form dialog -->
+        <span v-if="master_user.sel">
+        <el-dialog :title="master_user.dialog_title" :visible.sync="dialogFormVisible" :key="timer_time">
+            <el-form :model="master_user" ref="formSubmit">
+                <el-row>
+                    <el-col  v-for="(v, i) in master_user.columns" :key="v.field" :span="12" style="height:50px">
+                            <span v-if="v.type=='datetime' || v.type=='timestamp'">
+                                <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+                                <el-date-picker size="mini" style="width:180px"
+                                                v-model="master_user.sel[v.field]"
+                                                type="datetime" format="yyyy-MM-dd HH:mm:ss"
+                                                value-format="yyyy-MM-dd HH:mm:ss"
+                                                placeholder="选择日期和时间">
+                                </el-date-picker>
+                                </el-form-item>
+                            </span>
+                            <span v-else-if="v.type=='date'">
+                                <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+                                <el-date-picker size="mini" style="width:180px"
+                                                v-model="master_user.sel[v.field]"
+                                                type="date"
+                                                value-format="yyyy-MM-dd"
+                                                placeholder="选择日期">
+                                </el-date-picker>
+                                </el-form-item>
+                            </span>
+                            <span v-else-if="v.type=='bigint' ||v.type=='int'">
+                                <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+                                <el-input type="number" v-model="master_user.sel[v.field]" :rows="1" size="mini"
+                                          placeholder="Input Number"
+                                          style="width:180px" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="20"
+                                          show-word-limit>
+                                </el-input>
+                                </el-form-item>
+                            </span>
+                            <span v-else-if="v.type=='float' ||v.type=='numeric'">
+                                <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+                                <el-input-number size="mini" v-model="master_user.sel[v.field]" :precision="8"
+                                                 :controls="false" style="width:180px"></el-input-number>
+                                </el-form-item>
+                            </span>
+                            <span v-else>
+                                <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+                                <el-input type="textarea" :rows="2" size="mini" placeholder="Input Something"
+                                          v-model="master_user.sel[v.field]" style="width:180px">
+                                </el-input>
+                                </el-form-item>
+                            </span>
+
+                    </el-col>
+                </el-row>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+            </div>
+        </el-dialog>
+        </span>
     </el-row>
 </div>
 <!-- import Vue before Element -->
