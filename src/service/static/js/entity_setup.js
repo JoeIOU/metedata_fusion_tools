@@ -234,10 +234,6 @@ function renderTable(result) {
                           d["type"]=gl_field_type[d.field];
                       }
                   }
-                 //app.master_user.columns = app.master_user.columns; // 数据属性数据
-
-                 alert("gl_field_type:"+JSON.stringify(gl_field_type)+"\r\n"+"app.master_user.columns:"+JSON.stringify(app.master_user.columns));
-//                 alert();
                  if(label_gl)
                    app.master_user.dialog_title=label_gl;
                  app.dialogFormVisible = true;
