@@ -1,118 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="description" content="">
-    <title>Neo4j Model</title>
-    <link rel="stylesheet" href="static/css/neo4jd3.min.css?v=0.0.1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
-    <!--    <link rel="stylesheet" href="static/css/bootstrap.min.css">-->
-    <link rel="stylesheet" href="static/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <title>Meradata Model Show</title>
+    <style>
+        .el-dropdown {
+            vertical-align: top;
+          }
+        .el-dropdown + .el-dropdown {
+            margin-left: 15px;
+          }
+        .el-icon-arrow-down {
+            font-size: 12px;
+          }
+          .el-header, .el-footer {
+            background-color: #B3C0D1;
+            padding: 5px;
+            color: #333;
+            margin:1px;
+            text-align: center;
+          }
+          .m-header {
+            height: 50px !important;
+            text-align: center;
+          }
+        .el-aside {
+            background-color: #C3D0F1;
+            color: #333;
+            margin:1px;
+            text-align: center;
+            line-height: 100%;
+          }
+
+          .el-main {
+            background-color: #E9EEF3;
+            color: #333;
+            text-align: center;
+            margin:1px;
+            line-height:600px;
+            height:500px;
+          }
+
+        html,body,#app,.el-container{
+        /*设置内部填充为0，几个布局元素之间没有间距*/
+        padding: 0px;
+         /*外部间距也是如此设置*/
+        margin:0px;
+        /*统一设置高度为100%*/
+        height: 100%;
+        }
+    </style>
+    <script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
-<div role="navigation" class="navbar navbar-default navbar-static-top">
-    <div class="container">
-        <div class="row">
-            <div class="navbar-header col-sm-4 col-md-4">
-                <div class="navbar-brand">
-                    <div class="brand">Data Model Show</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="panel panel-default">
-            <div class="row">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <form role="search" class="navbar-form" id="search">
-                            <div class="form-group">
-                                &nbsp; <input type="text" value="" placeholder="Input Entity Name"
-                                              class="form-control" name="search">
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input name="flag_input" type="radio" value="0" checked/>All
-                                    <input name="flag_input" type="radio" value="1"/>Child
-                                    <input name="flag_input" type="radio" value="2"/>Father
-                                </label>
-                            </div>
-                            <button class="btn btn-default" type="submit">Search</button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-            <div class="panel-heading">Search Results</div>
-            <table id="results" class="table table-striped table-hover">
-                <thead style="display: block;weight:100%;">
-                <tr>
-                    <th width="350">Entity Name</th>
-                    <th width="150">Entity ID</th>
-                    <th width="250">Comments</th>
-                </tr>
-                </thead>
-                <tbody style="display: block;weight:100%; height: 150px;overflow-y: scroll;">
-                </tbody>
-            </table>
-        </div>
-        <div class="panel panel-default">
-            <h5>&nbsp;Relationship:</h5>
-            <h5><b>
-                <div class="panel-heading" id="title">Details</div>
-            </b></h5>
-            <div class="row">
-                <div class="col-sm-2 col-md-2">
-                    <img src="/static/imgs/001.png" class="well" id="poster"/>
-                </div>
-                <div class="col-md-10 col-sm-10">
-                    <div style="display: block;weight:90%;height:220px;overflow-y:scroll;border:1">
-                        <ul id="crew">
-                        </ul>
+<div id="app1">
+    <el-container>
+        <el-header class='m-header'>
+            <el-row>
+                <el-col span="12">
+                    <div class="grid-content bg-purple-light">
+                        <span class="demonstration"></span>
+                        <el-input id="entity_name" v-model="entity_name" prefix-icon="el-icon-search"
+                                  style="width:250px"
+                                  placeholder="search everything"></el-input>
+                        <el-button type="primary">Search</el-button>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
+                </el-col>
+                <el-col span="12">
+                    <div>
+                        <div class="grid-content bg-purple-light">
+                            <span class="demonstration">...</span>
+                            <span class="demonstration">默认日期：</span>
+                            <el-date-picker
+                                    v-model="date1"
+                                    type="datetime" format="yyyy-MM-dd HH:mm:ss"
+                                    placeholder="选择日期和时间">
+                            </el-date-picker>
+                            <el-date-picker
+                                    v-model="date1"
+                                    type="date"
+                                    placeholder="选择日期">
+                            </el-date-picker>
 
-        <div class="panel panel-default">
-            <div class="row">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <form role="search1" class="navbar-form" id="search1">
-                            <div class="form-group">
-                                &nbsp;From:<input type="text" value="" placeholder="Input Entity Name"
-                                                  class="form-control" name="search1">
-                                To:<input type="text" value="" placeholder="Input Another Entity Name"
-                                          class="form-control" name="search2">
-                            </div>
-                            <button class="btn btn-default" type="submit">Find Relationship Path</button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-            <div class="panel-heading">Entity Relationship Chart</div>
-            <div class="row" style="overflow-y:scroll;weight:100%;height:510px;">
-                <div class="col-md-12" style="height: 510px">
-                    <div style="height: 510px;background:#CCC; color:#FFF" id="neo4jd3"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+                            <el-dropdown @command="handleCommand">
+                                <el-button type="primary">
+                                    系统菜单<i class="el-icon-arrow-down el-icon--right"></i>
+                                </el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item command="">
+                                        <el-link href="/static/system_setup.html" target="_blank">System Setup
+                            </el-link></el-dropdown-item>
+                                    <el-dropdown-item command="b">item2</el-dropdown-item>
+                                    <el-dropdown-item command="c">item3</el-dropdown-item>
+                                    <el-dropdown-item command="d" disabled>item4</el-dropdown-item>
+                                    <el-dropdown-item command="e" divided>item5</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+        </el-header>
+        <el-container>
+            <el-aside width="200px">Aside</el-aside>
+            <el-container>
+                <el-container>
+                    <el-main>Main</el-main>
+                    <el-aside width="150px">Aside</el-aside>
+                </el-container>
+                <el-footer>Footer</el-footer>
+            </el-container>
+        </el-container>
+    </el-container>
 </div>
+<script>
+    //主要内容
+    var app = new Vue({
+        el: "#app1",
+        data() {
+            return {
+                options: [],
+                select1: '',
+                entity_name: "",
+                entity_name1: "",
+                date1:""
+            }
+        },
+        methods: {
+            handleClick(value) {
+                queryMetadata(url.format(value),value);
+                let res = this.queryFields(url_fields.format(value));
+            },
+            async queryFields(url) {
+                let res=await axios.get(url).then(res =>{
+                    var dict1={};
+                    var data = res.data.data;
+                    if (data) {
+                        var len = 0;
+                        if (data)
+                            len = data.length;
+                        for (var i=0;i<len;i++){
+                         var d=data[i];
+                         dict1[d["md_fields_name"]]=d["md_fields_type"];
+                        }
+                    }
+                    gl_field_type=dict1;
+                    }
+                );
+            },
+            handleCommand(command) {
+                this.$message('click on item ' + command);
+            }
+        }
+    });
 
-
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-<script src="/static/js/d3.min.js?v=1.0.1"></script>
-<script src="/static/js/neo4jd3.js?v=1.0.1"></script>
-<script src="/static/js/graph.js?v=1.0.1"></script>
+</script>
 </body>
 </html>
