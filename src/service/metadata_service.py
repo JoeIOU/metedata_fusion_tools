@@ -1,7 +1,7 @@
 # #metadata_service.py
 from flask import request, session, Response
 import json
-from mdata import metadata as md
+from mdata import metadata as md,metadata_initialize as mdi
 from privilege import role_privilege as rp, user_mngt as ur
 from mdata import index_unique as idx
 from data import data_view as vw
@@ -285,6 +285,44 @@ def query_view():
     logger.info('view result:{}'.format(re))
     return Response(json.dumps(re), mimetype='application/json')
 
+# 实体元数据对象配置信息查询
+@app.route(domain_root + '/services/findEntitySetup', methods=['POST', 'GET'])
+def find_entity_setup():
+    global user_privilege_list
+    # 入参：{"abc":"123"}
+    data = request_parse(request)
+    md_entity_id = data.get(GLOBAL_ENTITY_ID)
+    if md_entity_id is None or len(md_entity_id) <= 0:
+        msg = 'findEntitySetup,input entity params[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
+        logger.warning(msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+    else:
+        user = get_login_user()
+        tenant_id = user.get("tenant_id")
+        if user_privilege_list is None or len(user_privilege_list) == 0:
+            msg = 'access findEntitySetup service, user({}) does not have privilege,entity=[{}] ,please login again.'.format(
+                user.get("account_number"), md_entity_id)
+            logger.warning(msg)
+            output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None,
+                                           message=msg)
+            return output
+        b_privilege = have_privilege(md_entity_id, SERVICE_METHOD_GET)
+        if not b_privilege:
+            msg = '{},you do not have the privilege to access the find_entity_setup service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
+                user.get("account_number"), md_entity_id)
+            logger.warning(msg)
+            output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None,
+                                           message=msg)
+            return output
+        res=mdi.query_entity_fields_columns(tenant_id,md_entity_id)
+        irows=0
+        if res is not None:
+            irows=len(res)
+        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
+                            message='query Entity Setup Info Success.')
+        logger.info('find Entity Setup. Params:{},result:{}'.format(data, re))
+    return Response(json.dumps(re), mimetype='application/json')
 
 # 实体详情查询
 @app.route(domain_root + '/services/findEntity', methods=['POST', 'GET'])
@@ -330,6 +368,7 @@ def find_entity_by_code():
         re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])
         logger.info('findEntityByCode. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
+
 
 # 实体插入Insert
 @app.route(domain_root + '/services/insertEntity', methods=['POST'])
