@@ -52,7 +52,7 @@
 <body>
 <div id="app1">
     <el-row>
-        <el-col span="12">
+        <el-col span="24">
             <div class="grid-content bg-purple-light">
                 <span class="demonstration">Select Entity: </span>
                 <el-select v-model="select1" placeholder="请选择实体" @change="handleClick">
@@ -65,10 +65,10 @@
                 </el-select>
             </div>
         </el-col>
-        <el-col span="12">
-            <div>
-            </div>
-        </el-col>
+<!--        <el-col span="12">-->
+<!--            <div class="grid-content bg-purple-light">ABC-->
+<!--            </div>-->
+<!--        </el-col>-->
     </el-row>
 </div>
 </br>
@@ -101,21 +101,21 @@
                                 </el-date-picker>
                             </span>
                             <span v-else-if="v.type=='bigint' ||v.type=='int'">
-<!--                                <el-input-number size="mini" v-model="master_user.sel[v.field]" :controls="false"-->
-                                <!--                                                 step-strictly></el-input-number>-->
-                                <el-input type="number" v-model="master_user.sel[v.field]" :rows="1" size="mini"
-                                          placeholder="Input Number"
-                                          style="width:120px" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="20"
-                                          show-word-limit>
+                                <el-input v-model="master_user.sel[v.field]" :rows="1" size="mini"
+                                          placeholder="Input Number" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="20">
                                 </el-input>
                             </span>
                             <span v-else-if="v.type=='float' ||v.type=='numeric'">
                                 <el-input-number size="mini" v-model="master_user.sel[v.field]" :precision="8"
                                                  :controls="false"></el-input-number>
                             </span>
-                            <span v-else="scope.row.isSet">
-                                <el-input type="textarea" :rows="1" size="mini" placeholder="Input Something"
-                                          v-model="master_user.sel[v.field]">
+                            <span v-else-if="v.type=='char' ||v.type=='boolean'">
+                                <el-input size="mini" placeholder="Input Something" :rows="1"
+                                          v-model="master_user.sel[v.field]" maxlength="10"></el-input>
+                            </span>
+                            <span v-else>
+                                <el-input type="textarea"  size="mini" :rows="1" placeholder="Input Something"
+                                          v-model="master_user.sel[v.field]"  maxlength="256">
                                 </el-input>
                             </span>
                         </span>
@@ -138,7 +138,6 @@
                                             <i class="el-icon-edit"></i>
                                     </el-tooltip>
                                  </span>
-                            <!--                                {{scope.row.isSet?'Save':"Update"}}-->
                         </span>
                         <span v-if="!scope.row.isSet" class="el-tag el-tag--danger el-tag--mini"
                               style="cursor: pointer;"
@@ -184,7 +183,7 @@
     <el-row>
         <!-- Form dialog -->
         <span v-if="master_user.sel">
-        <el-dialog :title="master_user.dialog_title" :visible.sync="dialogFormVisible" :key="timer_time">
+        <el-dialog :title="dialog_title" :visible.sync="dialogFormVisible" :key="timer_time">
             <el-form :model="master_user" ref="formSubmit">
                 <el-row>
                     <el-col  v-for="(v, i) in master_user.columns" :key="v.field" :span="12" style="height:50px">
@@ -210,24 +209,30 @@
                             </span>
                             <span v-else-if="v.type=='bigint' ||v.type=='int'">
                                 <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
-                                <el-input type="number" v-model="master_user.sel[v.field]" :rows="1" size="mini"
+                                <el-input v-model="master_user.sel[v.field]" :rows="1" size="mini"
                                           placeholder="Input Number"
-                                          style="width:180px" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="20"
-                                          show-word-limit>
+                                          style="width:180px" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="20">
                                 </el-input>
                                 </el-form-item>
                             </span>
                             <span v-else-if="v.type=='float' ||v.type=='numeric'">
                                 <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
-                                <el-input-number size="mini" v-model="master_user.sel[v.field]" :precision="8"
+                                <el-input-number size="mini" v-model="master_user.sel[v.field]" :precision="4"
                                                  :controls="false" style="width:180px"></el-input-number>
+                                </el-form-item>
+                            </span>
+                            <span v-else-if="v.type=='char' ||v.type=='boolean'">
+                                <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+                                <el-input type="text" :rows="1" size="mini" placeholder="Input Something"
+                                          v-model="master_user.sel[v.field]" style="width:180px" maxlength="10"
+                                          show-word-limit="true"></el-input>
                                 </el-form-item>
                             </span>
                             <span v-else>
                                 <el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
                                 <el-input type="textarea" :rows="2" size="mini" placeholder="Input Something"
-                                          v-model="master_user.sel[v.field]" style="width:180px">
-                                </el-input>
+                                          v-model="master_user.sel[v.field]" style="width:180px" maxlength="256"
+                                          show-word-limit="true"></el-input>
                                 </el-form-item>
                             </span>
 
@@ -235,8 +240,8 @@
                 </el-row>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+                <el-button @click="pwdChange(row_sel,0,false)">取 消</el-button>
+                <el-button type="primary" @click="pwdChange(row_sel,0,true)">确 定</el-button>
             </div>
         </el-dialog>
         </span>
