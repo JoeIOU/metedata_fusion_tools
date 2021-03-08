@@ -185,15 +185,15 @@ function renderTable(result) {
                 master_user: {
                     sel: null,//选中行
                     columns: [],
-                    //types:[],
-                    data: [],
-                    dialog_title:"Demo"
+                    data: []
                 },
                 currentPage: 1, //默认显示页面为1
                 pagesize: 10 ,//    每页的数据条数
                 //dialogTableVisible: false,
                 dialogFormVisible: false,
                 formLabelWidth: '200px',
+                dialog_title:"Demo",
+                row_sel:null,
                 timer_time:''
             },
             methods: {
@@ -222,21 +222,25 @@ function renderTable(result) {
                     app.master_user.data.push(j);
                     app.master_user.sel = JSON.parse(JSON.stringify(j));
                 },
-                openDialog(row, index){
-                 app.master_user.sel = row;
-                 if(gl_field_type){
-                      var len=0;
-                      if(app.master_user.columns){
-                        len=app.master_user.columns.length;
+                 openDialog(row, index){
+                     //app.master_user.sel = row;
+                     app.row_sel=row;
+                     app.master_user.sel =JSON.parse(JSON.stringify(row));
+                     app.row_sel.isSet=true;
+                     row.isSet=true;
+                     if(gl_field_type){
+                          var len=0;
+                          if(app.master_user.columns){
+                            len=app.master_user.columns.length;
+                          }
+                          for (var i=0;i<len;i++){
+                              var d=app.master_user.columns[i];
+                              d["type"]=gl_field_type[d.field];
+                          }
                       }
-                      for (var i=0;i<len;i++){
-                          var d=app.master_user.columns[i];
-                          d["type"]=gl_field_type[d.field];
-                      }
-                  }
-                 if(label_gl)
-                   app.master_user.dialog_title=label_gl;
-                 app.dialogFormVisible = true;
+                     if(label_gl)
+                       app.dialog_title=label_gl;
+                     app.dialogFormVisible = true;
                 },
                 //读取表格数据
                 readMasterUser() {
@@ -271,13 +275,15 @@ function renderTable(result) {
                                 app.$message('delete success,row='+(index+1));
                               }).catch(() => {
                                 //点击取消的提示
+                                app.master_user.sel = row;
                                 return ;
                               });
                             return;
                         }
                         if (row.isSet== "undefined")
                           row.isSet = false
-                        app.master_user.sel = row;
+                        app.master_user.sel =row;
+                        app.dialogFormVisible = false;
                         return row.isSet = !row.isSet;
                     }
                     //提交数据
@@ -292,6 +298,7 @@ function renderTable(result) {
                             });
                             //然后这边重新读取表格数据
                             app.readMasterUser();
+                            app.dialogFormVisible = false;
                             app.master_user.sel=null;
                             row.isSet = false;
                         })();
@@ -342,7 +349,7 @@ function renderToolbar() {
                 queryMetadata(url.format(value),value);
                 let res = this.queryFields(url_fields.format(value));
                 if (app_gl){
-                  app_gl.master_user.dialog_title=label;
+                  app_gl.dialog_title=label;
                   label_gl=label;
                   //alert(label);
                 }else{
