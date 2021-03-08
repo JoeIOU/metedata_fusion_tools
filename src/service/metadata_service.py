@@ -26,6 +26,7 @@ SERVICE_METHOD_VIEW = "ViewQuery"
 user_privilege_list = None
 # 全局实体元数据ID。
 GLOBAL_ENTITY_ID = "$_ENTITY_ID"
+GLOBAL_ENTITY_CODE = "$_ENTITY_CODE"
 
 
 def request_parse(req):
@@ -301,6 +302,34 @@ def find_entity():
         logger.info('find Entity. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
 
+
+# 实体详情查询by entity code
+@app.route(domain_root + '/services/findEntityByCode', methods=['POST', 'GET'])
+def find_entity_by_code():
+    # 入参：{"abc":"123"}
+    data = request_parse(request)
+    md_entity_code = data.get(GLOBAL_ENTITY_CODE)
+    if md_entity_code is None or len(md_entity_code) <= 0:
+        msg = 'findEntityByCode,input entity code params[{}] should not be None.'.format(GLOBAL_ENTITY_CODE)
+        logger.warning(msg)
+        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+    else:
+        user = get_login_user()
+        tenant_id = user.get("tenant_id")
+        # user_id = user.get("user_id")
+        res = md.get_md_entities_by_code(tenant_id, [md_entity_code])
+        md_entity_id = None
+        if res is not None and len(res) > 0:
+            md_entity_id = res[0].get("md_entity_id")
+        else:
+            s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data)
+            logger.warning(s)
+            return md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                         message=s)
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])
+        logger.info('findEntityByCode. Params:{},result:{}'.format(data, re))
+    return Response(json.dumps(re), mimetype='application/json')
 
 # 实体插入Insert
 @app.route(domain_root + '/services/insertEntity', methods=['POST'])
