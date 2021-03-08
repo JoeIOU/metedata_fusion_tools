@@ -67,6 +67,91 @@ SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
 SQL_QUERY_ENTITY_REL_FORMAT = SQL_QUERY_ENTITY_ALL_REL_FORMAT + " AND (e.md_entity_code in %s or e1.md_entity_code in %s)"
 
 
+SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
+                SELECT
+                    distinct *
+                FROM
+                    (
+                        SELECT 
+                            e.md_entity_id,
+                            e.md_entity_code,
+                            e.md_entity_name,
+                            f.md_fields_id,
+                            f.md_fields_name,
+                            f.md_fields_type,
+                            f.md_fields_length,
+                            f.md_decimals_length,
+                            tt.md_tables_id,
+                            tt.md_tables_name,
+                            tt.md_tables_desc,
+                            cc.md_columns_id,
+                            cc.md_columns_name,
+                            cc.md_columns_type,
+                            cc.md_columns_length,
+                            cc.md_dec_length
+                        FROM
+                            md_entities e
+                        INNER JOIN md_tables tt ON e.md_tables_id = tt.md_tables_id
+                        AND tt.active_flag = 'Y'
+                        LEFT JOIN md_fields f ON f.md_entity_id = e.md_entity_id
+                        AND f.tenant_id = e.tenant_id
+                        AND f.active_flag = 'Y'
+                        LEFT JOIN md_columns cc ON cc.md_tables_id = tt.md_tables_id
+                        AND f.md_columns_id = cc.md_columns_id
+                        AND cc.active_flag = 'Y'
+                        WHERE
+                            e.tenant_id = %s
+                        AND e.md_entity_id = %s
+                        AND e.active_flag = 'Y'
+                        UNION
+                            SELECT 
+                                e.md_entity_id,
+                                e.md_entity_code,
+                                e.md_entity_name,
+                                f.md_fields_id,
+                                f.md_fields_name,
+                                f.md_fields_type,
+                                f.md_fields_length,
+                                f.md_decimals_length,
+                                tt.md_tables_id,
+                                tt.md_tables_name,
+                                tt.md_tables_desc,
+                                cc.md_columns_id,
+                                cc.md_columns_name,
+                                cc.md_columns_type,
+                                cc.md_columns_length,
+                                cc.md_dec_length
+                            FROM
+                                md_tables tt
+                            INNER JOIN md_entities e ON e.md_tables_id = tt.md_tables_id
+                            AND e.active_flag = 'Y'
+                            LEFT JOIN md_columns cc ON cc.md_tables_id = tt.md_tables_id
+                            AND cc.active_flag = 'Y'
+                            LEFT JOIN md_fields f ON f.md_entity_id = e.md_entity_id
+                            AND f.md_columns_id = cc.md_columns_id
+                            AND f.active_flag = 'Y'
+                            WHERE
+                                e.md_entity_id = %s
+                            AND e.tenant_id = %s
+                            AND tt.active_flag = 'Y'
+                            AND f.md_columns_id IS NULL
+                    ) aaa
+                ORDER BY
+                    md_columns_id,md_fields_id
+                """
+
+# 查询实体和数据表属性和字段信息
+def query_entity_fields_columns(tenant_id, entity_id):
+    if entity_id is None:
+        logger.warning("query_entity_fields_columns,entity_id should not be None")
+        return None
+    sql = SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT
+    conn = db_md()
+    cursor = conn.cursor()
+    cursor.execute(sql, args=(tenant_id, entity_id, tenant_id, entity_id))
+    result = cursor.fetchall()
+    return result
+
 # 查询实体关系信息
 def query_entity_rel_by_entity(tenant_id, entity_codes):
     if entity_codes is None:
