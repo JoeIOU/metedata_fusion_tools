@@ -76,20 +76,24 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                             e.md_entity_id,
                             e.md_entity_code,
                             e.md_entity_name,
+		    e.md_entity_name_en,
+                            e.md_entity_desc,
                             f.md_fields_id,
                             f.md_fields_name,
                             f.md_fields_type,
+                            f.md_fields_desc,
                             f.md_fields_length,
                             f.md_decimals_length,
+                            f.active_flag,
                             tt.md_tables_id,
                             tt.md_tables_name,
                             tt.md_tables_desc,
                             cc.md_columns_id,
                             cc.md_columns_name,
                             cc.md_columns_type,
+                            cc.md_columns_desc,
                             cc.md_columns_length,
-                            cc.md_dec_length,
-                            f.active_flag
+                            cc.md_dec_length
                         FROM
                             md_entities e
                         INNER JOIN md_tables tt ON e.md_tables_id = tt.md_tables_id
@@ -108,20 +112,24 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                                 e.md_entity_id,
                                 e.md_entity_code,
                                 e.md_entity_name,
+		        e.md_entity_name_en,
+                                e.md_entity_desc,
                                 f.md_fields_id,
                                 f.md_fields_name,
                                 f.md_fields_type,
+                                f.md_fields_desc,
                                 f.md_fields_length,
                                 f.md_decimals_length,
+                                f.active_flag,
                                 tt.md_tables_id,
                                 tt.md_tables_name,
                                 tt.md_tables_desc,
                                 cc.md_columns_id,
                                 cc.md_columns_name,
                                 cc.md_columns_type,
+                                cc.md_columns_desc,
                                 cc.md_columns_length,
-                                cc.md_dec_length,
-                                f.active_flag
+                                cc.md_dec_length
                             FROM
                                 md_tables tt
                             INNER JOIN md_entities e ON e.md_tables_id = tt.md_tables_id
