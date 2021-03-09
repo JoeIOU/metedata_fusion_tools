@@ -88,14 +88,14 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                             cc.md_columns_name,
                             cc.md_columns_type,
                             cc.md_columns_length,
-                            cc.md_dec_length
+                            cc.md_dec_length,
+                            f.active_flag
                         FROM
                             md_entities e
                         INNER JOIN md_tables tt ON e.md_tables_id = tt.md_tables_id
                         AND tt.active_flag = 'Y'
                         LEFT JOIN md_fields f ON f.md_entity_id = e.md_entity_id
                         AND f.tenant_id = e.tenant_id
-                        AND f.active_flag = 'Y'
                         LEFT JOIN md_columns cc ON cc.md_tables_id = tt.md_tables_id
                         AND f.md_columns_id = cc.md_columns_id
                         AND cc.active_flag = 'Y'
@@ -120,7 +120,8 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                                 cc.md_columns_name,
                                 cc.md_columns_type,
                                 cc.md_columns_length,
-                                cc.md_dec_length
+                                cc.md_dec_length,
+                                f.active_flag
                             FROM
                                 md_tables tt
                             INNER JOIN md_entities e ON e.md_tables_id = tt.md_tables_id
@@ -129,9 +130,8 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                             AND cc.active_flag = 'Y'
                             LEFT JOIN md_fields f ON f.md_entity_id = e.md_entity_id
                             AND f.md_columns_id = cc.md_columns_id
-                            AND f.active_flag = 'Y'
                             WHERE
-                               e.tenant_id = %s 
+                                e.tenant_id = %s
                             AND e.md_entity_id = %s
                             AND tt.active_flag = 'Y'
                             AND f.md_columns_id IS NULL
