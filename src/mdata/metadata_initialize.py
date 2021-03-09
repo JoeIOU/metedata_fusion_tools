@@ -131,8 +131,8 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                             AND f.md_columns_id = cc.md_columns_id
                             AND f.active_flag = 'Y'
                             WHERE
-                                e.md_entity_id = %s
-                            AND e.tenant_id = %s
+                               e.tenant_id = %s 
+                            AND e.md_entity_id = %s
                             AND tt.active_flag = 'Y'
                             AND f.md_columns_id IS NULL
                     ) aaa
