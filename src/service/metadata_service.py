@@ -160,8 +160,12 @@ def have_privilege(md_entity_id, method):
                 if privilege_type == const.PRIVILEGE_TYPE_READ:
                     b_privilege = True
                     break
-            elif method == SERVICE_METHOD_INSERT or method == SERVICE_METHOD_UPDATE:
-                if (privilege_type == const.PRIVILEGE_TYPE_UPDATE or privilege_type == const.PRIVILEGE_TYPE_CREATE):
+            elif method == SERVICE_METHOD_INSERT:
+                if (privilege_type == const.PRIVILEGE_TYPE_CREATE):
+                    b_privilege = True
+                    break
+            elif method == SERVICE_METHOD_UPDATE:
+                if (privilege_type == const.PRIVILEGE_TYPE_UPDATE):
                     b_privilege = True
                     break
             elif method == SERVICE_METHOD_DELETE:
