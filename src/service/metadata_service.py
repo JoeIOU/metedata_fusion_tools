@@ -393,7 +393,12 @@ def insert_entity():
         re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_INSERT, data_list=[data])
+        list_data=[]
+        if isinstance(data,list):
+            list_data=data
+        else:
+            list_data=[data]
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_INSERT, data_list=list_data)
         logger.info('insert Entity Params:%s' % data)
     return Response(json.dumps(re), mimetype='application/json')
 
