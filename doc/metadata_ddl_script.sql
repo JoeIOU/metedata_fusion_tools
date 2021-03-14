@@ -313,6 +313,8 @@ CREATE TABLE  IF NOT EXISTS `md_entities` (
   CONSTRAINT `md_entities_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='元数据实体对象';
 
+ALTER  TABLE  `md_entities`  ADD  INDEX md_entity_code_idx1 (  `md_entity_code`  );
+ALTER  TABLE  `md_entities`  ADD  INDEX md_entity_name_idx1 (  `md_entity_name`  );
 
 -- ----------------------------
 -- Table structure for md_fields
