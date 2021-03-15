@@ -11,7 +11,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/login?user_account=test1&user_name=Joe.Lin",
+					"raw": "http://127.0.0.1:8888/md/login?user_account=admin&user_name=Joe.Lin",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -51,7 +51,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/findEntity?id=1346641783622340609&$_ENTITY_ID=30015",
+					"raw": "http://127.0.0.1:8888/md/services/findEntity?$_ENTITY_ID=30015",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -68,7 +68,132 @@
 					"query": [
 						{
 							"key": "id",
-							"value": "1346641783622340609"
+							"value": "1346641783622340609",
+							"disabled": true
+						},
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30015"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "queryEntitySetup",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findEntitySetup?$_ENTITY_ID=30047",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findEntitySetup"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1346641783622340609",
+							"disabled": true
+						},
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30047"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "queryEntityByCodeOrID",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/queryEntityByCodeOrID?$_ENTITY_CODE=md_entities&$_ENTITY_ID=30015",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"queryEntityByCodeOrID"
+					],
+					"query": [
+						{
+							"key": "$_ENTITY_CODE",
+							"value": "md_entities"
+						},
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30015"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "queryFieldsByCodeOrID",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/queryFieldsByCodeOrID?$_ENTITY_CODE=md_fields&$_ENTITY_ID=30015",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"queryFieldsByCodeOrID"
+					],
+					"query": [
+						{
+							"key": "$_ENTITY_CODE",
+							"value": "md_fields"
 						},
 						{
 							"key": "$_ENTITY_ID",
@@ -85,7 +210,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/findEntity?$_ENTITY_ID=30015",
+					"raw": "http://127.0.0.1:8888/md/services/findEntity?$_ENTITY_ID=30016",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -107,7 +232,7 @@
 						},
 						{
 							"key": "$_ENTITY_ID",
-							"value": "30015"
+							"value": "30016"
 						}
 					]
 				}
@@ -243,12 +368,12 @@
 						},
 						{
 							"key": "test_fields",
-							"value": "美丽001",
+							"value": "狗日子001",
 							"type": "text"
 						},
 						{
 							"key": "test_fields1",
-							"value": "真是太",
+							"value": "特特特色",
 							"type": "text"
 						},
 						{
@@ -264,7 +389,7 @@
 					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/updateEntity?__obj_id__=1353956569045405696",
+					"raw": "http://127.0.0.1:8888/md/services/updateEntity?__obj_id__=800001",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -281,7 +406,7 @@
 					"query": [
 						{
 							"key": "__obj_id__",
-							"value": "1353956569045405696"
+							"value": "800001"
 						}
 					]
 				}
@@ -539,4 +664,3 @@
 		}
 	]
 }
-
