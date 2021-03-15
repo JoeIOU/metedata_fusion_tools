@@ -87,12 +87,12 @@ def login():
         logger.warning("user account[{}] is not exists.".format(user_acc))
     else:
         session["user_account"] = user_acc
-        session["user_name"] = data.get('user_name')
+        session["user_name"] = re.get('user_name')
         session["user"] = re
         logger.warning("user:[{}] login success.".format(user_acc))
-        msg = "success"
+        msg = "login success."
         out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
-                                         data=data, message=msg)
+                                         data=re, message=msg)
     return Response(json.dumps(out_data), mimetype='application/json')
 
 
