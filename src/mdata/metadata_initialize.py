@@ -67,7 +67,7 @@ SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
 SQL_QUERY_ENTITY_REL_FORMAT = SQL_QUERY_ENTITY_ALL_REL_FORMAT + " AND (e.md_entity_code in %s or e1.md_entity_code in %s)"
 
 
-SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
+SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                 SELECT
                     distinct *
                 FROM
@@ -76,7 +76,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                             e.md_entity_id,
                             e.md_entity_code,
                             e.md_entity_name,
-		    	    e.md_entity_name_en,
+			    e.md_entity_name_en,
                             e.md_entity_desc,
                             f.md_fields_id,
                             f.md_fields_name,
@@ -86,6 +86,9 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                             f.md_decimals_length,
                             f.lookup_flag,
                             f.default_value,
+                            f.is_null,
+                            f.is_indexed,
+                            f.is_unique,
                             f.active_flag,
                             tt.md_tables_id,
                             tt.md_tables_name,
@@ -114,7 +117,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                                 e.md_entity_id,
                                 e.md_entity_code,
                                 e.md_entity_name,
-		        e.md_entity_name_en,
+			        e.md_entity_name_en,
                                 e.md_entity_desc,
                                 f.md_fields_id,
                                 f.md_fields_name,
@@ -122,8 +125,11 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT="""
                                 f.md_fields_desc,
                                 f.md_fields_length,
                                 f.md_decimals_length,
-                            	f.lookup_flag,
-                            	f.default_value,
+                                f.lookup_flag,
+                                f.default_value,
+                                f.is_null,
+                                f.is_indexed,
+                                f.is_unique,
                                 f.active_flag,
                                 tt.md_tables_id,
                                 tt.md_tables_name,
