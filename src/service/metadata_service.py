@@ -186,7 +186,7 @@ def get_index_data_ids(data):
     return ids
 
 
-def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
+def sql_execute_method(md_entity_id, method, service_name, data_list=None, where_list=None):
     user = get_login_user()
     if user is None:
         msg = 'access service, user does not login ,please login first.'
@@ -202,8 +202,8 @@ def sql_execute_method(md_entity_id, method, data_list=None, where_list=None):
         return output
     b_privilege = have_privilege(md_entity_id, method)
     if not b_privilege:
-        msg = '{},you do not have the privilege to access the service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
-            user.get("account_number"), md_entity_id)
+        msg = '{},you do not have the privilege to access the service[{}],entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
+            user.get("account_number"), md_entity_id, service_name)
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         return output
@@ -284,7 +284,7 @@ def query_view():
             if key == "view_id":
                 data.pop("view_id")
                 break
-    re = sql_execute_method(view_id, SERVICE_METHOD_VIEW, data_list=None, where_list=[data])
+    re = sql_execute_method(view_id, SERVICE_METHOD_VIEW, "queryView", data_list=None, where_list=[data])
 
     logger.info('view result:{}'.format(re))
     return Response(json.dumps(re), mimetype='application/json')
@@ -433,7 +433,7 @@ def find_entity():
         re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, "findEntity", data_list=None, where_list=[data])
         logger.info('find Entity. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
 
@@ -462,7 +462,7 @@ def find_entity_by_code():
             logger.warning(s)
             return md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=s)
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, data_list=None, where_list=[data])
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, "findEntityByCode", data_list=None, where_list=[data])
         logger.info('findEntityByCode. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
 
@@ -480,6 +480,8 @@ def insert_entity():
         return json.dumps(re)
 
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
+    if not isinstance(md_entity_id, str):
+        md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'insert Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
@@ -487,11 +489,12 @@ def insert_entity():
                                    message=msg)
     else:
         list_data = []
-        if isinstance(data, list):
-            list_data = data
-        else:
-            list_data = [data]
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_INSERT, data_list=list_data)
+        if data and data['data']:
+            if isinstance(data['data'], list):
+                list_data = data['data']
+            else:
+                list_data = [data['data']]
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_INSERT, "insertEntity", data_list=list_data)
         logger.info('insert Entity Params:%s' % data)
     return Response(json.dumps(re), mimetype='application/json')
 
@@ -543,7 +546,8 @@ def update_entity_common(md_entity_id, data_list, where_list):
         re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_UPDATE, data_list=data_list, where_list=where_list)
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_UPDATE, "updateEntity", data_list=data_list,
+                                where_list=where_list)
         logger.info('update Entity Params:{}'.format(data_list))
     return re
 
@@ -561,13 +565,15 @@ def delete_entity():
     else:
         wh_list.append(wh_dict)
     md_entity_id = wh_dict.get(GLOBAL_ENTITY_ID)
+    if not isinstance(md_entity_id, str):
+        md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'delete Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
         logger.warning(msg)
         re = md.exec_output_status(type=SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_DELETE, data_list=None, where_list=wh_list)
+        re = sql_execute_method(md_entity_id, SERVICE_METHOD_DELETE, "deleteEntity", data_list=None, where_list=wh_list)
         logger.info('delete Entity Params:{}'.format(wh_list))
     return Response(json.dumps(re), mimetype='application/json')
 
