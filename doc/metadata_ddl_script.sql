@@ -451,7 +451,7 @@ CREATE TABLE  IF NOT EXISTS entity_privileges (	entity_privilege_id BIGINT(20) N
 	last_update_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP comment '最后更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='实体权限信息维护';
 alter table entity_privileges add constraint entity_privileges_entity_tenant_id_fk0  foreign key (tenant_id) references tenants (tenant_id);
-
+ALTER TABLE `entity_privileges` ADD UNIQUE KEY entity_privileges_code_idx0(tenant_id,md_entity_id,privilege_code ) ;
 
 -- ----------------------------
 -- Table structure for roles
@@ -706,7 +706,7 @@ CREATE TABLE  IF NOT EXISTS `data_privileges` (
   `last_update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`data_privilege_id`),
   UNIQUE KEY `data_privilege_id` (`data_privilege_id`),
-  UNIQUE KEY `data_privilege_code` (`data_privilege_code`),
+  UNIQUE KEY `data_privilege_code` (tenant_id,md_entity_id,`data_privilege_code`),
   KEY `data_privileges_tenant_id_fk0` (`tenant_id`),
   -- KEY `data_privileges_md_entity_id_fk0` (`md_entity_id`),
   -- CONSTRAINT `data_privileges_md_entity_id_fk0` FOREIGN KEY (`md_entity_id`) REFERENCES `md_entities` (`md_entity_id`),
