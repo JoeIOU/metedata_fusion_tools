@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Entity Setup Config</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+     .bg-purple-light {
+        background: #e5e9f2;
+    }
+
+    .el-dropdown {
+        vertical-align: top;
+    }
+    .el-dropdown + .el-dropdown {
+        margin-left: 15px;
+    }
+    .el-icon-arrow-down {
+        font-size: 12px;
+    }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <span class="demonstration"><h4>Entity Setup:</h4> </span>
+    <el-row>
+            <span v-if="master_user.sel">
+                <el-col span="24">
+                 entity_id:
+                 <el-input size="mini" :rows="1" placeholder="Input Something"
+                           v-model="master_user.sel['md_entity_id']" style="width:150px" maxlength="30"
+                           disabled>
+             </el-input>
+             entity_code:
+             <el-input size="mini" :rows="1" placeholder="Input Something"
+                       v-model="master_user.sel['md_entity_code']" style="width:180px"
+                       maxlength="256" id="md_entity_code1001"
+                       @change="onchange('md_entity_code',master_user.sel,1001)">
+         </el-input>
+         entity_name:
+         <el-input size="mini" :rows="1" placeholder="Input Something"
+                   v-model="master_user.sel['md_entity_name']" style="width:200px"
+                   maxlength="256" id="md_entity_name1001"
+                   @change="onchange('md_entity_name',master_user.sel,1001)">
+     </el-input>
+     entity_name_en:
+     <el-input size="mini" :rows="1" placeholder="Input Something"
+               v-model="master_user.sel['md_entity_name_en']" style="width:200px"
+               maxlength="256" id="md_entity_name_en1001"
+               @change="onchange('md_entity_name_en',master_user.sel,1001)">
+ </el-input>
+ entity_desc:
+ <el-input size="mini" :rows="1" placeholder="Input Something"
+           v-model="master_user.sel['md_entity_desc']" style="width:200px"
+           maxlength="256" id="md_entity_desc1001"
+           @change="onchange('md_entity_desc',master_user.sel,1001)">
+</el-input>
+</el-col>
+</span>
+    </el-row>
+    <br/>
+    <el-row>
+        <el-col span="24">
+            <el-table size="mini" :data="master_user.data"
+                      highlight-current-row height="450" border style="width:100%"
+                      :header-cell-style="{'background-color': '#dddddd','color': 'rgb(0, 0, 0)','border-bottom': '1px rgb(200, 200, 200) solid'}">
+                <el-table-column type="index" label="No."></el-table-column>
+                <el-table-column label="action" width="60">
+                    <template slot-scope="scope">
+                <span v-if="scope.row.active_flag=='Y'" class="el-tag el-tag--danger el-tag--mini"
+                      style="cursor: pointer;"
+                      @click="pwdChange(scope.row,scope.$index,false)">
+                <span v-if="scope.row.isDel">
+                    <el-tooltip placement="top">
+                      <div slot="content">Recover</div>
+                      <i class="el-icon-edit-outline"></i>
+                  </el-tooltip>
+              </span>
+              <span v-else>
+                <el-tooltip placement="top">
+                  <div slot="content">Delete</div>
+                  <i class="el-icon-delete"></i>
+              </el-tooltip>
+          </span>
+      </span>
+                        </span>
+                        <span v-else-if="scope.row.md_fields_id===''||scope.row.md_fields_id===null"
+                              class="el-tag el-tag--warning el-tag--mini"
+                              style="cursor: pointer;"
+                              @click="pwdChange(scope.row,scope.$index,false)">
+  <el-tooltip placement="top">
+      <div slot="content">Reset</div>
+      <i class="el-icon-refresh"></i>
+  </el-tooltip>
+</span>
+                    </template>
+                </el-table-column>
+                <el-table-column v-for="(v,i) in master_user.columns" :prop="v.field" :label="v.title" :type="v.type"
+                                 :width="v.width" v-if="v.visible">
+                    <template slot-scope="scope">
+    <span v-if="scope.row['active_flag']=='Y' || scope.row.md_fields_id===''||scope.row.md_fields_id===null">
+        <span v-if="v.type=='bigint' ||v.type=='int'">
+            <el-input v-model="scope.row[v.field]" :rows="1" size="mini"
+                      oninput="value=value.replace(/[^0-9]/g,'')"
+                      maxlength="20" :disabled="v.readonly" :id="v.field+scope.$index"
+                      @change="onchange(v.field,scope.row,scope.$index)">
+        </el-input>
+    </span>
+    <span v-else-if="v.field=='md_fields_type'">
+        <el-select size="mini" v-model="scope.row[v.field]" :disabled="v.readonly" :id="v.field+scope.$index"
+                   @change="onchange(v.field,scope.row,scope.$index)">
+        <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+    </el-option>
+</el-select>
+</span>
+<span v-else-if="v.field=='lookup_flag'||v.field=='is_null'||v.field=='is_indexed'||v.field=='is_unique'||v.field=='public_flag'">
+    <el-select size="mini" v-model="scope.row[v.field]" :disabled="v.readonly" :id="v.field+scope.$index"
+               @change="onchange(v.field,scope.row,scope.$index)">
+    <el-option
+            key="Y"
+            label="Y"
+            value="Y">
+</el-option>
+<el-option
+        key="N"
+        label="N"
+        value="N">
+</el-option>
+</el-select>
+</span>
+<span v-else-if="v.type=='float' ||v.type=='numeric'">
+    <el-input-number size="mini" v-model="scope.row[v.field]" :rows="1" :precision="8"
+                     :controls="false" :disabled="v.readonly" :id="v.field+scope.$index"
+                     @change="onchange(v.field,scope.row,scope.$index)"></el-input-number>
+</span>
+<span v-else-if="v.type=='char' ||v.type=='boolean'">
+    <el-input size="mini" :rows="1"
+              v-model="scope.row[v.field]" maxlength="10" :disabled="v.readonly" :id="v.field+scope.$index"
+              @change="onchange(v.field,scope.row,scope.$index)"></el-input>
+</span>
+<span v-else>
+    <span v-if="scope.row[v.field]!=null && scope.row[v.field].length>3">
+      <el-tooltip placement="top">
+        <div slot="content">{{scope.row[v.field]}}</div>
+        <el-input size="mini" :rows="1"
+                  v-model="scope.row[v.field]" maxlength="500" :disabled="v.readonly" :id="v.field+scope.$index"
+                  @change="onchange(v.field,scope.row,scope.$index)">
+    </el-input>
+</el-tooltip>
+</span>
+<span v-else>
+    <el-input size="mini" :rows="1"
+              v-model="scope.row[v.field]" maxlength="500" :disabled="v.readonly" :id="v.field+scope.$index"
+              @change="onchange(v.field,scope.row,scope.$index)">
+</el-input>
+</span>
+</span>
+</span>
+<span v-else>
+      <el-tooltip placement="top">
+                            <div slot="content">{{scope.row[v.field]}}</div>
+    <el-input size="mini" :rows="1"
+              v-model="scope.row[v.field]" disabled :id="v.field+scope.$index">
+    </el-input>
+      </el-tooltip>
+</span>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-col>
+    </el-row>
+    <br/>
+    <el-row>
+        <el-col span="24">
+            <div class="grid-content bg-purple-light">
+                <el-button type="primary" @click="submitData()">Save</el-button>
+                <el-button type="primary" @click="close()">Close</el-button>
+            </div>
+        </el-col>
+    </el-row>
+</div>
+<!-- import Vue before Element -->
+<!--<script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>-->
+<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+<script src="/static/js/entity_setup1.js"></script>
+</body>
+
+</html>
