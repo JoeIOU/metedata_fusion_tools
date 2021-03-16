@@ -1,4 +1,3 @@
-
 # ######test_service.py
 import requests
 
@@ -99,6 +98,40 @@ def view_query():
     return "success"
 
 
+def findEntitySetup():
+    url = "http://127.0.0.1:8888/md/services/findEntitySetup?$_ENTITY_ID=30047"
+
+    payload = {}
+    headers = {
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUxD1uCVn6rnk5mnVAsAEkItYA.YEsiGw.XBXuv8IeU5ED9wVqugMyADTZs9s'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    print(response.text)
+    return "success"
+
+
+def queryEntityByCodeOrID():
+    url = "http://127.0.0.1:8888/md/services/queryEntityByCodeOrID?$_ENTITY_CODE=md_entities&$_ENTITY_ID=30015"
+    payload = {}
+    headers = {
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUxD1uCVn6rnk5mnVAsAEkItYA.YEsiGw.XBXuv8IeU5ED9wVqugMyADTZs9s'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    print(response.text)
+    return "success"
+
+
+def queryFieldsByCodeOrID():
+    url = "http://127.0.0.1:8888/md/services/queryFieldsByCodeOrID?$_ENTITY_CODE=md_fields&$_ENTITY_ID=30015"
+    payload = {}
+    headers = {
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUxD1uCVn6rnk5mnVAsAEkItYA.YEsiGw.XBXuv8IeU5ED9wVqugMyADTZs9s'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    print(response.text)
+    return "success"
+
+
 def test_dm():
     login()
     re = md_insert()
@@ -110,6 +143,12 @@ def test_dm():
     re = md_delete()
     assert re == "success"
     re = view_query()
+    assert re == "success"
+    re = findEntitySetup()
+    assert re == "success"
+    re = queryEntityByCodeOrID()
+    assert re == "success"
+    re = queryEntityByCodeOrID()
     assert re == "success"
 
 
