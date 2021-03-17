@@ -1,4 +1,3 @@
-var url_root = "http://127.0.0.1:8888/md";
 var url = url_root + "/services/findEntitySetup?$_ENTITY_ID={0}";
 var login_url = url_root + "/login?user_account=test1&user_name=Joe.Lin";
 var url_entity = url_root + "/services/queryEntityByCodeOrID?$_ENTITY_CODE=md_entities";
@@ -9,84 +8,7 @@ var edit_gl=false;
 var GL_ENTITY_ID=null;
 var GL_FIELD_ID=null;
 var GL_TENANT_ID=null;
-	/**
-* 替换所有匹配exp的字符串为指定字符串
-* @param exp 被替换部分的正则
-* @param newStr 替换成的字符串
-*/
-String.prototype.replaceAll = function (exp, newStr) {
-	return this.replace(new RegExp(exp, "gm"), newStr);
-};
-String.prototype.format = function(args) {
-	var result = this;
-	if (arguments.length < 1) {
-		return result;
-	}
-	var data = arguments;
-	//如果模板参数是数组
-	if (arguments.length == 1 && typeof (args) == "object") {
-		//如果模板参数是对象
-		data = args;
-	}
-	for (var key in data) {
-		var value = data[key];
-		if (undefined != value) {
-			result = result.replace("{" + key + "}", value);
-		}
-	}
-	return result;
-}
-/**
-* 原型：字符串格式化
-* @param args 格式化参数值
-*/
-String.prototype.format = function(args) {
-	var result = this;
-	if (arguments.length < 1) {
-		return result;
-	}
-	var data = arguments;
-	// 如果模板参数是数组
-	if (arguments.length == 1 && typeof (args) == "object") {
-		// 如果模板参数是对象
-		data = args;
-	}
-	for ( var key in data) {
-		var value = data[key];
-		if (undefined != value) {
-			result = result.replaceAll("\\{" + key + "\\}", value);
-		}
-	}
-	return result;
-}
-function axios_long_parse() {
-	axios.defaults.transformResponse = [(data, headers) => {
-		/*eslint no-param-reassign:0*/
-		if (typeof data === 'string' && headers["content-type"] === "application/json") {
-			try {
-				data = JSONbig.parse(data);
-			}
-			catch (e) {
-				/* Ignore */
-				console.log(e);
-			}
-		}
-		return data;
-	}
-	];
-}
-//long类型转换设置
-axios_long_parse();
-//cookie认证传递
-axios.defaults.withCredentials = true;
-//让ajax携带cookie
-axios.get(login_url)
-.then(res => {
-	if(res)
-	 GL_TENANT_ID=res.data.data.tenant_id;
-	var rs = JSONbig.stringify(res);
-	console.log(rs);
-});
+
 axios.get(url_entity)
 .then(res => {
 	var rs = JSONbig.stringify(res);
@@ -167,6 +89,8 @@ function getUrlKey (name) {
 }
 function queryData() {
 	let id = getUrlKey('entity_id');
+	if (!id)
+	   id=-1
 	var s=url.format(id);
 	queryMetadata(s,id);
 }
@@ -349,6 +273,12 @@ function renderTable(result,id) {
                           }
                           if (item.lookup_flag==null||item.lookup_flag==''){
                             var id="lookup_flag"+index;
+                            var dom=document.getElementById(id);
+                            dom.style.border = '1px solid #FF8800';
+                            is_not_ok=true;
+                          }
+                          if (item.public_flag==null||item.public_flag==''){
+                            var id="public_flag"+index;
                             var dom=document.getElementById(id);
                             dom.style.border = '1px solid #FF8800';
                             is_not_ok=true;
