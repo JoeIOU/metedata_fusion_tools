@@ -11,53 +11,55 @@
     <style>
         .el-dropdown {
             vertical-align: top;
-          }
+        }
         .el-dropdown + .el-dropdown {
             margin-left: 15px;
-          }
+        }
         .el-icon-arrow-down {
             font-size: 12px;
-          }
-          .el-header, .el-footer {
+        }
+        .el-header, .el-footer {
             background-color: #B3C0D1;
             padding: 5px;
             color: #333;
             margin:1px;
             text-align: center;
-          }
-          .m-header {
+        }
+        .m-header {
             height: 50px !important;
             text-align: center;
-          }
+        }
         .el-aside {
             background-color: #C3D0F1;
             color: #333;
             margin:1px;
             text-align: center;
             line-height: 100%;
-          }
+        }
 
-          .el-main {
+        .el-main {
             background-color: #E9EEF3;
             color: #333;
             text-align: center;
             margin:1px;
             line-height:600px;
             height:500px;
-          }
+        }
 
         html,body,#app,.el-container{
-        /*设置内部填充为0，几个布局元素之间没有间距*/
-        padding: 0px;
-         /*外部间距也是如此设置*/
-        margin:0px;
-        /*统一设置高度为100%*/
-        height: 100%;
+            /*设置内部填充为0，几个布局元素之间没有间距*/
+            padding: 0px;
+            /*外部间距也是如此设置*/
+            margin:0px;
+            /*统一设置高度为100%*/
+            height: 100%;
         }
+
     </style>
     <script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="/static/js/main.js"></script>
 </head>
 
 <body>
@@ -97,7 +99,8 @@
                                 <el-dropdown-menu slot="dropdown">
                                     <el-dropdown-item command="">
                                         <el-link href="/static/system_setup.html" target="_blank">System Setup
-                            </el-link></el-dropdown-item>
+                                        </el-link>
+                                    </el-dropdown-item>
                                     <el-dropdown-item command="b">item2</el-dropdown-item>
                                     <el-dropdown-item command="c">item3</el-dropdown-item>
                                     <el-dropdown-item command="d" disabled>item4</el-dropdown-item>
@@ -148,13 +151,13 @@
                         if (data)
                             len = data.length;
                         for (var i=0;i<len;i++){
-                         var d=data[i];
-                         dict1[d["md_fields_name"]]=d["md_fields_type"];
-                        }
-                    }
-                    gl_field_type=dict1;
-                    }
-                );
+                           var d=data[i];
+                           dict1[d["md_fields_name"]]=d["md_fields_type"];
+                       }
+                   }
+                   gl_field_type=dict1;
+               }
+               );
             },
             handleCommand(command) {
                 this.$message('click on item ' + command);
