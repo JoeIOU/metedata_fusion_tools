@@ -1,15 +1,17 @@
 # #metadata_service.py
-from flask import request, session, Response
+from flask import request, session, Response, g, jsonify
 import json
 from mdata import metadata as md, metadata_initialize as mdi
-from privilege import role_privilege as rp, user_mngt as ur
+from privilege import role_privilege as rp
 from mdata import index_unique as idx
 from data import data_view as vw
 from httpserver import httpserver
 from config.config import cfg as config
 from common import constants as const
+from flask_httpauth import HTTPBasicAuth
+from common import authorization as au
 
-# from db.db_conn import db_connection_metedata as db_md
+auth = HTTPBasicAuth()
 
 logger = config.logger
 domain_root = '/md'
@@ -49,54 +51,52 @@ def request_parse(req):
     return d
 
 
+# 验证token
+@auth.verify_password
+def verify_password(username, password):
+    return au.verify_password(username, password)
+
+
 @app.route(domain_root + '/env_profile', methods=['GET'])
+@auth.login_required
 def env_profile():
     return config.ENV
 
 
-def login_verify(user_account, password):
-    if user_account is None or password is None:
-        return None
-    login_flag = False
-    # -------------
-    # verify code...
-    # --------------
-
-    # if login_flag:
-    if True:
-        re = ur.get_user(user_account)
-        logger.info("login success,user info:{}".format(re))
-    return re
-
-
-# test url= http://127.0.0.1:8888/md/login?user_account=test1&user_name=Joe.Lin
-@app.route(domain_root + "/login", methods=['GET'])
+# test url= http://127.0.0.1:8888/md/login?username=test1&password=112233
+@app.route(domain_root + "/login", methods=['GET', 'POST'])
+# @auth.login_required
 def login():
     data = request_parse(request)
     """设置session的数据"""
-    user_acc = data.get('user_account')
+    uname = data.get('username')
     pwd = data.get('password')
-    if pwd is None:
-        pwd = ''
-    if user_acc is None:
-        logger.warning("user account is NULL.")
+    if uname is None or len(uname.strip()) <= 0 or pwd is None or len(pwd.strip()) <= 0:
+        logger.warning("user account[{}] or password is NULL,please input again".format(uname))
         return None
-    re = login_verify(user_acc, pwd)
-    out_data = None
+    vr = au.verify_password(uname, pwd)
+    if not vr:
+        logger.warning("user account[{}] login failed,please input the right username and password.".format(uname))
+        return None
+    token = au.generate_auth_token(g.user_id)
+    re = g.user
     if re is None:
-        logger.warning("user account[{}] is not exists.".format(user_acc))
+        logger.warning("user account is not exists.")
     else:
-        session["user_account"] = user_acc
+        session["user_account"] = re.get('account_number')
         session["user_name"] = re.get('user_name')
         session["user"] = re
-        logger.warning("user:[{}] login success.".format(user_acc))
-        msg = "login success."
-        out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
-                                         data=re, message=msg)
-    return Response(json.dumps(out_data), mimetype='application/json')
+        logger.warning("user:[{}] login success.".format(re.get('account_number')))
+        # msg = "login success."
+        # out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
+        #                                  data=re, message=msg)
+        # return Response(json.dumps(out_data), mimetype='application/json')
+    logger.info("token:{}".format(token))
+    return jsonify({'token': token})
 
 
-@app.route(domain_root + "/logout", methods=['GET'])
+@app.route(domain_root + "/logout", methods=['GET', 'POST'])
+@auth.login_required
 def logout():
     user_acc = session["user_account"]
     """设置session的数据"""
@@ -127,6 +127,7 @@ def get_login_user():
 
 
 @app.route(domain_root + '/user', methods=['GET'])
+@auth.login_required
 def get_userinfo():
     re = get_login_user()
     msg = "success"
@@ -273,6 +274,7 @@ def ids2_where(ids):
 
 # 视图查询
 @app.route(domain_root + '/services/queryView', methods=['POST', 'GET'])
+@auth.login_required
 def query_view():
     data = request_parse(request)
     view_id = data.get("view_id")
@@ -292,6 +294,7 @@ def query_view():
 
 # 实体元数据对象配置信息查询
 @app.route(domain_root + '/services/findEntitySetup', methods=['POST', 'GET'])
+@auth.login_required
 def find_entity_setup():
     # 入参：{"abc":"123"}
     data = request_parse(request)
@@ -327,6 +330,7 @@ def getEntityIDByCode(tenant_id, md_entity_code, data):
 
 # 实体元数据对象信息查询,入参：{"$_ENTITY_ID":"123",$_ENTITY_CODE:""}
 @app.route(domain_root + '/services/queryEntityByCodeOrID', methods=['POST', 'GET'])
+@auth.login_required
 def query_Metadata_Entity():
     data = request_parse(request)
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
@@ -359,6 +363,7 @@ def query_Metadata_Entity():
 
 # 实体元数据对象属性信息查询,入参：{"$_ENTITY_ID":"123",$_ENTITY_CODE:""}
 @app.route(domain_root + '/services/queryFieldsByCodeOrID', methods=['POST', 'GET'])
+@auth.login_required
 def query_Metadata_Fields():
     data = request_parse(request)
     md_entity_id = data.get(GLOBAL_ENTITY_ID)
@@ -423,6 +428,7 @@ def query_privilege_check(method_name, md_entity_id):
 
 # 实体详情查询
 @app.route(domain_root + '/services/findEntity', methods=['POST', 'GET'])
+@auth.login_required
 def find_entity():
     # 入参：{"abc":"123"}
     data = request_parse(request)
@@ -440,6 +446,7 @@ def find_entity():
 
 # 实体详情查询by entity code
 @app.route(domain_root + '/services/findEntityByCode', methods=['POST', 'GET'])
+@auth.login_required
 def find_entity_by_code():
     # 入参：{"abc":"123"}
     data = request_parse(request)
@@ -469,6 +476,7 @@ def find_entity_by_code():
 
 # 实体插入Insert
 @app.route(domain_root + '/services/insertEntity', methods=['POST'])
+@auth.login_required
 def insert_entity():
     # 入参：{"abc":"123"}
     data = request_parse(request)
@@ -501,6 +509,7 @@ def insert_entity():
 
 # 单个实体更新，通过request.args输入单个对象的id，name等参数,body输入更新的信息
 @app.route(domain_root + '/services/updateEntity', methods=['POST'])
+@auth.login_required
 def update_entity():
     # 入参：{"abc":"123"}
     data = request_parse(request)
@@ -521,6 +530,7 @@ def update_entity():
 
 # 批量实体更新，通过where和data list两个json 数据输入格式：{md_entity_id:12345,data:[{},{}],where:[{},{}]}
 @app.route(domain_root + '/services/updateEntityBatch', methods=['POST'])
+@auth.login_required
 def update_entity_batch():
     # 入参：{"abc":"123"}
     data = request_parse(request)
@@ -554,6 +564,7 @@ def update_entity_common(md_entity_id, data_list, where_list):
 
 # 删除数据
 @app.route(domain_root + '/services/deleteEntity', methods=['POST'])
+@auth.login_required
 def delete_entity():
     # 入参：{"abc":"123"}
     wh_dict = request_parse(request)
