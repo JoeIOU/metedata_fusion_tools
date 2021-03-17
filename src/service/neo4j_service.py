@@ -1,25 +1,17 @@
 #####neo4j_service.py
 from json import dumps
-from flask import Flask, Response, request
+from flask import Response, request
 from db.neo4j_conn import neo4j_graph as graph
 from config.config import cfg as config
-
-# from httpserver import httpserver
+from httpserver import httpserver
 
 logger = config.logger
 graph = graph()
-app = Flask(__name__, static_url_path='/static/')
-# app.static_url_path='/static/'
-# app = httpserver.getApp()
+app = httpserver.getApp()
 
-# domain_root = '/md'
+domain_root = '/md/graph'
 
 DATA_ENTITY = "ENTITY"
-
-
-@app.route("/")
-def get_index():
-    return app.send_static_file('index.html')
 
 
 def serialize_model(model):
@@ -57,7 +49,7 @@ def serialize_cast(cast):
     }
 
 
-@app.route("/graph/<title>/<flag>")
+@app.route(domain_root + "/graph/<title>/<flag>")
 def get_graph(title, flag):
     if title is None or title == '':
         return None
@@ -81,7 +73,7 @@ def query_relation_graph(title, flag):
     return data
 
 
-@app.route("/search")
+@app.route(domain_root + "/search")
 def get_search():
     try:
         q = request.args["q"]
@@ -96,7 +88,7 @@ def get_search():
                         mimetype="application/json")
 
 
-@app.route("/search_shortest_path")
+@app.route(domain_root + "/search_shortest_path")
 def search_shortest_path():
     try:
         q = request.args["q"]
@@ -267,12 +259,11 @@ def query_relation(title, flag):
     return dict2
 
 
-@app.route("/relation/<title>/<flag>")
+@app.route(domain_root + "/relation/<title>/<flag>")
 def get_relation(title, flag):
     dict1 = query_relation(title, flag)
     return Response(dumps(dict1), mimetype="application/json")
 
 
 if __name__ == '__main__':
-    # httpserver.startWebServer()
-    app.run(port=8080)
+    app.run(port=8080, host="localhost", threaded=True)  # 8080
