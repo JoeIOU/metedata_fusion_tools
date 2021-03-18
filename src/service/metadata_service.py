@@ -2,53 +2,21 @@
 from flask import request, session, Response, g, jsonify
 import json
 from mdata import metadata as md, metadata_initialize as mdi
-from privilege import role_privilege as rp
-from mdata import index_unique as idx
-from data import data_view as vw
 from httpserver import httpserver
 from config.config import cfg as config
-from common import constants as const
 from flask_httpauth import HTTPBasicAuth
 from common import authorization as au
-
-auth = HTTPBasicAuth()
+from service import utils_serv as utl
 
 logger = config.logger
+app = httpserver.getApp()
+auth = HTTPBasicAuth()
 domain_root = '/md'
 
-app = httpserver.getApp()
-HTTP_STATUS_CODE_NOT_RIGHT = 401
-HTTP_STATUS_CODE_FORBIDDEN = 403
 
-SERVICE_METHOD_INSERT = "Insert"
-SERVICE_METHOD_UPDATE = "Update"
-SERVICE_METHOD_DELETE = "Delete"
-SERVICE_METHOD_GET = "Query"
-SERVICE_METHOD_VIEW = "ViewQuery"
-user_privilege_list = None
-# 全局实体元数据ID。
-GLOBAL_ENTITY_ID = "$_ENTITY_ID"
-GLOBAL_ENTITY_CODE = "$_ENTITY_CODE"
-
-
-def request_parse(req):
-    d = None
-    data = None
-    # '''解析请求数据并以json形式返回'''
-    if req.method == 'POST':
-        if req.is_json:
-            data = req.json
-        else:
-            fm = req.form
-            if fm is not None:
-                data = fm.to_dict()
-    elif req.method == 'GET':
-        data = req.args
-    if data is not None and not isinstance(data, dict):
-        d = json.loads(json.dumps(data))
-    else:
-        d = data
-    return d
+@app.route("/", methods=["GET"])
+def get_index():
+    return app.send_static_file('index.html')
 
 
 # 验证token
@@ -67,14 +35,14 @@ def env_profile():
 @app.route(domain_root + "/login", methods=['GET', 'POST'])
 # @auth.login_required
 def login():
-    data = request_parse(request)
+    data = utl.request_parse(request)
     """设置session的数据"""
     uname = data.get('username')
     pwd = data.get('password')
     if uname is None or len(uname.strip()) <= 0 or pwd is None or len(pwd.strip()) <= 0:
         logger.warning("user account[{}] or password is NULL,please input again".format(uname))
         return None
-    vr = au.verify_password(uname, pwd)
+    vr = au.verify_password(uname, pwd, force=True)
     if not vr:
         logger.warning("user account[{}] login failed,please input the right username and password.".format(uname))
         return None
@@ -87,6 +55,8 @@ def login():
         session["user_name"] = re.get('user_name')
         session["user"] = re
         logger.warning("user:[{}] login success.".format(re.get('account_number')))
+        # 获取权限
+        utl.get_login_user_privilege()
         # msg = "login success."
         # out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
         #                                  data=re, message=msg)
@@ -102,34 +72,21 @@ def logout():
     """设置session的数据"""
     session["user_account"] = None
     session["user_name"] = None
+    session["user"] = None
+    g.user = None
     logger.warning("user:[{}] logout success.".format(user_acc))
     msg = "logout success!"
-    global user_privilege_list
-    user_privilege_list = None
+    utl.remove_privilege()
+    g.user_id = None
     out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
                                      data=user_acc, message=msg)
     return Response(json.dumps(out_data), mimetype='application/json')
 
 
-def get_login_user():
-    global user_privilege_list
-    user = None
-    if session is not None:
-        user = session.get("user")
-        if user is None:
-            user_privilege_list = None
-            logger.warning("the user does not login,please login first.")
-        else:
-            tenant_id = user.get("tenant_id")
-            user_id = user.get("user_id")
-            user_privilege_list = rp.query_user_privilege_by_userid(tenant_id, user_id)
-    return user
-
-
-@app.route(domain_root + '/user', methods=['GET'])
+@app.route(domain_root + '/services/user', methods=['GET'])
 @auth.login_required
 def get_userinfo():
-    re = get_login_user()
+    re = utl.get_login_user()
     msg = "success"
     if re is None:
         msg = "there is no one login,please login first."
@@ -141,142 +98,11 @@ def get_userinfo():
     return Response(json.dumps(re), mimetype='application/json')
 
 
-def have_privilege(md_entity_id, method):
-    b_privilege = False
-    global user_privilege_list
-    if user_privilege_list is None:
-        msg = 'you does not have any privilege ,please login again,or ask the service center for help.'
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
-        logger.warning(output)
-        return b_privilege
-    if isinstance(md_entity_id, str):
-        i_md_entity_id = int(md_entity_id)
-    else:
-        i_md_entity_id = md_entity_id
-    for item in user_privilege_list:
-        privllege_entity_id = item.get("md_entity_id")
-        privilege_type = item.get("privilege_type")
-        if privllege_entity_id == i_md_entity_id:
-            if method == SERVICE_METHOD_GET:
-                if privilege_type == const.PRIVILEGE_TYPE_READ:
-                    b_privilege = True
-                    break
-            elif method == SERVICE_METHOD_INSERT:
-                if (privilege_type == const.PRIVILEGE_TYPE_CREATE):
-                    b_privilege = True
-                    break
-            elif method == SERVICE_METHOD_UPDATE:
-                if (privilege_type == const.PRIVILEGE_TYPE_UPDATE):
-                    b_privilege = True
-                    break
-            elif method == SERVICE_METHOD_DELETE:
-                if (privilege_type == const.PRIVILEGE_TYPE_DELETE):
-                    b_privilege = True
-                    break
-            else:
-                continue
-    return b_privilege
-
-
-def get_index_data_ids(data):
-    ids = None
-    if data is not None:
-        d = data.get("data")
-        if d is not None and d.get("ids") is not None:
-            ids = d.get("ids")
-    return ids
-
-
-def sql_execute_method(md_entity_id, method, service_name, data_list=None, where_list=None):
-    user = get_login_user()
-    if user is None:
-        msg = 'access service, user does not login ,please login first.'
-        logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN, rows=0, data=None, message=msg)
-        return output
-    global user_privilege_list
-    if user_privilege_list is None or len(user_privilege_list) == 0:
-        msg = 'access service, user({}) does not have privilege,entity=[{}] ,please login again.'.format(
-            user.get("account_number"), md_entity_id)
-        logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
-        return output
-    b_privilege = have_privilege(md_entity_id, method)
-    if not b_privilege:
-        msg = '{},you do not have the privilege to access the service[{}],entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
-            user.get("account_number"), md_entity_id, service_name)
-        logger.warning(msg)
-        output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
-        return output
-
-    user_id = None
-    tenant_id = None
-    if user is not None:
-        user_id = user.get("user_id")
-        tenant_id = user.get("tenant_id")
-    re = None
-    try:
-        if method == SERVICE_METHOD_GET:
-            re = md.query_execute(user_id, tenant_id, md_entity_id, where_list[0])
-        elif method == SERVICE_METHOD_INSERT:
-            re = md.insert_execute(user_id, tenant_id, md_entity_id, data_list)
-            # 插入索引数据
-            if re is not None:
-                iRows = re.get("rows")
-                if iRows is not None and iRows > 0:
-                    ids = get_index_data_ids(re)
-                    ids_list = ids2_where(ids)
-                    try:
-                        idx.insert_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
-                    except Exception as ex:
-                        # 插入有异常，如唯一键重复等，则删除回滚。
-                        re = md.delete_execute(user_id, tenant_id, md_entity_id, ids_list)
-                        idx.delete_index_data(user_id, tenant_id, md_entity_id, where_list, ids)
-                        raise ex
-        elif method == SERVICE_METHOD_DELETE:
-            re = md.delete_execute(user_id, tenant_id, md_entity_id, where_list)
-            # 删除索引数据
-            if re is not None:
-                iRows = re.get("rows")
-                if iRows is not None and iRows > 0:
-                    ids = get_index_data_ids(re)
-                    idx.delete_index_data(user_id, tenant_id, md_entity_id, where_list, ids)
-        elif method == SERVICE_METHOD_UPDATE:
-            re = md.update_execute(user_id, tenant_id, md_entity_id, data_list, where_list)
-            # 更新索引数据
-            if re is not None:
-                iRows = re.get("rows")
-                if iRows is not None and iRows > 0:
-                    ids = get_index_data_ids(re)
-                    idx.update_index_data(user_id, tenant_id, md_entity_id, data_list, ids)
-        elif method == SERVICE_METHOD_VIEW:
-            re = vw.query_view(user_id, md_entity_id, where_list[0])
-        else:
-            re = md.query_execute(user_id, tenant_id, md_entity_id, where_list[0])
-        return re
-    except Exception as e:
-        msg = 'execute method error,message:%s' % (e)
-        logger.error(msg)
-        output = md.exec_output_status(type=method, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None, message=msg)
-        return output
-
-
-def ids2_where(ids):
-    if ids is None:
-        return None
-    id_list = []
-    for id in ids:
-        d = {}
-        d[md.KEY_FIELDS_ID] = id
-        id_list.append(d)
-    return id_list
-
-
 # 视图查询
 @app.route(domain_root + '/services/queryView', methods=['POST', 'GET'])
 @auth.login_required
 def query_view():
-    data = request_parse(request)
+    data = utl.request_parse(request)
     view_id = data.get("view_id")
     if view_id is None:
         logger.warning('query View, view_id should not be None')
@@ -286,7 +112,7 @@ def query_view():
             if key == "view_id":
                 data.pop("view_id")
                 break
-    re = sql_execute_method(view_id, SERVICE_METHOD_VIEW, "queryView", data_list=None, where_list=[data])
+    re = utl.sql_execute_method(view_id, utl.SERVICE_METHOD_VIEW, "queryView", data_list=None, where_list=[data])
 
     logger.info('view result:{}'.format(re))
     return Response(json.dumps(re), mimetype='application/json')
@@ -297,18 +123,18 @@ def query_view():
 @auth.login_required
 def find_entity_setup():
     # 入参：{"abc":"123"}
-    data = request_parse(request)
-    md_entity_id = data.get(GLOBAL_ENTITY_ID)
+    data = utl.request_parse(request)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     (bool, re) = query_privilege_check('findEntitySetup', md_entity_id)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
-    user = get_login_user()
+    user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     res = mdi.query_entity_fields_columns(tenant_id, md_entity_id)
     irows = 0
     if res is not None:
         irows = len(res)
-    re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
+    re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
                                message='query Entity Setup Info Success.')
     logger.info('find Entity Setup. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
@@ -323,7 +149,7 @@ def getEntityIDByCode(tenant_id, md_entity_code, data):
     else:
         s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data)
         logger.warning(s)
-        msg = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        msg = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                     message=s)
     return (md_entity_id, msg)
 
@@ -332,19 +158,19 @@ def getEntityIDByCode(tenant_id, md_entity_code, data):
 @app.route(domain_root + '/services/queryEntityByCodeOrID', methods=['POST', 'GET'])
 @auth.login_required
 def query_Metadata_Entity():
-    data = request_parse(request)
-    md_entity_id = data.get(GLOBAL_ENTITY_ID)
-    md_entity_code = data.get(GLOBAL_ENTITY_CODE)
-    user = get_login_user()
+    data = utl.request_parse(request)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+    md_entity_code = data.get(utl.GLOBAL_ENTITY_CODE)
+    user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
         (md_entity_id, msg) = getEntityIDByCode(tenant_id, md_entity_code, data)
 
     if md_entity_id is None:
         msg = "queryEntityByCodeOrID Input params [{}] or[{}] at least one should be none or not match,please checked.".format(
-            GLOBAL_ENTITY_ID,
-            GLOBAL_ENTITY_CODE)
-        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+            utl.GLOBAL_ENTITY_ID,
+            utl.GLOBAL_ENTITY_CODE)
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
     # 权限校验
@@ -355,7 +181,7 @@ def query_Metadata_Entity():
     irows = 0
     if res is not None:
         irows = len(res)
-    re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
+    re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
                                message='queryEntityByCodeOrID Info Success.')
     logger.info('queryEntityByCodeOrID, Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
@@ -365,18 +191,18 @@ def query_Metadata_Entity():
 @app.route(domain_root + '/services/queryFieldsByCodeOrID', methods=['POST', 'GET'])
 @auth.login_required
 def query_Metadata_Fields():
-    data = request_parse(request)
-    md_entity_id = data.get(GLOBAL_ENTITY_ID)
-    md_entity_code = data.get(GLOBAL_ENTITY_CODE)
-    user = get_login_user()
+    data = utl.request_parse(request)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+    md_entity_code = data.get(utl.GLOBAL_ENTITY_CODE)
+    user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
         (md_entity_id, msg) = getEntityIDByCode(tenant_id, md_entity_code, data)
     if md_entity_id is None:
         msg = "queryFieldsByCodeOrID Input params [{}] or[{}] at least one should be none or not match,please checked.".format(
-            GLOBAL_ENTITY_ID,
-            GLOBAL_ENTITY_CODE)
-        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+            utl.GLOBAL_ENTITY_ID,
+            utl.GLOBAL_ENTITY_CODE)
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
     # 权限校验
@@ -387,39 +213,39 @@ def query_Metadata_Fields():
     irows = 0
     if res is not None:
         irows = len(res)
-    re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
+    re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
                                message='queryFieldsByCodeOrID Info Success.')
     logger.info('queryFieldsByCodeOrID, Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
 
 
 def query_privilege_check(method_name, md_entity_id):
-    global user_privilege_list
     if md_entity_id is not None and not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'Access {},input entity params[{}] should not be None.'.format(method_name, GLOBAL_ENTITY_ID)
+        msg = 'Access {},input entity params[{}] should not be None.'.format(method_name, utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        output = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        output = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                        message=msg)
         return (False, output)
     else:
-        user = get_login_user()
+        user = utl.get_login_user()
+        user_privilege_list = utl.get_login_user_privilege()
         if user_privilege_list is None or len(user_privilege_list) == 0:
             msg = 'Access {} service, user({}) does not have privilege,entity=[{}] ,please login again.'.format(
                 method_name,
                 user.get("account_number"), md_entity_id)
             logger.warning(msg)
-            output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
+            output = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=utl.HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
                                            message=msg)
             return (False, output)
-        b_privilege = have_privilege(md_entity_id, SERVICE_METHOD_GET)
+        b_privilege = utl.have_privilege(md_entity_id, utl.SERVICE_METHOD_GET)
         if not b_privilege:
             msg = 'Hi,{},you do not have the privilege to access the {} service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
                 user.get("account_number"), method_name, md_entity_id)
             logger.warning(msg)
-            output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
+            output = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=utl.HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
                                            message=msg)
             return (False, output)
@@ -431,15 +257,16 @@ def query_privilege_check(method_name, md_entity_id):
 @auth.login_required
 def find_entity():
     # 入参：{"abc":"123"}
-    data = request_parse(request)
-    md_entity_id = data.get(GLOBAL_ENTITY_ID)
+    data = utl.request_parse(request)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'findEntity,input entity params[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
+        msg = 'findEntity,input entity params[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, "findEntity", data_list=None, where_list=[data])
+        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntity", data_list=None,
+                                    where_list=[data])
         logger.info('find Entity. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
 
@@ -449,15 +276,15 @@ def find_entity():
 @auth.login_required
 def find_entity_by_code():
     # 入参：{"abc":"123"}
-    data = request_parse(request)
-    md_entity_code = data.get(GLOBAL_ENTITY_CODE)
+    data = utl.request_parse(request)
+    md_entity_code = data.get(utl.GLOBAL_ENTITY_CODE)
     if md_entity_code is None or len(md_entity_code) <= 0:
-        msg = 'findEntityByCode,input entity code params[{}] should not be None.'.format(GLOBAL_ENTITY_CODE)
+        msg = 'findEntityByCode,input entity code params[{}] should not be None.'.format(utl.GLOBAL_ENTITY_CODE)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        user = get_login_user()
+        user = utl.get_login_user()
         tenant_id = user.get("tenant_id")
         # user_id = user.get("user_id")
         res = md.get_md_entities_by_code(tenant_id, [md_entity_code])
@@ -467,9 +294,10 @@ def find_entity_by_code():
         else:
             s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data)
             logger.warning(s)
-            return md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+            return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=s)
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_GET, "findEntityByCode", data_list=None, where_list=[data])
+        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntityByCode", data_list=None,
+                                    where_list=[data])
         logger.info('findEntityByCode. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
 
@@ -479,21 +307,21 @@ def find_entity_by_code():
 @auth.login_required
 def insert_entity():
     # 入参：{"abc":"123"}
-    data = request_parse(request)
+    data = utl.request_parse(request)
     if data is None:
-        msg = 'insert Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
+        msg = 'insert Entity, input param[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
         return json.dumps(re)
 
-    md_entity_id = data.get(GLOBAL_ENTITY_ID)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     if not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'insert Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
+        msg = 'insert Entity, input param[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
         list_data = []
@@ -502,7 +330,7 @@ def insert_entity():
                 list_data = data['data']
             else:
                 list_data = [data['data']]
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_INSERT, "insertEntity", data_list=list_data)
+        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity", data_list=list_data)
         logger.info('insert Entity Params:%s' % data)
     return Response(json.dumps(re), mimetype='application/json')
 
@@ -512,13 +340,13 @@ def insert_entity():
 @auth.login_required
 def update_entity():
     # 入参：{"abc":"123"}
-    data = request_parse(request)
+    data = utl.request_parse(request)
     wh_dict = request.args
     if wh_dict is not None:
         wh_dict = json.loads(json.dumps(wh_dict))
     wh_list = []
     wh_list.append(wh_dict)
-    md_entity_id = data.get(GLOBAL_ENTITY_ID)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     ls_data = []
     if isinstance(data, list):
         ls_data = data
@@ -533,15 +361,15 @@ def update_entity():
 @auth.login_required
 def update_entity_batch():
     # 入参：{"abc":"123"}
-    data = request_parse(request)
+    data = utl.request_parse(request)
     if data is None:
         msg = 'update Entity Batch, input params should not be None.'
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
         return re
 
-    md_entity_id = data.get(GLOBAL_ENTITY_ID)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     where_list = data.get("where")
     data_list = data.get("data")
     re = update_entity_common(md_entity_id, data_list, where_list)
@@ -551,13 +379,13 @@ def update_entity_batch():
 # 更新数据的方法，支持单个或多个对象更新，要求同一个实体的。
 def update_entity_common(md_entity_id, data_list, where_list):
     if md_entity_id is None:
-        msg = 'update Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
+        msg = 'update Entity, input param[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_UPDATE, "updateEntity", data_list=data_list,
-                                where_list=where_list)
+        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_UPDATE, "updateEntity", data_list=data_list,
+                                    where_list=where_list)
         logger.info('update Entity Params:{}'.format(data_list))
     return re
 
@@ -567,7 +395,7 @@ def update_entity_common(md_entity_id, data_list, where_list):
 @auth.login_required
 def delete_entity():
     # 入参：{"abc":"123"}
-    wh_dict = request_parse(request)
+    wh_dict = utl.request_parse(request)
     if wh_dict is not None:
         wh_dict = json.loads(json.dumps(wh_dict))
     wh_list = []
@@ -575,16 +403,17 @@ def delete_entity():
         wh_list = wh_dict
     else:
         wh_list.append(wh_dict)
-    md_entity_id = wh_dict.get(GLOBAL_ENTITY_ID)
+    md_entity_id = wh_dict.get(utl.GLOBAL_ENTITY_ID)
     if not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'delete Entity, input param[{}] should not be None.'.format(GLOBAL_ENTITY_ID)
+        msg = 'delete Entity, input param[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
-        re = md.exec_output_status(type=SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = sql_execute_method(md_entity_id, SERVICE_METHOD_DELETE, "deleteEntity", data_list=None, where_list=wh_list)
+        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_DELETE, "deleteEntity", data_list=None,
+                                    where_list=wh_list)
         logger.info('delete Entity Params:{}'.format(wh_list))
     return Response(json.dumps(re), mimetype='application/json')
 
