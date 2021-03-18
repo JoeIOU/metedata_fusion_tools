@@ -221,7 +221,7 @@ def query_data_privilege_info(tenant_id, user_id, md_entity_id, object_type):
     privilege_ids = []
     if re is None:
         logger.warning(
-            'query_data_privilege_info,privilege is None,user_id={},object_id={}'.format(user_id, md_entity_id))
+            'query_data_privilege_info,privilege is None,user_id={},entity_id={}'.format(user_id, md_entity_id))
         return None
     else:
         i = 0
