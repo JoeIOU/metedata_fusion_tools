@@ -93,7 +93,7 @@ def get_md_fields(tenant_id, md_entity_id):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_fields where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id=%s"
+    sql = "select distinct * from md_fields where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id=%s"
     cursor.execute(sql, args=(tenant_id, md_entity_id,))
     result = cursor.fetchall()
     result = data_type_convert(result)
@@ -199,7 +199,7 @@ def get_md_key_columns(md_table_ids):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select * from md_columns where active_flag='Y' and is_key='Y' and  md_tables_id in %s"
+    sql = "select distinct * from md_columns where active_flag='Y' and is_key='Y' and  md_tables_id in %s"
     cursor.execute(sql, args=(md_table_ids,))
     result = cursor.fetchall()
     result = data_type_convert(result)
@@ -479,7 +479,7 @@ def set_system_fields_values(values_dict, user_id, tenant_id, md_entity_id, is_u
 def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     irows = 0
     if md_entity_id is None or tenant_id is None:
-        msg = 'query_execute,tenant_id or md_entity_id is NULL'
+        msg = 'query_execute,tenant_id or md_entity_id is none'
         logger.warning(msg)
         return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
                                   message=msg)
@@ -487,7 +487,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     where_list_new = []
     all_fields = get_entity_all_fields(tenant_id, [md_entity_id])
     if all_fields is None:
-        msg = 'query execute warning:query fields is NULL.'
+        msg = 'query execute warning:query fields is None.'
         logger.warning(msg)
         return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
                                   message=msg)
@@ -495,7 +495,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     exist_fields = False
     data_mapping = {}
     if all_fields is None or len(all_fields) == 0:
-        msg = 'query_execute,entity fields is NULL'
+        msg = 'query_execute,all_fields is none'
         logger.warning(msg)
         return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
                                   message=msg)
@@ -535,7 +535,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     where_mapping['tenant_id'] = tenant_id
     # 数据权限
     dp_list = dp.query_data_privilege_info(tenant_id, user_id, md_entity_id, const.ENTITY_TYPE_ENTITY)
-    # 假如系统表，则查询时不做实体ID限制，否则，则要增加。
+    # 假如是系统表，则查询时不做实体ID限制，否则，则要增加。
     if entity_sys_flag is not None and entity_sys_flag == "N":
         where_mapping['md_entity_id'] = md_entity_id
     where_list_new.append(where_mapping)
@@ -586,7 +586,7 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
     id = ids[0]
     all_fields = get_entity_all_fields(tenant_id, [md_entity_id])
     if all_fields is None:
-        msg = 'insert execute warning:query fields is NULL'
+        msg = 'insert execute warning:query fields is None'
         logger.warning(msg)
         return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
                                   message=msg)
@@ -800,7 +800,7 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
         re = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=sStatus, rows=irows, data=data,
                                 message=message)
         if commit_flag:
-             conn.commit()
+            conn.commit()
         return re
 
     except Exception as e:
@@ -815,7 +815,7 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
 def delete_execute(user_id, tenant_id, md_entity_id, where_list):
     irows = 0
     if user_id is None or tenant_id is None or md_entity_id is None:
-        msg = 'delete execute,user_id,tenant_id,md_entity_id or or more is NULL,user_id={},tenant_id={},entity_id={}'.format(
+        msg = 'delete execute,user_id,tenant_id,md_entity_id or or more is Null,user_id={},tenant_id={},entity_id={}'.format(
             user_id, tenant_id, md_entity_id)
         logger.warning(msg)
         return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
@@ -825,7 +825,7 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
     values_new = []
     all_fields = get_entity_all_fields(tenant_id, [md_entity_id])
     if all_fields is None:
-        msg = 'delete execute warning:query fields is NULL,user={},entity_id={}'.format(user_id, md_entity_id)
+        msg = 'delete execute warning:query fields is Null,user={},entity_id={}'.format(user_id, md_entity_id)
         logger.warning(msg)
         return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
                                   message=msg)
@@ -873,8 +873,7 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
 
             b_flag = False
             if sys_flag is not None and sys_flag == 'Y':
-                b_flag = True    
-            # wehere条件为空，则不允许操作        
+                b_flag = True
             if where_mapping is None or len(where_mapping) <= 0:
                 kk = None
                 if where is not None:
@@ -887,6 +886,7 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
                                          message=msg)
                 logger.warning(res)
                 return res
+
             # 系统字段赋值
             where_mapping['tenant_id'] = tenant_id
             if not b_flag:
