@@ -266,4 +266,4 @@ def get_relation(title, flag):
 
 
 if __name__ == '__main__':
-    app.run(port=8080, host="localhost", threaded=True)  # 8080
+    app.run(port=8080, host="localhost", threaded=True)
