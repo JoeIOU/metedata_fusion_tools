@@ -22,7 +22,10 @@ def get_index():
 # 验证token
 @auth.verify_password
 def verify_password(username, password):
-    return au.verify_password(username, password)
+    bool = au.verify_password(username, password)
+    if bool:
+        utl.get_login_user_privilege()
+    return bool
 
 
 @app.route(domain_root + '/env_profile', methods=['GET'])
