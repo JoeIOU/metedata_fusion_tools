@@ -389,7 +389,7 @@
 					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/updateEntity?__obj_id__=800001",
+					"raw": "http://127.0.0.1:8888/md/services/updateEntity?$_row_id_=800001",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -405,7 +405,7 @@
 					],
 					"query": [
 						{
-							"key": "__obj_id__",
+							"key": "$_row_id_",
 							"value": "800001"
 						}
 					]
@@ -527,7 +527,7 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "__obj_id__",
+							"key": "$_row_id_",
 							"value": "1353988934199283712",
 							"type": "text"
 						},
