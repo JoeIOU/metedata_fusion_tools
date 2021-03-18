@@ -19,7 +19,7 @@ DB_EXEC_STATUS_FAIL = 500
 DB_EXEC_STATUS_PANDING = 100
 DB_EXEC_STATUS_OVERTIME = 501
 
-KEY_FIELDS_ID = "__obj_id__"
+KEY_FIELDS_ID = "$_row_id_"
 
 
 # 元数据实体
@@ -715,7 +715,8 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
                         exist_fields = True
                         break
                 if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
-                    data_mapping[field.get('md_columns_name')] = v
+                    if (field.get('is_key') != 'Y'):  # 排除key主键字作为更新值保存
+                        data_mapping[field.get('md_columns_name')] = v
 
             where_mapping = {}
             is_key_fields_in_where = False
