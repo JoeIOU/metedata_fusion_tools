@@ -6,9 +6,10 @@ from itsdangerous import BadSignature, SignatureExpired
 from flask_cors import CORS
 import re
 from config.config import cfg as config
+from privilege import user_mngt as ur
+from common import cache
 
 logger = config.logger
-from privilege import user_mngt as ur
 
 # 密钥，可随意修改
 SECRET_KEY = 'J@#oabcdefghijklmm@#H33@kwl!@jK%22W#Etty%@'
@@ -19,9 +20,9 @@ auth = HTTPBasicAuth()
 
 
 # 生成token, 有效时间为600min
-def generate_auth_token(user, expiration=36000):
+def generate_auth_token(user_id, expiration=36000):
     s = Serializer(SECRET_KEY, expires_in=expiration)
-    return s.dumps({'user_id': user})
+    return s.dumps({'user_id': user_id})
 
 
 # 解析token
@@ -57,18 +58,32 @@ def login_verify(user_account, password):
 
 # 验证token
 @auth.verify_password
-def verify_password(username, password):
+def verify_password(username, password, force=False):
     # 先验证token
     user_id = re.sub(r'^"|"$', '', username)
-    user = verify_auth_token(user_id)
+    user = None
+    token = None
+    if not force:
+        token = verify_auth_token(user_id)
+        if token is not None:
+            user_id = token.get('user_id')
     # 如果token不存在，验证用户id与密码是否匹配
-    if not user:
-        user = login_verify(username, password)
+    if not token:
+        user = login_verify(user_id, password)
         # 如果用户id与密码对应不上，返回False
         if not user:
+            logger.warning("the user[{}] login failed,the user account or password is wrong.".format(user_id))
             return False
-    g.user_id = user.get('account_number')
-    g.user = user
+        g.user = user
+        cache.push(user_id, user)
+    else:
+        if cache.get(user_id) is None:
+            new_user = ur.get_user(user_id)
+            cache.push(user_id, new_user)
+    if user_id is None:
+        logger.warning("the user[{}] login failed,the user account or password is wrong.".format(username))
+        return False
+    g.user_id = user_id
     return True
 
 
