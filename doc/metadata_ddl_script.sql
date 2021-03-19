@@ -331,6 +331,7 @@ ALTER  TABLE  `md_entities`  ADD  INDEX md_entity_name_idx1 (  `md_entity_name` 
   `is_null` char(1) NOT NULL DEFAULT 'Y' COMMENT '是否允许为空标识，Y允许，N不允许',
   `is_indexed` char(1) NOT NULL DEFAULT 'N' COMMENT '是否建立索引，Y允许，N不',
   `is_unique` char(1) NOT NULL DEFAULT 'N' COMMENT '是否唯一不允许重复，Y是，N不',
+  `is_key` char(1) NOT NULL DEFAULT 'N' COMMENT '是否主键ID，Y是，N不',
   `md_fields_desc` varchar(2000) DEFAULT NULL COMMENT '元数据属性描述',
   `md_columns_id` bigint(20) DEFAULT NULL COMMENT '元数据-数据表列ID',
   `lookup_flag` char(1) NOT NULL DEFAULT 'N' COMMENT 'lookup类型，包括多值字段或者关联其他lookup对象标识，Y为是，N为否,多值字段则关联lookup表的数据。',
