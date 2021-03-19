@@ -54,11 +54,14 @@ def get_login_user():
     return user
 
 
-def get_login_user_privilege():
+def get_login_user_privilege(force=False):
     user_id = g.user_id
     user = None
     if user_id is not None:
         user = cache.get(user_id)
+    else:
+        logger.warning("the user does not login,please login first.")
+        return None
     user_privilege_list = cache.get(user_id + '_privilege')
     if user is None:
         cache.remove(user_id + '_privilege')
@@ -66,7 +69,7 @@ def get_login_user_privilege():
         return None
     tenant_id = user.get("tenant_id")
     user_id1 = user.get("user_id")
-    if user_privilege_list is None:
+    if user_privilege_list is None or force:
         user_privilege_list = rp.query_user_privilege_by_userid(tenant_id, user_id1)
         cache.push(user_id + '_privilege', user_privilege_list)
     return user_privilege_list
@@ -136,7 +139,7 @@ def sql_execute_method(md_entity_id, method, service_name, data_list=None, where
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN, rows=0, data=None, message=msg)
         return output
     if user_privilege_list is None or len(user_privilege_list) == 0:
-        msg = 'access service, user({}) does not have privilege,entity=[{}] ,please login again.'.format(
+        msg = 'access service, user({}) does not have privilege,entity=[{}] ,please check or ask the service center for help.'.format(
             user.get("account_number"), md_entity_id)
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
