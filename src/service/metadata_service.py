@@ -59,7 +59,7 @@ def login():
         session["user"] = re
         logger.warning("user:[{}] login success.".format(re.get('account_number')))
         # 获取权限
-        utl.get_login_user_privilege()
+        utl.get_login_user_privilege(force=True)
         # msg = "login success."
         # out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
         #                                  data=re, message=msg)
@@ -235,9 +235,8 @@ def query_privilege_check(method_name, md_entity_id):
         user = utl.get_login_user()
         user_privilege_list = utl.get_login_user_privilege()
         if user_privilege_list is None or len(user_privilege_list) == 0:
-            msg = 'Access {} service, user({}) does not have privilege,entity=[{}] ,please login again.'.format(
-                method_name,
-                user.get("account_number"), md_entity_id)
+            msg = 'Access {} service, user({}) does not have privilege,entity=[{}] ,please check or ask the service center for help.'.format(
+                method_name, user.get("account_number"), md_entity_id)
             logger.warning(msg)
             output = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=utl.HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
@@ -305,6 +304,41 @@ def find_entity_by_code():
     return Response(json.dumps(re), mimetype='application/json')
 
 
+# 实体表查询by table name list
+@app.route(domain_root + '/services/findTableByName', methods=['POST', 'GET'])
+@auth.login_required
+def find_table_by_name():
+    # POST入参：{"table_names":["abc","123"]} or GET入参 {table_names=abc}
+    data = utl.request_parse(request)
+    tableName = data.get("table_names")
+    user = utl.get_login_user()
+    tenant_id = user.get("tenant_id")
+    # user_id = user.get("user_id")
+    name_list = []
+    if tableName is not None and isinstance(tableName, list):
+        name_list = tableName
+    elif tableName is not None:
+        name_list.append(tableName)
+    else:
+        name_list = None
+
+    res = md.get_md_tables_by_name(tenant_id, name_list)
+    out = None
+    if res is not None and len(res) > 0:
+        s = 'findTableByName success'.format(data)
+        logger.info(s)
+        icount = len(res)
+        out = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=icount,
+                                    data=res, message=s)
+    else:
+        s = 'findTableByName. Params:{},the Entity is not exists'.format(data)
+        logger.warning(s)
+        out = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                    message=s)
+    logger.info('findTableByName. Params:{},result:{}'.format(data, res))
+    return Response(json.dumps(out), mimetype='application/json')
+
+
 # 实体插入Insert
 @app.route(domain_root + '/services/insertEntity', methods=['POST'])
 @auth.login_required
@@ -317,7 +351,6 @@ def insert_entity():
         re = md.exec_output_status(type=utl.SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
         return json.dumps(re)
-
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     if not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
@@ -338,35 +371,14 @@ def insert_entity():
     return Response(json.dumps(re), mimetype='application/json')
 
 
-# 单个实体更新，通过request.args输入单个对象的id，name等参数,body输入更新的信息
+# 单个或多个实体更新，入参：{"$_ENTITY_ID":30025,"data":[{"user_name":"test01"},{"user_name":"test02"}],"where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
 @app.route(domain_root + '/services/updateEntity', methods=['POST'])
 @auth.login_required
 def update_entity():
-    # 入参：{"abc":"123"}
-    data = utl.request_parse(request)
-    wh_dict = request.args
-    if wh_dict is not None:
-        wh_dict = json.loads(json.dumps(wh_dict))
-    wh_list = []
-    wh_list.append(wh_dict)
-    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
-    ls_data = []
-    if isinstance(data, list):
-        ls_data = data
-    else:
-        ls_data.append(data)
-    re = update_entity_common(md_entity_id, ls_data, wh_list)
-    return Response(json.dumps(re), mimetype='application/json')
-
-
-# 批量实体更新，通过where和data list两个json 数据输入格式：{md_entity_id:12345,data:[{},{}],where:[{},{}]}
-@app.route(domain_root + '/services/updateEntityBatch', methods=['POST'])
-@auth.login_required
-def update_entity_batch():
-    # 入参：{"abc":"123"}
+    # 入参：{"$_ENTITY_ID":30025,"data":[{"user_name":"test01"},{"user_name":"test02"}],"where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
     data = utl.request_parse(request)
     if data is None:
-        msg = 'update Entity Batch, input params should not be None.'
+        msg = 'updateEntity, input params should not be None.'
         logger.warning(msg)
         re = md.exec_output_status(type=utl.SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
@@ -398,16 +410,10 @@ def update_entity_common(md_entity_id, data_list, where_list):
 @auth.login_required
 def delete_entity():
     # 入参：{"abc":"123"}
-    wh_dict = utl.request_parse(request)
-    if wh_dict is not None:
-        wh_dict = json.loads(json.dumps(wh_dict))
-    wh_list = []
-    if isinstance(wh_dict, list):
-        wh_list = wh_dict
-    else:
-        wh_list.append(wh_dict)
-    md_entity_id = wh_dict.get(utl.GLOBAL_ENTITY_ID)
-    if not isinstance(md_entity_id, str):
+    data = utl.request_parse(request)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+    where_list = data.get("where")
+    if md_entity_id is not None and not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'delete Entity, input param[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
@@ -416,8 +422,8 @@ def delete_entity():
                                    message=msg)
     else:
         re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_DELETE, "deleteEntity", data_list=None,
-                                    where_list=wh_list)
-        logger.info('delete Entity Params:{}'.format(wh_list))
+                                    where_list=where_list)
+        logger.info('delete Entity Params:{}'.format(where_list))
     return Response(json.dumps(re), mimetype='application/json')
 
 
