@@ -133,13 +133,16 @@ def get_md_tables(tenant_id, md_table_ids):
 
 # 元数据DB表映射通过表名
 def get_md_tables_by_name(tenant_id, md_table_names):
-    if md_table_names is None or len(md_table_names) == 0:
-        logger.warning("get_md_tables_by_name,md_table_names is None")
-        return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select distinct * from md_tables where active_flag='Y' and (tenant_id=%s or public_flag='Y')and  md_tables_name in %s"
-    cursor.execute(sql, args=(tenant_id, md_table_names,))
+    sql = "select distinct * from md_tables where active_flag='Y' and (tenant_id=%s or public_flag='Y')"
+    if md_table_names is not None and len(md_table_names) > 0:
+        sql += " and  md_tables_name in %s limit 1000"
+        cursor.execute(sql, args=(tenant_id, md_table_names,))
+    else:
+        sql += " limit 1000"
+        cursor.execute(sql, args=(tenant_id,))
+
     result = cursor.fetchall()
     result = data_type_convert(result)
     logger.info("md_tables by Name:{}".format(result))
