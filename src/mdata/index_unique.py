@@ -262,12 +262,13 @@ def insert_index_data(user_id, tenant_id, md_entity_id, data_list, ids):
 
 def update_index_data(user_id, tenant_id, md_entity_id, data_list, ids):
     re = None
+    new_list = None
     if md_entity_id is not None:
         mapping_list = query_index_mapping(tenant_id, md_entity_id)
         new_list = get_mapping_list(data_list, mapping_list, ids)
-        if new_list is not None:
+        if new_list is not None and len(new_list) > 0:
             re = exec_index_action(user_id, tenant_id, new_list)
-    if re is None:
+    if new_list is not None and len(new_list) > 0 and re is None:
         logger.warning(
             "update_index_data,update nothing,entity_id=[{}],data:{}.".format(md_entity_id, data_list))
     return re
