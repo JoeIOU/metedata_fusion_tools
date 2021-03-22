@@ -37,6 +37,17 @@ def get_md_entities(tenant_id, md_entity_ids):
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
 
+# 元数据实体清单list
+def get_md_entities_list(tenant_id):
+    conn = db_md()
+    cursor = conn.cursor()
+    sql = "select distinct md_entity_id,tenant_id,md_entity_name,md_entity_code,md_entity_name_en,md_entity_desc,md_tables_id from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') limit 1000"
+    cursor.execute(sql, args=(tenant_id,))
+    result = cursor.fetchall()
+    result = data_type_convert(result)
+    logger.info("get_md_entities_list:{}".format(result))
+    conn.close()  # 不是真正关闭，而是重新放回了连接池
+    return result
 
 # 元数据实体通过实体code编码
 def get_md_entities_by_code(tenant_id, md_entity_codes):
