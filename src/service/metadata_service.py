@@ -128,7 +128,7 @@ def find_entity_setup():
     # 入参：{"abc":"123"}
     data = utl.request_parse(request)
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
-    (bool, re) = query_privilege_check('findEntitySetup', md_entity_id)
+    (bool, re) = utl.query_privilege_check('findEntitySetup', md_entity_id)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     user = utl.get_login_user()
@@ -143,20 +143,6 @@ def find_entity_setup():
     return Response(json.dumps(re), mimetype='application/json')
 
 
-def getEntityIDByCode(tenant_id, md_entity_code, data):
-    res = md.get_md_entities_by_code(tenant_id, [md_entity_code])
-    md_entity_id = None
-    msg = None
-    if res is not None and len(res) > 0:
-        md_entity_id = res[0].get("md_entity_id")
-    else:
-        s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data)
-        logger.warning(s)
-        msg = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
-                                    message=s)
-    return (md_entity_id, msg)
-
-
 # 实体元数据对象信息查询,入参：{"$_ENTITY_ID":"123",$_ENTITY_CODE:""}
 @app.route(domain_root + '/services/queryEntityByCodeOrID', methods=['POST', 'GET'])
 @auth.login_required
@@ -167,7 +153,7 @@ def query_Metadata_Entity():
     user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
-        (md_entity_id, msg) = getEntityIDByCode(tenant_id, md_entity_code, data)
+        (md_entity_id, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
 
     if md_entity_id is None:
         msg = "queryEntityByCodeOrID Input params [{}] or[{}] at least one should be none or not match,please checked.".format(
@@ -177,7 +163,7 @@ def query_Metadata_Entity():
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
     # 权限校验
-    (bool, re) = query_privilege_check('queryEntityByCodeOrID', md_entity_id)
+    (bool, re) = utl.query_privilege_check('queryEntityByCodeOrID', md_entity_id)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     res = md.get_md_entities(tenant_id, [md_entity_id])
@@ -200,7 +186,7 @@ def query_Metadata_Fields():
     user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
-        (md_entity_id, msg) = getEntityIDByCode(tenant_id, md_entity_code, data)
+        (md_entity_id, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
     if md_entity_id is None:
         msg = "queryFieldsByCodeOrID Input params [{}] or[{}] at least one should be none or not match,please checked.".format(
             utl.GLOBAL_ENTITY_ID,
@@ -209,7 +195,7 @@ def query_Metadata_Fields():
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
     # 权限校验
-    (bool, re) = query_privilege_check('queryFieldsByCodeOrID', md_entity_id)
+    (bool, re) = utl.query_privilege_check('queryFieldsByCodeOrID', md_entity_id)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     res = md.get_md_fields(tenant_id, md_entity_id)
@@ -220,38 +206,6 @@ def query_Metadata_Fields():
                                message='queryFieldsByCodeOrID Info Success.')
     logger.info('queryFieldsByCodeOrID, Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
-
-
-def query_privilege_check(method_name, md_entity_id):
-    if md_entity_id is not None and not isinstance(md_entity_id, str):
-        md_entity_id = str(md_entity_id)
-    if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'Access {},input entity params[{}] should not be None.'.format(method_name, utl.GLOBAL_ENTITY_ID)
-        logger.warning(msg)
-        output = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
-                                       message=msg)
-        return (False, output)
-    else:
-        user = utl.get_login_user()
-        user_privilege_list = utl.get_login_user_privilege()
-        if user_privilege_list is None or len(user_privilege_list) == 0:
-            msg = 'Access {} service, user({}) does not have privilege,entity=[{}] ,please check or ask the service center for help.'.format(
-                method_name, user.get("account_number"), md_entity_id)
-            logger.warning(msg)
-            output = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=utl.HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
-                                           data=None,
-                                           message=msg)
-            return (False, output)
-        b_privilege = utl.have_privilege(md_entity_id, utl.SERVICE_METHOD_GET)
-        if not b_privilege:
-            msg = 'Hi,{},you do not have the privilege to access the {} service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
-                user.get("account_number"), method_name, md_entity_id)
-            logger.warning(msg)
-            output = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=utl.HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
-                                           data=None,
-                                           message=msg)
-            return (False, output)
-    return (True, None)
 
 
 # 实体详情查询
@@ -337,6 +291,36 @@ def find_table_by_name():
                                     message=s)
     logger.info('findTableByName. Params:{},result:{}'.format(data, res))
     return Response(json.dumps(out), mimetype='application/json')
+
+
+# 实体元数据对象清单查询,入参：{}
+@app.route(domain_root + '/services/queryEntityList', methods=['POST', 'GET'])
+@auth.login_required
+def query_entity_list():
+    data = utl.request_parse(request)
+    md_entity_id = None
+    md_entity_code = "md_entities"
+    user = utl.get_login_user()
+    tenant_id = user.get("tenant_id")
+    if md_entity_id is None and md_entity_code is not None:
+        (md_entity_id, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
+    if md_entity_id is None:
+        msg = "queryEntityList ,md_entity_code not exists,please checked."
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
+    # 权限校验
+    (bool, re) = utl.query_privilege_check('queryEntityList', md_entity_id)
+    if not bool:
+        return Response(json.dumps(re), mimetype='application/json')
+    res = md.get_md_entities_list(tenant_id)
+    irows = 0
+    if res is not None:
+        irows = len(res)
+    re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=irows, data=res,
+                               message='queryEntityList Info Success.')
+    logger.info('queryEntityList, Params:{},result:{}'.format(data, re))
+    return Response(json.dumps(re), mimetype='application/json')
 
 
 # 实体插入Insert
