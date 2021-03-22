@@ -6,34 +6,36 @@ domain_url = "http://127.0.0.1:8888"
 
 # ====================login==========================================
 def login():
-    url = domain_url + "/md/login?user_account=test1&user_name=Joe.Lin"
-    payload = {}
+    url = domain_url + "/login"
+
+    payload = {'username': 'test1',
+               'password': '121212'}
+    files = [
+
+    ]
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
-        'Content-Type': 'application/json',
-        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFMgnQ.g1_9KHHCIyu-2yHAIq6-YB7hZms'
     }
-    response = requests.request("GET", url, headers=headers, data=payload)
+
+    response = requests.request("POST", url, headers=headers, data=payload, files=files)
 
     print(response.text)
+    return "success"
 
 
 # ============================insert===================================
 def md_insert():
-    url = domain_url + "/md/services/insertEntity"
+    url = domain_url + "/services/insertEntity"
 
-    payload = {'md_entity_id': 30001,
-               'test_fields': 'pyTest',
-               'test_fields1': 'pyTest',
-               'test_fields2': 3,
-               'test_fields3': '2021-01-01 12:00:00'}
-    files = []
+    payload = "{\"$_ENTITY_ID\":30001,\"data\":[{\"test_fields\":\"Mark\",\"test_fields1\":\"Mark0001\"}]}"
     headers = {
-      'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
-      'Content-Type': 'application/json',
-      'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
+        'Authorization': 'Basic dGVzdDE6MTExMQ==',
+        'Content-Type': 'application/json',
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFMgnQ.g1_9KHHCIyu-2yHAIq6-YB7hZms'
     }
-    response = requests.request("POST", url, headers=headers, data=payload, files=files)
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
     print(response.text)
     return "success"
 
@@ -53,23 +55,16 @@ def md_query():
 
 
 def md_update():
-    url = domain_url + "/md/services/updateEntity?id=1347358568483000320"
+    url = domain_url + "/md/services/updateEntity"
 
-    payload = {'md_entity_id': 30001,
-               'test_fields': 'Mark_update',
-               'test_fields1': 'Mark.Lin_new',
-               'test_fields2': '10',
-               'test_fields3': '2021-01-01 12:00:01'}
-    files = [
-
-    ]
+    payload = "{\"$_ENTITY_ID\":30047,\"data\":[{\"text_value\":1233444},{\"text_value\":\"test02\"}],\"where\":[{\"index_text_id\":1348844049557229568},{\"index_text_id\":1348892817107324928}]}"
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
+        'Authorization': 'Basic dGVzdDE6MTExMTE=',
         'Content-Type': 'application/json',
-        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFMgnQ.g1_9KHHCIyu-2yHAIq6-YB7hZms'
     }
 
-    response = requests.request("POST", url, headers=headers, data=payload, files=files)
+    response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
     return "success"
@@ -78,18 +73,14 @@ def md_update():
 def md_delete():
     url = domain_url + "/md/services/deleteEntity"
 
-    payload = {'id': '1347392993136611328',
-               'md_entity_id': '30001'}
-    files = [
-
-    ]
+    payload = "{\"$_ENTITY_ID\":30047,\"where\":[{\"index_text_id\":1348844049557229568}]}"
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
+        'Authorization': 'Basic dGVzdDE6MTExMQ==',
         'Content-Type': 'application/json',
-        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFMgnQ.g1_9KHHCIyu-2yHAIq6-YB7hZms'
     }
 
-    response = requests.request("POST", url, headers=headers, data=payload, files=files)
+    response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
     return "success"
