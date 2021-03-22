@@ -101,7 +101,7 @@ def view_query():
 
 
 def findEntitySetup():
-    url = "http://127.0.0.1:8888/md/services/findEntitySetup?$_ENTITY_ID=30047"
+    url = domain_url + "/services/findEntitySetup?$_ENTITY_ID=30047"
 
     payload = {}
     headers = {
@@ -115,7 +115,7 @@ def findEntitySetup():
 
 
 def queryEntityByCodeOrID():
-    url = "http://127.0.0.1:8888/md/services/queryEntityByCodeOrID?$_ENTITY_CODE=md_entities&$_ENTITY_ID=30015"
+    url = domain_url + "/services/queryEntityByCodeOrID?$_ENTITY_CODE=md_entities&$_ENTITY_ID=30015"
     payload = {}
     headers = {
         'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
@@ -128,7 +128,7 @@ def queryEntityByCodeOrID():
 
 
 def queryFieldsByCodeOrID():
-    url = "http://127.0.0.1:8888/md/services/queryFieldsByCodeOrID?$_ENTITY_CODE=md_fields&$_ENTITY_ID=30015"
+    url = domain_url + "/services/queryFieldsByCodeOrID?$_ENTITY_CODE=md_fields&$_ENTITY_ID=30015"
     payload = {}
     headers = {
         'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
@@ -137,6 +137,23 @@ def queryFieldsByCodeOrID():
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
+    return "success"
+
+
+def findTableByName():
+    url = domain_url + "/services/findTableByName?table_names=data_t"
+
+    payload = "{\"table_names\":[\"abc\"]}"
+    headers = {
+        'Authorization': 'Basic dGVzdDE6MTIzNDU=',
+        'Content-Type': 'application/json',
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFg4Tg.iGELYRQIg8g_2IgmiGVwVkA-_XY'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    print(response.text)
+
     return "success"
 
 
@@ -157,6 +174,8 @@ def test_dm():
     re = queryEntityByCodeOrID()
     assert re == "success"
     re = queryEntityByCodeOrID()
+    assert re == "success"
+    re = findTableByName()
     assert re == "success"
 
 
