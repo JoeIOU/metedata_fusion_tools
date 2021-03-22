@@ -8,10 +8,25 @@
 		{
 			"name": "login",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "test1",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "121212",
+							"type": "text"
+						}
+					]
+				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/login?user_account=admin&user_name=Joe.Lin",
+					"raw": "http://127.0.0.1:8888/md/login",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -23,16 +38,6 @@
 					"path": [
 						"md",
 						"login"
-					],
-					"query": [
-						{
-							"key": "user_account",
-							"value": "test1"
-						},
-						{
-							"key": "user_name",
-							"value": "Joe.Lin"
-						}
 					]
 				}
 			},
@@ -44,8 +49,30 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"type": "text",
+						"disabled": true
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": ""
@@ -86,6 +113,21 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -128,6 +170,21 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -169,6 +226,21 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -207,6 +279,21 @@
 		{
 			"name": "query_user",
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -242,37 +329,31 @@
 		{
 			"name": "insert",
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "1111",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "test1",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "$_ENTITY_ID",
-							"value": "30001",
-							"type": "text"
-						},
-						{
-							"key": "test_fields",
-							"value": "aaaa",
-							"type": "text"
-						},
-						{
-							"key": "test_fields1",
-							"value": "1dwqdwdwq",
-							"type": "text"
-						},
-						{
-							"key": "test_fields2",
-							"value": "200",
-							"type": "text"
-						},
-						{
-							"key": "test_fields3",
-							"value": "2021-01-01 12:00:00",
-							"type": "text"
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30001,\"data\":[{\"test_fields\":\"Mark\",\"test_fields1\":\"Mark0001\"}]}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "http://127.0.0.1:8888/md/services/insertEntity",
@@ -296,32 +377,31 @@
 		{
 			"name": "insert_user",
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123333",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "$_ENTITY_ID",
-							"value": "30025",
-							"type": "text"
-						},
-						{
-							"key": "user_name",
-							"value": "Mark",
-							"type": "text"
-						},
-						{
-							"key": "account_number",
-							"value": "Mark001",
-							"type": "text"
-						},
-						{
-							"key": "branch_id",
-							"value": "1000",
-							"type": "text"
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30025,\"data\":[{\"user_name\":\"Mark\",\"account_number\":\"Mark0001\",\"branch_id\":1000}]}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "http://127.0.0.1:8888/md/services/insertEntity",
@@ -356,40 +436,34 @@
 				}
 			],
 			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
+				"auth": {
+					"type": "basic",
+					"basic": [
 						{
-							"key": "$_ENTITY_ID",
-							"value": "30001",
-							"type": "text"
+							"key": "password",
+							"value": "11111",
+							"type": "string"
 						},
 						{
-							"key": "test_fields",
-							"value": "狗日子001",
-							"type": "text"
-						},
-						{
-							"key": "test_fields1",
-							"value": "特特特色",
-							"type": "text"
-						},
-						{
-							"key": "test_fields2",
-							"value": "10",
-							"type": "text"
-						},
-						{
-							"key": "test_fields3",
-							"value": "2021-01-01 12:00:01",
-							"type": "text"
+							"key": "username",
+							"value": "test1",
+							"type": "string"
 						}
 					]
 				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30047,\"data\":[{\"text_value\":1233444},{\"text_value\":\"test02\"}],\"where\":[{\"index_text_id\":1348844049557229568},{\"index_text_id\":1348892817107324928}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/updateEntity?$_row_id_=800001",
+					"raw": "http://127.0.0.1:8888/md/services/updateEntity",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -402,12 +476,6 @@
 						"md",
 						"services",
 						"updateEntity"
-					],
-					"query": [
-						{
-							"key": "$_row_id_",
-							"value": "800001"
-						}
 					]
 				}
 			},
@@ -427,67 +495,21 @@
 				}
 			],
 			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
+				"auth": {
+					"type": "basic",
+					"basic": [
 						{
-							"key": "$_ENTITY_ID",
-							"value": "30025",
-							"type": "text"
+							"key": "password",
+							"value": "11122",
+							"type": "string"
 						},
 						{
-							"key": "user_name",
-							"value": "Mark",
-							"type": "text"
-						},
-						{
-							"key": "account_number",
-							"value": "mark100",
-							"type": "text"
+							"key": "username",
+							"value": "test1",
+							"type": "string"
 						}
 					]
 				},
-				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/updateEntity?user_id=1348892817107324928",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8888",
-					"path": [
-						"md",
-						"services",
-						"updateEntity"
-					],
-					"query": [
-						{
-							"key": "user_id",
-							"value": "1348892817107324928"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "update_batch",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -500,7 +522,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/updateEntityBatch",
+					"raw": "http://127.0.0.1:8888/md/services/updateEntity",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -512,7 +534,7 @@
 					"path": [
 						"md",
 						"services",
-						"updateEntityBatch"
+						"updateEntity"
 					]
 				}
 			},
@@ -521,22 +543,31 @@
 		{
 			"name": "delete",
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "1111",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "test1",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "$_row_id_",
-							"value": "1353988934199283712",
-							"type": "text"
-						},
-						{
-							"key": "$_ENTITY_ID",
-							"value": "30001",
-							"type": "text"
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30047,\"where\":[{\"index_text_id\":1348844049557229568}]}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "http://127.0.0.1:8888/md/services/deleteEntity",
@@ -560,22 +591,31 @@
 		{
 			"name": "delete_user",
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "111111",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "test1",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "user_id",
-							"value": "1348889862480203776",
-							"type": "text"
-						},
-						{
-							"key": "$_ENTITY_ID",
-							"value": "30025",
-							"type": "text"
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30025,\"where\":[{\"user_id\":1348844049557229568}]}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "http://127.0.0.1:8888/md/services/deleteEntity",
@@ -599,6 +639,21 @@
 		{
 			"name": "view",
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -632,6 +687,21 @@
 		{
 			"name": "view metadata",
 			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
