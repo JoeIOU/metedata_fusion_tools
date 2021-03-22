@@ -213,3 +213,49 @@ def ids2_where(ids):
         d[md.KEY_FIELDS_ID] = id
         id_list.append(d)
     return id_list
+
+
+def query_privilege_check(method_name, md_entity_id):
+    if md_entity_id is not None and not isinstance(md_entity_id, str):
+        md_entity_id = str(md_entity_id)
+    if md_entity_id is None or len(md_entity_id) <= 0:
+        msg = 'Access {},input entity params[{}] should not be None.'.format(method_name, GLOBAL_ENTITY_ID)
+        logger.warning(msg)
+        output = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                       message=msg)
+        return (False, output)
+    else:
+        user = get_login_user()
+        user_privilege_list = get_login_user_privilege()
+        if user_privilege_list is None or len(user_privilege_list) == 0:
+            msg = 'Access {} service, user({}) does not have privilege,entity=[{}] ,please check or ask the service center for help.'.format(
+                method_name, user.get("account_number"), md_entity_id)
+            logger.warning(msg)
+            output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
+                                           data=None,
+                                           message=msg)
+            return (False, output)
+        b_privilege = have_privilege(md_entity_id, SERVICE_METHOD_GET)
+        if not b_privilege:
+            msg = 'Hi,{},you do not have the privilege to access the {} service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
+                user.get("account_number"), method_name, md_entity_id)
+            logger.warning(msg)
+            output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
+                                           data=None,
+                                           message=msg)
+            return (False, output)
+    return (True, None)
+
+
+def getEntityIDByCode(tenant_id, md_entity_code, data):
+    res = md.get_md_entities_by_code(tenant_id, [md_entity_code])
+    md_entity_id = None
+    msg = None
+    if res is not None and len(res) > 0:
+        md_entity_id = res[0].get("md_entity_id")
+    else:
+        s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data)
+        logger.warning(s)
+        msg = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                    message=s)
+    return (md_entity_id, msg)
