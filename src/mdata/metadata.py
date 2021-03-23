@@ -37,6 +37,7 @@ def get_md_entities(tenant_id, md_entity_ids):
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
 
+
 # 元数据实体清单list
 def get_md_entities_list(tenant_id):
     conn = db_md()
@@ -48,6 +49,7 @@ def get_md_entities_list(tenant_id):
     logger.info("get_md_entities_list:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
+
 
 # 元数据实体通过实体code编码
 def get_md_entities_by_code(tenant_id, md_entity_codes):
