@@ -212,9 +212,18 @@ def query_Metadata_Fields():
 @app.route(domain_root + '/services/findEntity', methods=['POST', 'GET'])
 @auth.login_required
 def find_entity():
-    # 入参：{"abc":"123"}
+    # GET入参：{"$_ENTITY_ID":30025,"user_id":"123"}
+    # POST入参：{"$_ENTITY_ID":30025,"where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
+    data_list = []
     data = utl.request_parse(request)
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+    if not isinstance(md_entity_id, str):
+        md_entity_id = str(md_entity_id)
+    if request.method == 'POST':
+        data_list = data.get('where')
+    else:
+        data_list.append(data)
+
     if md_entity_id is None or len(md_entity_id) <= 0:
         msg = 'findEntity,input entity params[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
@@ -222,7 +231,7 @@ def find_entity():
                                    message=msg)
     else:
         re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntity", data_list=None,
-                                    where_list=[data])
+                                    where_list=data_list)
         logger.info('find Entity. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
 
