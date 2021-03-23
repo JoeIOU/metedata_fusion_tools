@@ -38,7 +38,7 @@ SQL_QUERY_ENTITY_FORMAT = """
             AND f.tenant_id = e.tenant_id
             AND f.md_columns_id = cc.md_columns_id
             WHERE
-                e.tenant_id = %s
+                (e.tenant_id = %s  or e.public_flag='Y')
             AND tt.md_tables_name in %s
             """
 
@@ -62,10 +62,9 @@ SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
             INNER JOIN md_fields f1 ON f1.md_entity_id = e1.md_entity_id
             AND f1.tenant_id = e1.tenant_id and f1.md_fields_id=r.to_field_id
             WHERE
-                e.tenant_id = %s               
+                (e.tenant_id = %s  or e.public_flag='Y')            
              """
 SQL_QUERY_ENTITY_REL_FORMAT = SQL_QUERY_ENTITY_ALL_REL_FORMAT + " AND (e.md_entity_code in %s or e1.md_entity_code in %s)"
-
 
 SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                 SELECT
@@ -76,7 +75,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                             e.md_entity_id,
                             e.md_entity_code,
                             e.md_entity_name,
-			    e.md_entity_name_en,
+			                e.md_entity_name_en,
                             e.md_entity_desc,
                             f.md_fields_id,
                             f.md_fields_name,
@@ -111,7 +110,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                         AND f.md_columns_id = cc.md_columns_id
                         AND cc.active_flag = 'Y'
                         WHERE
-                            e.tenant_id = %s
+                            (e.tenant_id = %s  or e.public_flag='Y')
                         AND e.md_entity_id = %s
                         AND e.active_flag = 'Y'
                         UNION
@@ -119,11 +118,11 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                                 e.md_entity_id,
                                 e.md_entity_code,
                                 e.md_entity_name,
-			        e.md_entity_name_en,
+			                    e.md_entity_name_en,
                                 e.md_entity_desc,
                                 f.md_fields_id,
                                 f.md_fields_name,
-                            	f.md_fields_name_en,
+                                f.md_fields_name_en,
                                 f.md_fields_type,
                                 f.md_fields_desc,
                                 f.md_fields_length,
@@ -153,7 +152,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                             LEFT JOIN md_fields f ON f.md_entity_id = e.md_entity_id
                             AND f.md_columns_id = cc.md_columns_id
                             WHERE
-                                e.tenant_id = %s
+                                (e.tenant_id = %s  or e.public_flag='Y')
                             AND e.md_entity_id = %s
                             AND tt.active_flag = 'Y'
                             AND f.md_columns_id IS NULL
@@ -161,6 +160,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                 ORDER BY
                     md_columns_id,md_fields_id
                 """
+
 
 # 查询实体和数据表属性和字段信息
 def query_entity_fields_columns(tenant_id, entity_id):
@@ -173,6 +173,7 @@ def query_entity_fields_columns(tenant_id, entity_id):
     cursor.execute(sql, args=(tenant_id, entity_id, tenant_id, entity_id))
     result = cursor.fetchall()
     return result
+
 
 # 查询实体关系信息
 def query_entity_rel_by_entity(tenant_id, entity_codes):
@@ -301,7 +302,7 @@ def ini_entities(user_id, tenant_id, new_entity_code, table_dict, is_sys_flag):
         entity_dict["sys_flag"] = "N"
     entity_list.append(entity_dict)
     re = md.insert_execute(user_id, tenant_id, md_entity_id, entity_list)
-    logger.info("insert entity success,name={}".format(code))
+    logger.info("insert entity,name={}".format(code))
     return re
 
 
@@ -448,7 +449,6 @@ def ini_entity_model_graph(tenant_id, entity_codes):
     # entity_codes = ["md_entities"]
     result = query_entity_rel_by_entity(tenant_id, entity_codes)
     entitie_model_list, rel_list = graph_data_mapping(result)
-    # mg.create_unique_index(mg.DATA_ENTITY,"entity_id")
     mg.create_object_from_metadata(entitie_model_list)
     mg.create_object_rel_from_metadata(rel_list)
     return (entitie_model_list, rel_list)
@@ -457,11 +457,13 @@ def ini_entity_model_graph(tenant_id, entity_codes):
 if __name__ == '__main__':
     # [{"entity_code":"table_name"}]
     entity_list = [{"entity_code": "Contract", "table_name": "data_t"}, {"entity_code": "BoQ", "table_name": "data_t"}]
-    user = ur.get_user("admin")
+    user = ur.get_user("isales")
     user_id = user.get("user_id")
     tenant_id = user.get("tenant_id")
+
     # 从数据库反向工程，初始化表和字段元数据
     # re = initialize_md_entities_from_tables(user_id, tenant_id, entity_list)
+
     tables = ["t001"]
     # 查询指定租户的所有实体和对应主键。
     # re = query_entity_by_tenant(tenant_id, tables)
@@ -470,8 +472,10 @@ if __name__ == '__main__':
     # entity_codes = ["md_entities"]
     # re = query_entity_rel_by_entity(tenant_id, entity_codes)
     # logger.info("query_entity_rel_by_entity ,re={}".format(re))
-    
+
     # entity_codes = ["tenants", "md_columns"]
+
+    # Noe4j模型关系初始化
     entity_codes = None
     re = ini_entity_model_graph(tenant_id, entity_codes)
     logger.info("ini_entity_model_graph ,re={}".format(re))
