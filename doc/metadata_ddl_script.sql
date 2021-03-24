@@ -1044,7 +1044,7 @@ CREATE TABLE  IF NOT EXISTS `data_lookup_set` (
 CREATE TABLE  IF NOT EXISTS `data_views` (
   `data_view_id` bigint(20) NOT NULL COMMENT '查询视图ID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
-  `md_main_entity_id` bigint(20) NOT NULL COMMENT '主元数据实体ID',
+  `md_entity_id` bigint(20) NOT NULL COMMENT '主元数据实体ID',
   `data_view_name` varchar(100) DEFAULT NULL COMMENT '查询视图名称',
   `text_column1` varchar(2000) COMMENT '预留文本字段1',
   `text_column2` varchar(2000) COMMENT '预留文本字段2',
@@ -1068,8 +1068,8 @@ CREATE TABLE  IF NOT EXISTS `data_views` (
   PRIMARY KEY (`data_view_id`),
   UNIQUE KEY `data_view_id` (`data_view_id`),
   KEY `data_views_tenant_id_fk0` (`tenant_id`),
-  KEY `data_views_md_main_entity_id_fk0` (`md_main_entity_id`),
-  CONSTRAINT `data_views_md_main_entity_id_fk0` FOREIGN KEY (`md_main_entity_id`) REFERENCES `md_entities` (`md_entity_id`),
+  KEY `data_views_md_entity_id_fk0` (`md_entity_id`),
+  CONSTRAINT `data_views_md_entity_id_fk0` FOREIGN KEY (`md_entity_id`) REFERENCES `md_entities` (`md_entity_id`),
   CONSTRAINT `data_views_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='查询视图，跨多表查询';
 
