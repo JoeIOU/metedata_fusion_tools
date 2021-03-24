@@ -248,7 +248,7 @@ def query_privilege_check(method_name, md_entity_id):
 
 
 def getEntityIDByCode(tenant_id, md_entity_code, data):
-    res = md.get_md_entities_by_code(tenant_id, [md_entity_code])
+    res = md.get_md_entities_id_by_code([md_entity_code])
     md_entity_id = None
     msg = None
     if res is not None and len(res) > 0:
