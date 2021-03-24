@@ -128,7 +128,11 @@ def find_entity_setup():
     # 入参：{"abc":"123"}
     data = utl.request_parse(request)
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
-    (bool, re) = utl.query_privilege_check('findEntitySetup', md_entity_id)
+    bool = False
+    result = md.get_md_entities_id_by_code(['md_fields'])
+    if (result is not None and len(result) > 0):
+        ent_id = result[0].get('md_entity_id')
+        (bool, re) = utl.query_privilege_check('findEntitySetup', ent_id)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     user = utl.get_login_user()
@@ -240,8 +244,14 @@ def find_entity():
 @app.route(domain_root + '/services/findEntityByCode', methods=['POST', 'GET'])
 @auth.login_required
 def find_entity_by_code():
-    # 入参：{"abc":"123"}
+    # GET入参：{"$_ENTITY_CODE":"users","user_id":"123"}
+    # POST入参：{"$_ENTITY_CODE":"users","where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
     data = utl.request_parse(request)
+    data_list = []
+    if request.method == 'POST':
+        data_list = data.get('where')
+    else:
+        data_list.append(data)
     md_entity_code = data.get(utl.GLOBAL_ENTITY_CODE)
     if md_entity_code is None or len(md_entity_code) <= 0:
         msg = 'findEntityByCode,input entity code params[{}] should not be None.'.format(utl.GLOBAL_ENTITY_CODE)
@@ -257,13 +267,13 @@ def find_entity_by_code():
         if res is not None and len(res) > 0:
             md_entity_id = res[0].get("md_entity_id")
         else:
-            s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data)
+            s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data_list)
             logger.warning(s)
             return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=s)
         re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntityByCode", data_list=None,
-                                    where_list=[data])
-        logger.info('findEntityByCode. Params:{},result:{}'.format(data, re))
+                                    where_list=data_list)
+        logger.info('findEntityByCode. Params:{},result:{}'.format(data_list, re))
     return Response(json.dumps(re), mimetype='application/json')
 
 
