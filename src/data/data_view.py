@@ -15,7 +15,7 @@ sql_in = """
             SELECT
             'input' AS io_type,
             d.data_view_id AS view_id,
-            d.md_main_entity_id,
+            d.md_entity_id,
             i.md_entity_id,
             i.md_fields_id,
             i.view_input_id AS param_id,
@@ -37,7 +37,7 @@ sql_out = """
             SELECT
                 'output' AS io_type,
                 d.data_view_id AS view_id,
-                d.md_main_entity_id,
+                d.md_entity_id,
                 i.md_entity_id,
                 i.md_fields_id,
                 i.view_output_id,
@@ -81,9 +81,9 @@ def query_view_format(user_id, data_view_id):
         logger.warning('query_view output param is none.')
         return None
     if result_out is not None and len(result_out) > 0:
-        main_entity_id = result_out[0].get("md_main_entity_id")
+        main_entity_id = result_out[0].get("md_entity_id")
     else:
-        main_entity_id = result_in[0].get("md_main_entity_id")
+        main_entity_id = result_in[0].get("md_entity_id")
     entity_selected_list = find_entity_list(result_in, result_out)
     entity_ids = []
     for x in entity_selected_list:
@@ -457,8 +457,8 @@ def find_main_entity_id(list):
     if list is None:
         return s_table
     for item in list:
-        if item.get('md_main_entity_id') == item.get('md_entity_id'):
-            s_table = item.get('md_main_entity_id')
+        if item.get('md_entity_id') == item.get('md_entity_id'):
+            s_table = item.get('md_entity_id')
             break
     logger.info('find_main_entity_id:\n{}'.format(s_table))
     return s_table
