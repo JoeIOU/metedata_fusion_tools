@@ -8,6 +8,7 @@ import re
 from config.config import cfg as config
 from privilege import user_mngt as ur
 from common import cache
+import datetime
 
 logger = config.logger
 
@@ -22,7 +23,13 @@ auth = HTTPBasicAuth()
 # 生成token, 有效时间为600min
 def generate_auth_token(user_id, expiration=36000):
     s = Serializer(SECRET_KEY, expires_in=expiration)
-    return s.dumps({'user_id': user_id})
+    utc = datetime.datetime.utcnow()
+    timestamp = utc.timestamp()
+    utc_msecond = int(round(timestamp * 1000))
+    expire_time = utc_msecond + (expiration * 1000)
+    re = {'user_id': user_id}
+    logger.info('token:{}'.format(re))
+    return (s.dumps(re), expire_time)
 
 
 # 解析token
@@ -88,4 +95,5 @@ def verify_password(username, password, force=False):
 
 
 if __name__ == '__main__':
-    logger.info("tokenDecode:{}".format('s'))
+    # logger.info("tokenDecode:{}".format('s'))
+    generate_auth_token('test1', 36000)
