@@ -49,7 +49,7 @@ def login():
     if not vr:
         logger.warning("user account[{}] login failed,please input the right username and password.".format(uname))
         return None
-    token = au.generate_auth_token(g.user_id)
+    (token,expire_time) = au.generate_auth_token(g.user_id)
     re = g.user
     if re is None:
         logger.warning("user account is not exists.")
@@ -60,12 +60,8 @@ def login():
         logger.warning("user:[{}] login success.".format(re.get('account_number')))
         # 获取权限
         utl.get_login_user_privilege(force=True)
-        # msg = "login success."
-        # out_data = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=0,
-        #                                  data=re, message=msg)
-        # return Response(json.dumps(out_data), mimetype='application/json')
     logger.info("token:{}".format(token))
-    return jsonify({'token': token})
+    return jsonify({'token': token,'expire_time':expire_time})
 
 
 @app.route(domain_root + "/logout", methods=['GET', 'POST'])
@@ -130,6 +126,7 @@ def find_entity_setup():
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     bool = False
     result = md.get_md_entities_id_by_code(['md_fields'])
+    re = None
     if (result is not None and len(result) > 0):
         ent_id = result[0].get('md_entity_id')
         (bool, re) = utl.query_privilege_check('findEntitySetup', ent_id)
