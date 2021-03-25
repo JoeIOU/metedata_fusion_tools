@@ -1,18 +1,14 @@
 # model_graph.py
 # ==元数据关系转换成Neo4j图数据库关系
-from py2neo import Node, Relationship, NodeMatcher, Subgraph
+from py2neo import Relationship, NodeMatcher, Subgraph
 from db.neo4j_conn import neo4j_graph as graph
 from config.config import cfg as config
 
 DATA_ENTITY = "ENTITY"
 logger = config.logger
-graph = graph()
 
 
-def create_object(graph, label, name, **kwargs):
-    a = Node(label, name=name, **kwargs)
-    graph.create(a)
-
+# graph = graph()
 
 # 创建图数据库实体对象
 def create_object_from_metadata(entity_list):
@@ -36,7 +32,7 @@ def create_object_from_metadata(entity_list):
         fileds_str = "{" + fileds_str + "}"
         cql = cql_create_node_template.format(name=name, labels=labels, fields=fileds_str)
 
-        nm = graph.run(cql)
+        nm = graph().run(cql)
     if nm is None:
         logger.warning("create_object_from_metadata,create node failed:{}".format(entity_list))
     else:
@@ -50,22 +46,22 @@ def create_object_rel_from_metadata(entity_rel_list):
         return None
     ii = 0
     ls_obj = []
-    nm = NodeMatcher(graph)
+    nm = NodeMatcher(graph())
     for item in entity_rel_list:
-        rel_type = item.get("label")
-        rel_flag = item.get("name")
-        rel_id = item.get("relation_id")
-        rel_desc = item.get("relation_desc")
+        # rel_type = item.get("label")
+        # rel_flag = item.get("name")
+        # rel_id = item.get("relation_id")
+        # rel_desc = item.get("relation_desc")
         rel_type = item.get("relation_type")
-        frm_md_entity_id = item.get("from_entity_id")
-        frm_md_entity_name = item.get("from_entity_name")
+        # frm_md_entity_id = item.get("from_entity_id")
+        # frm_md_entity_name = item.get("from_entity_name")
         frm_md_entity_code = item.get("from_entity_code")
-        frm_md_fields_id = item.get("from_fields_id")
-        frm_md_fields_name = item.get("from_fields_name")
-        to_md_entity_id = item.get("to_entity_id")
-        to_md_entity_name = item.get("to_entity_name")
+        # frm_md_fields_id = item.get("from_fields_id")
+        # frm_md_fields_name = item.get("from_fields_name")
+        # to_md_entity_id = item.get("to_entity_id")
+        # to_md_entity_name = item.get("to_entity_name")
         to_md_entity_code = item.get("to_entity_code")
-        to_md_fields_id = item.get("to_fields_id")
+        # to_md_fields_id = item.get("to_fields_id")
         to_md_fields_name = item.get("to_fields_name")
         rel_type_new = "{}({})".format(rel_type, to_md_fields_name)
         item["relation_type"] = rel_type_new
@@ -81,12 +77,12 @@ def create_object_rel_from_metadata(entity_rel_list):
         ii += 1
         if ii >= 100:
             A = Subgraph(relationships=ls_obj)
-            graph.create(A)
+            graph().create(A)
             ls_obj = []
             ii = 0
     if len(ls_obj) > 0:
         A = Subgraph(relationships=ls_obj)
-        graph.create(A)
+        graph().create(A)
     if nm is None:
         logger.warning("create_object_rel_from_metadata,create node failed:{}".format(entity_rel_list))
     else:
@@ -97,7 +93,7 @@ def create_object_rel_from_metadata(entity_rel_list):
 def create_unique_index(label, field):
     # cql="CREATE CONSTRAINT ON (cc:User) ASSERT cc.name IS UNIQUE"
     cql = "CREATE CONSTRAINT ON (cc:{}) ASSERT cc.{} IS UNIQUE".format(label, field)
-    nm = graph.run(cql)
+    nm = graph().run(cql)
     return nm.data()
 
 
@@ -116,15 +112,15 @@ def create_relation(graph):
     group = nm.match("Group", name="group").first()
     tenant = nm.match("Tenant", name="tenant").first()
 
-    r1 = Relationship(user, 'OWN', role)
-    r2 = Relationship(user, 'belongTo', group)
+    # r1 = Relationship(user, 'OWN', role)
+    # r2 = Relationship(user, 'belongTo', group)
     r1 = Relationship(group, 'belongTo', tenant)
     r2 = Relationship(user, 'belongTo', tenant)
     r3 = Relationship(role, 'belongTo', tenant)
     rr = r1 | r2 | r3
     graph.create(rr)
 
-    
+
 # 查询2个节点间的关系（10层内关系）
 def query_relation_between_entity(graph, node_label1, node_label2):
     if graph is None or node_label1 is None or node_label2 is None:
@@ -157,6 +153,7 @@ def query_all_node_by_name(graph, node_name):
     logger.info("query_all_node_by_name,result:{}".format(data))
     return data
 
+
 if __name__ == "__main__":
     # create_object(graph)
     entity_list = []
@@ -165,10 +162,11 @@ if __name__ == "__main__":
     # re = create_object_from_metadata(graph, entity_list)
 
     # re = create_object(graph, label="ABC", name="test", age=120,gendar="M")
-    
+
     # data = query_relation_between_entity(graph, "SALE_CONTRACT_T", "SALE_CFG_BOQ_T")
     # logger.info("query_relation_between_entity,result:{}".format(data))
 
-    data = query_all_node_by_name(graph, "cfg")
+    data = query_all_node_by_name(graph(), "cfg")
     # logger.info("query_all_node_like_label,result:{}".format(data))
+
     pass
