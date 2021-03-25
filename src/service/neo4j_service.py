@@ -6,7 +6,7 @@ from config.config import cfg as config
 from httpserver import httpserver
 
 logger = config.logger
-graph = graph()
+# graph = graph()
 app = httpserver.getApp()
 
 domain_root = '/md/graph'
@@ -82,7 +82,7 @@ def get_search():
     else:
         q_str = "(?i).*" + q + ".*"
         cql = "MATCH (m:ENTITY) WHERE m.name =~ '{}' or m.entity_code=~ '{}' RETURN m".format(q_str, q_str)
-        results = graph.run(cql)
+        results = graph().run(cql)
 
         return Response(dumps([serialize_model(record['m']) for record in results]),
                         mimetype="application/json")
@@ -98,7 +98,7 @@ def search_shortest_path():
     else:
         cql = "MATCH (p1:ENTITY {label:'%s'}),(p2:ENTITY{label:'%s'}),p=shortestpath((p1)-[*..10]-(p2))RETURN p" % (
             q, to)
-        result = graph.run(cql)
+        result = graph().run(cql)
         nodes, relationships = relationship_mapping(result)
         data = combine_data(nodes, relationships)
         logger.info("search_shortest_path,graph data:{}".format(data))
@@ -111,7 +111,7 @@ def query_graph_rel(medel_name, sfrom, sto):
     if sto is None:
         sto = ""
     cql = "MATCH p=(n:ENTITY{name:'%s'})%s-[r]-%s(m) RETURN p LIMIT 100" % (medel_name, sfrom, sto)
-    result = graph.run(cql)
+    result = graph().run(cql)
     return relationship_mapping(result)
 
 
@@ -239,7 +239,7 @@ def query_relation(title, flag):
         sto = ""
     cql = "MATCH (m:ENTITY {entity_code:'%s'}) OPTIONAL MATCH (m)%s-[r]-%s(n:ENTITY) RETURN m.name as name,m.entity_code as title," \
           "COLLECT([n.name, r.label,r.from_fields_name,r.to_fields_name]) AS cast LIMIT 100" % (title, sfrom, sto)
-    result = graph.run(cql)
+    result = graph().run(cql)
     re_list = []
     for item in result:
         dict1 = {}
@@ -266,4 +266,4 @@ def get_relation(title, flag):
 
 
 if __name__ == '__main__':
-    app.run(port=8080, host="localhost", threaded=True)
+    app.run(port=8080, host="localhost", threaded=True)  # 8080
