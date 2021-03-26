@@ -12,6 +12,7 @@ logger = config.logger
 app = httpserver.getApp()
 auth = HTTPBasicAuth()
 domain_root = '/md'
+GLOBAL_VIEW_ID = "$_VIEW_ID"
 
 
 @app.route("/", methods=["GET"])
@@ -49,7 +50,7 @@ def login():
     if not vr:
         logger.warning("user account[{}] login failed,please input the right username and password.".format(uname))
         return None
-    (token,expire_time) = au.generate_auth_token(g.user_id)
+    (token, expire_time) = au.generate_auth_token(g.user_id)
     re = g.user
     if re is None:
         logger.warning("user account is not exists.")
@@ -61,7 +62,7 @@ def login():
         # 获取权限
         utl.get_login_user_privilege(force=True)
     logger.info("token:{}".format(token))
-    return jsonify({'token': token,'expire_time':expire_time})
+    return jsonify({'token': token, 'expire_time': expire_time})
 
 
 @app.route(domain_root + "/logout", methods=['GET', 'POST'])
@@ -102,14 +103,16 @@ def get_userinfo():
 @auth.login_required
 def query_view():
     data = utl.request_parse(request)
-    view_id = data.get("view_id")
+    view_id = data.get(GLOBAL_VIEW_ID)
     if view_id is None:
-        logger.warning('query View, view_id should not be None')
-        return '{view_id is None}'
+        logger.warning('query View, param[$_VIEW_ID] should not be None')
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message='query View,$_VIEW_ID is None')
+        return re
     if data is not None:
         for key in data.keys():
-            if key == "view_id":
-                data.pop("view_id")
+            if key == GLOBAL_VIEW_ID:
+                data.pop(GLOBAL_VIEW_ID)
                 break
     re = utl.sql_execute_method(view_id, utl.SERVICE_METHOD_VIEW, "queryView", data_list=None, where_list=[data])
 
