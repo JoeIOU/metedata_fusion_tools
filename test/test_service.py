@@ -1,7 +1,8 @@
 # ######test_service.py
 import requests
 
-domain_url = "http://127.0.0.1:8888"
+domain_url = "http://127.0.0.1:8888/md"
+auth_token = 'Basic dGVzdDE6MTIzNDU='
 
 
 # ====================login==========================================
@@ -20,7 +21,10 @@ def login():
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
 
     print(response.text)
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 # ============================insert===================================
@@ -29,7 +33,7 @@ def md_insert():
 
     payload = "{\"$_ENTITY_ID\":30001,\"data\":[{\"test_fields\":\"Mark\",\"test_fields1\":\"Mark0001\"}]}"
     headers = {
-        'Authorization': 'Basic dGVzdDE6MTExMQ==',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
         'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFMgnQ.g1_9KHHCIyu-2yHAIq6-YB7hZms'
     }
@@ -37,29 +41,42 @@ def md_insert():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def md_query():
     # ================================update===============================
-    url = domain_url + "/md/services/findEntity?id=1346641783622340609&md_entity_id=30001"
-    payload = {}
+    url = domain_url + "/services/findEntity?$_ENTITY_ID=30015&md_entity_id=1373928231974211584"
+
+    payload = "{\"$_ENTITY_ID\":30015,\"where\":[{\"md_entity_id\":1373928231974211584},{\"md_entity_id\":1348892817107324928}]}"
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
-        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFwHUA.D3nKN48L6EIW5TvEAbOJB4ZFMzM'
     }
+
     response = requests.request("GET", url, headers=headers, data=payload)
+
     print(response.text)
-    return "success"
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def md_update():
-    url = domain_url + "/md/services/updateEntity"
+    url = domain_url + "/services/updateEntity"
 
-    payload = "{\"$_ENTITY_ID\":30047,\"data\":[{\"text_value\":1233444},{\"text_value\":\"test02\"}],\"where\":[{\"index_text_id\":1348844049557229568},{\"index_text_id\":1348892817107324928}]}"
+    payload = "{\"$_ENTITY_ID\":30001,\"data\":[{\"test_fields\":\"12323\"},{\"test_fields\":\"test02\"}],\"where\":[{\"id\":1348844049557229568},{\"id\":1348892817107324928}]}"
     headers = {
-        'Authorization': 'Basic dGVzdDE6MTExMTE=',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
         'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFMgnQ.g1_9KHHCIyu-2yHAIq6-YB7hZms'
     }
@@ -67,15 +84,18 @@ def md_update():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def md_delete():
-    url = domain_url + "/md/services/deleteEntity"
+    url = domain_url + "/services/deleteEntity"
 
-    payload = "{\"$_ENTITY_ID\":30047,\"where\":[{\"index_text_id\":1348844049557229568}]}"
+    payload = "{\"$_ENTITY_ID\":30001,\"where\":[{\"id\":1348844049557229568}]}"
     headers = {
-        'Authorization': 'Basic dGVzdDE6MTExMQ==',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
         'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFMgnQ.g1_9KHHCIyu-2yHAIq6-YB7hZms'
     }
@@ -83,21 +103,30 @@ def md_delete():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def view_query():
-    url = domain_url + "/md/services/queryView"
+    url = domain_url + "/services/queryView?$_VIEW_ID=50001"
 
-    payload = "{\"view_id\":50001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}"
+    payload = "{\"$_VIEW_ID\":30001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}"
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
-        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
+        'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YF1MSg.qMO8j0nSj6VwvEJ0AxpgfYjIAJ0'
     }
+
     response = requests.request("POST", url, headers=headers, data=payload)
+
     print(response.text)
-    return "success"
+
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def findEntitySetup():
@@ -105,39 +134,48 @@ def findEntitySetup():
 
     payload = {}
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
         'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def queryEntityByCodeOrID():
     url = domain_url + "/services/queryEntityByCodeOrID?$_ENTITY_CODE=md_entities&$_ENTITY_ID=30015"
     payload = {}
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
         'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def queryFieldsByCodeOrID():
     url = domain_url + "/services/queryFieldsByCodeOrID?$_ENTITY_CODE=md_fields&$_ENTITY_ID=30015"
     payload = {}
     headers = {
-        'Authorization': 'Basic ZXlKaGJHY2lPaUpJVXpVeE1pSXNJbWxoZENJNk1UWXhOVGszTURJM01Td2laWGh3SWpveE5qRTJNREEyTWpjeGZRLmV5SjFjMlZ5WDJsa0lqb2lZV1J0YVc0aWZRLjNKMkhTYXp5SGZseUVub3VEVEc3RW00UDJvWVRBaFVWU3BfT3pYcktoZVQ5dy1vc00tSGtFV2xTZWVWZmpCcU5tOElmTnZYUUY3Tmt5a3VFampMa0h3Og==',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
         'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokoJabkZuYp6SiVpOYlAsUzU5SsDA0MdMAaYDxjKDcvMTcVrqUWKgg1EckoLGoBFxUrhg.YFG_3w.OPt6SlSWffEO4mgc3rmKJLH5HT4'
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def findTableByName():
@@ -145,7 +183,7 @@ def findTableByName():
 
     payload = "{\"table_names\":[\"abc\"]}"
     headers = {
-        'Authorization': 'Basic dGVzdDE6MTIzNDU=',
+        'Authorization': auth_token,
         'Content-Type': 'application/json',
         'Cookie': 'session=.eJyrViotTi1SsqpWSkxOzi_NK4nPK81NAokolaQWlxgq6QDpvESgeGaKkpWhDlg5hG1gAOPmJeamQjXEgwQMlWqhMlBDkUzDpQEAom8vAA.YFg4Tg.iGELYRQIg8g_2IgmiGVwVkA-_XY'
     }
@@ -153,8 +191,10 @@ def findTableByName():
     response = requests.request("GET", url, headers=headers, data=payload)
 
     print(response.text)
-
-    return "success"
+    if response is not None:
+        return "success"
+    else:
+        return None
 
 
 def test_dm():
