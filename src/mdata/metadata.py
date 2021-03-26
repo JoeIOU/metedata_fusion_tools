@@ -765,7 +765,7 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
                 kk = None
                 if where is not None:
                     kk = where.keys()
-                msg = "uppdate_execute,the input condition fields[{}] is NULL or not Key Fields in the Condition or not match the fields of the entity={},by user={}.".format(
+                msg = "update_execute,the input condition fields[{}] is NULL or not Key Fields in the Condition or not match the fields of the entity={},by user={}.".format(
                     kk,
                     md_entity_id, user_id)
                 res = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=DB_EXEC_STATUS_FAIL, rows=0,
