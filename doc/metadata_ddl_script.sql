@@ -308,8 +308,8 @@ CREATE TABLE  IF NOT EXISTS `md_entities` (
   UNIQUE KEY `md_entity_id` (`md_entity_id`),
   UNIQUE KEY `md_entity_code` (`tenant_id`,`md_entity_code`),
   KEY `md_entities_tenant_id_fk0` (`tenant_id`),
-  KEY `md_entities_md_tables_id_fk0` (`md_tables_id`),
-  CONSTRAINT `md_entities_md_tables_id_fk0` FOREIGN KEY (`md_tables_id`) REFERENCES `md_tables` (`md_tables_id`),
+  -- KEY `md_entities_md_tables_id_fk0` (`md_tables_id`),
+  -- CONSTRAINT `md_entities_md_tables_id_fk0` FOREIGN KEY (`md_tables_id`) REFERENCES `md_tables` (`md_tables_id`),
   CONSTRAINT `md_entities_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='元数据实体对象';
 
@@ -360,8 +360,8 @@ ALTER  TABLE  `md_entities`  ADD  INDEX md_entity_name_idx1 (  `md_entity_name` 
   UNIQUE KEY `md_fields_id` (`md_fields_id`),
   KEY `md_fields_tenant_id_fk0` (`tenant_id`),
   KEY `md_fields_md_entity_id_fk0` (`md_entity_id`),
-  KEY `md_fields_md_columns_id_fk0` (`md_columns_id`),
-  CONSTRAINT `md_fields_md_columns_id_fk0` FOREIGN KEY (`md_columns_id`) REFERENCES `md_columns` (`md_columns_id`),
+  -- KEY `md_fields_md_columns_id_fk0` (`md_columns_id`), 
+  -- CONSTRAINT `md_fields_md_columns_id_fk0` FOREIGN KEY (`md_columns_id`) REFERENCES `md_columns` (`md_columns_id`),
   CONSTRAINT `md_fields_md_entity_id_fk0` FOREIGN KEY (`md_entity_id`) REFERENCES `md_entities` (`md_entity_id`),
   CONSTRAINT `md_fields_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='元数据属性';
