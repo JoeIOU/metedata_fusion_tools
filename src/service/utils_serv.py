@@ -36,10 +36,8 @@ def request_parse(req):
                 data = fm.to_dict()
     elif req.method == 'GET':
         data = req.args
-    if data is not None and not isinstance(data, dict):
+    if data is not None:
         d = json.loads(json.dumps(data))
-    else:
-        d = data
     return d
 
 
