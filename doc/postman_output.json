@@ -45,6 +45,9 @@
 		},
 		{
 			"name": "findEntity",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"auth": {
 					"type": "basic",
@@ -61,7 +64,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "GET",
 				"header": [
 					{
 						"key": "token",
@@ -827,27 +830,30 @@
 		},
 		{
 			"name": "view",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"auth": {
 					"type": "basic",
 					"basic": [
 						{
 							"key": "username",
-							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"value": "test1",
 							"type": "string"
 						},
 						{
 							"key": "password",
-							"value": "",
+							"value": "12",
 							"type": "string"
 						}
 					]
 				},
-				"method": "POST",
+				"method": "GET",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"view_id\":50001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}",
+					"raw": "{\"$_VIEW_ID\":30001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -855,7 +861,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/queryView",
+					"raw": "http://127.0.0.1:8888/md/services/queryView?$_VIEW_ID=30001",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -868,6 +874,12 @@
 						"md",
 						"services",
 						"queryView"
+					],
+					"query": [
+						{
+							"key": "$_VIEW_ID",
+							"value": "30001"
+						}
 					]
 				}
 			},
@@ -895,7 +907,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"view_id\":50002,\"teant_name_label\": \"%租户%\"}",
+					"raw": "{\"$_VIEW_ID\":50002,\"teant_name_label\": \"%租户%\"}",
 					"options": {
 						"raw": {
 							"language": "json"
