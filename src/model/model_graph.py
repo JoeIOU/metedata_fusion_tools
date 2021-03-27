@@ -4,21 +4,30 @@ from py2neo import Relationship, NodeMatcher, Subgraph
 from db.neo4j_conn import neo4j_graph as graph
 from config.config import cfg as config
 
-DATA_ENTITY = "ENTITY"
 logger = config.logger
 
 
-# graph = graph()
+def name_format(name):
+    if name is not None:
+        name = name.strip()
+        name = name.replace(' ', '_').replace('&', '_')
+    return name
+
 
 # 创建图数据库实体对象
-def create_object_from_metadata(entity_list):
+def create_object_from_metadata(entity_list, entity_catagory, schema):
+    global DATA_ENTITY
     if entity_list is None:
         return None
-    cql_create_node_template = "CREATE ({name}:{labels}:%s {fields})" % (DATA_ENTITY)
+    entity_catagory = name_format(entity_catagory)
+    cql_create_node_template = "CREATE ({name}:{labels}:%s {fields})" % (entity_catagory)
     kv_template = "{key}:{value}"
     nm = None
     for item in entity_list:
         name = item.get("name")
+        if schema is None:
+            schema = 'Default'
+        item['schema'] = schema
         labels = item.get("label")
         fileds_str = None
         for key in item.keys():
@@ -30,7 +39,9 @@ def create_object_from_metadata(entity_list):
             else:
                 fileds_str += "," + kv_template.format(key=key, value=value)
         fileds_str = "{" + fileds_str + "}"
-        cql = cql_create_node_template.format(name=name, labels=labels, fields=fileds_str)
+        name = name_format(name)
+        labels = name_format(labels)
+        cql = cql_create_node_template.format(name=labels, labels=labels, fields=fileds_str)
 
         nm = graph().run(cql)
     if nm is None:
@@ -54,12 +65,12 @@ def create_object_rel_from_metadata(entity_rel_list):
         # rel_desc = item.get("relation_desc")
         rel_type = item.get("relation_type")
         # frm_md_entity_id = item.get("from_entity_id")
-        # frm_md_entity_name = item.get("from_entity_name")
+        frm_md_entity_name = item.get("from_entity_name")
         frm_md_entity_code = item.get("from_entity_code")
         # frm_md_fields_id = item.get("from_fields_id")
         # frm_md_fields_name = item.get("from_fields_name")
         # to_md_entity_id = item.get("to_entity_id")
-        # to_md_entity_name = item.get("to_entity_name")
+        to_md_entity_name = item.get("to_entity_name")
         to_md_entity_code = item.get("to_entity_code")
         # to_md_fields_id = item.get("to_fields_id")
         to_md_fields_name = item.get("to_fields_name")
@@ -67,8 +78,8 @@ def create_object_rel_from_metadata(entity_rel_list):
         item["relation_type"] = rel_type_new
         item["label"] = rel_type_new
 
-        node1 = nm.match(frm_md_entity_code, name=frm_md_entity_code).first()
-        node2 = nm.match(to_md_entity_code, name=to_md_entity_code).first()
+        node1 = nm.match(frm_md_entity_code, name=frm_md_entity_name).first()
+        node2 = nm.match(to_md_entity_code, name=to_md_entity_name).first()
         if node1 is None or node2 is None:
             continue
         properties = item
