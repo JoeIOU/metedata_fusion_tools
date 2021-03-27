@@ -6,12 +6,9 @@ from config.config import cfg as config
 from httpserver import httpserver
 
 logger = config.logger
-# graph = graph()
 app = httpserver.getApp()
 
 domain_root = '/md/graph'
-
-DATA_ENTITY = "ENTITY"
 
 
 def serialize_model(model):
@@ -21,7 +18,8 @@ def serialize_model(model):
         s_ver = str(release)
     return {
         'id': model['id'],
-        'title': model['entity_code'],
+        'code': model['entity_code'],
+        'title': model['name'],
         'name': model['name'],
         'released': s_ver
     }
@@ -81,7 +79,7 @@ def get_search():
         return []
     else:
         q_str = "(?i).*" + q + ".*"
-        cql = "MATCH (m:ENTITY) WHERE m.name =~ '{}' or m.entity_code=~ '{}' RETURN m".format(q_str, q_str)
+        cql = "MATCH (m) WHERE m.name =~ '{}' or m.entity_code=~ '{}' RETURN m".format(q_str, q_str)
         results = graph().run(cql)
 
         return Response(dumps([serialize_model(record['m']) for record in results]),
@@ -96,7 +94,7 @@ def search_shortest_path():
     except KeyError:
         return []
     else:
-        cql = "MATCH (p1:ENTITY {label:'%s'}),(p2:ENTITY{label:'%s'}),p=shortestpath((p1)-[*..10]-(p2))RETURN p" % (
+        cql = "MATCH (p1 {name:'%s'}),(p2{name:'%s'}),p=shortestpath((p1)-[*..10]-(p2))RETURN p" % (
             q, to)
         result = graph().run(cql)
         nodes, relationships = relationship_mapping(result)
@@ -110,7 +108,7 @@ def query_graph_rel(medel_name, sfrom, sto):
         sfrom = ""
     if sto is None:
         sto = ""
-    cql = "MATCH p=(n:ENTITY{name:'%s'})%s-[r]-%s(m) RETURN p LIMIT 100" % (medel_name, sfrom, sto)
+    cql = "MATCH p=(n{name:'%s'})%s-[r]-%s(m) RETURN p LIMIT 100" % (medel_name, sfrom, sto)
     result = graph().run(cql)
     return relationship_mapping(result)
 
@@ -237,7 +235,7 @@ def query_relation(title, flag):
     elif flag is not None and flag == "2":
         sfrom = "<"
         sto = ""
-    cql = "MATCH (m:ENTITY {entity_code:'%s'}) OPTIONAL MATCH (m)%s-[r]-%s(n:ENTITY) RETURN m.name as name,m.entity_code as title," \
+    cql = "MATCH (m {name:'%s'}) OPTIONAL MATCH (m)%s-[r]-%s(n) RETURN m.name as name,m.entity_code as title," \
           "COLLECT([n.name, r.label,r.from_fields_name,r.to_fields_name]) AS cast LIMIT 100" % (title, sfrom, sto)
     result = graph().run(cql)
     re_list = []
