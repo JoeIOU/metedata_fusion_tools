@@ -77,7 +77,6 @@ def test_view():
     assert qr is not None
 
 
-
 # 从erwin反向生成表的元数据
 def test_erwin_table_ini():
     user = ur.get_user("isales")
@@ -119,6 +118,7 @@ def test_erwin_entity_relation_ini():
     logger.info("all rels in[{}],re={}".format(schema, re))
     assert re is not None
 
+
 # 从元数据实体关系生成Neo4j图数据库
 def test_entity_relation_2_neo4j():
     user = ur.get_user("isales")
@@ -126,9 +126,10 @@ def test_entity_relation_2_neo4j():
     tenant_id = user.get("tenant_id")
     # Noe4j模型关系初始化
     entity_codes = None
-    re = mdi.ini_entity_model_graph(tenant_id, entity_codes)
+    re = mdi.ini_entity_model_graph(tenant_id, entity_codes, 'entity_catagory', 'schema')
     logger.info("ini_entity_model_graph ,re={}".format(re))
     return re
+
 
 test_md()
 test_view()
