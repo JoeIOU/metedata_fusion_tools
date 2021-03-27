@@ -445,11 +445,11 @@ def is_entity_in_list(key, value, entity_list):
 
 
 # 初始化数据模型关系模型图数据库
-def ini_entity_model_graph(tenant_id, entity_codes):
+def ini_entity_model_graph(tenant_id, entity_codes, entity_catagory, schema):
     # entity_codes = ["md_entities"]
     result = query_entity_rel_by_entity(tenant_id, entity_codes)
     entitie_model_list, rel_list = graph_data_mapping(result)
-    mg.create_object_from_metadata(entitie_model_list)
+    mg.create_object_from_metadata(entitie_model_list, entity_catagory, schema)
     mg.create_object_rel_from_metadata(rel_list)
     return (entitie_model_list, rel_list)
 
@@ -476,6 +476,6 @@ if __name__ == '__main__':
     # entity_codes = ["tenants", "md_columns"]
 
     # Noe4j模型关系初始化
-    entity_codes = None
-    re = ini_entity_model_graph(tenant_id, entity_codes)
-    logger.info("ini_entity_model_graph ,re={}".format(re))
+    # entity_codes = None
+    # re = ini_entity_model_graph(tenant_id, entity_codes, 'entity_catagory', 'schema')
+    # logger.info("ini_entity_model_graph ,re={}".format(re))
