@@ -47,11 +47,15 @@ SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
                 e.md_entity_id frm_md_entity_id,
                 e.md_entity_code frm_md_entity_code,
                 e.md_entity_name frm_md_entity_name,
+                e.tenant_id frm_tenant_id,
+                e.public_flag frm_public_flag,
                 f.md_fields_id frm_md_fields_id,
                 f.md_fields_name  frm_md_fields_name,
                 e1.md_entity_id to_md_entity_id,
                 e1.md_entity_code to_md_entity_code,
                 e1.md_entity_name to_md_entity_name,
+                e1.tenant_id to_tenant_id,
+                e1.public_flag to_public_flag,
                 f1.md_fields_id to_md_fields_id,
                 f1.md_fields_name  to_md_fields_name
             FROM md_entities_rel r
@@ -389,11 +393,15 @@ def graph_data_mapping(entiies_rel_list):
             frm_md_entity_name = item.get("frm_md_entity_name")
             frm_md_fields_id = item.get("frm_md_fields_id")
             frm_md_fields_name = item.get("frm_md_fields_name")
+            frm_tenant_id = item.get("frm_tenant_id")
+            frm_public_flag = item.get("frm_public_flag")
             to_md_entity_id = item.get("to_md_entity_id")
             to_md_entity_code = item.get("to_md_entity_code")
             to_md_entity_name = item.get("to_md_entity_name")
             to_md_fields_id = item.get("to_md_fields_id")
             to_md_fields_name = item.get("to_md_fields_name")
+            to_tenant_id = item.get("to_tenant_id")
+            to_public_flag = item.get("to_public_flag")
             rel_dict = {}
             rel_dict["label"] = rel_type
             rel_dict["name"] = rel_desc
@@ -414,6 +422,8 @@ def graph_data_mapping(entiies_rel_list):
             entity_dict = {}
             entity_dict["label"] = frm_md_entity_code
             entity_dict["name"] = frm_md_entity_name
+            entity_dict["tenant_id"] = frm_tenant_id
+            entity_dict["public_flag"] = frm_public_flag
             entity_dict["entity_id"] = frm_md_entity_id
             entity_dict["entity_code"] = frm_md_entity_code
             entity_dict["entity_name"] = frm_md_entity_name
@@ -422,6 +432,8 @@ def graph_data_mapping(entiies_rel_list):
             entity_dict = {}
             entity_dict["label"] = to_md_entity_code
             entity_dict["name"] = to_md_entity_name
+            entity_dict["tenant_id"] = to_tenant_id
+            entity_dict["public_flag"] = to_public_flag
             entity_dict["entity_id"] = to_md_entity_id
             entity_dict["entity_code"] = to_md_entity_code
             entity_dict["entity_name"] = to_md_entity_name
@@ -457,7 +469,7 @@ def ini_entity_model_graph(tenant_id, entity_codes, entity_catagory, schema):
 if __name__ == '__main__':
     # [{"entity_code":"table_name"}]
     entity_list = [{"entity_code": "Contract", "table_name": "data_t"}, {"entity_code": "BoQ", "table_name": "data_t"}]
-    user = ur.get_user("isales")
+    user = ur.get_user("test1")
     user_id = user.get("user_id")
     tenant_id = user.get("tenant_id")
 
@@ -473,9 +485,10 @@ if __name__ == '__main__':
     # re = query_entity_rel_by_entity(tenant_id, entity_codes)
     # logger.info("query_entity_rel_by_entity ,re={}".format(re))
 
-    # entity_codes = ["tenants", "md_columns"]
-
+    entity_codes = ["Part", "BOM"]
+    entity_catagory = "DEMO"
+    schema = "Test"
     # Noe4j模型关系初始化
     # entity_codes = None
-    # re = ini_entity_model_graph(tenant_id, entity_codes, 'entity_catagory', 'schema')
+    # re = ini_entity_model_graph(tenant_id, entity_codes, entity_catagory, schema)
     # logger.info("ini_entity_model_graph ,re={}".format(re))
