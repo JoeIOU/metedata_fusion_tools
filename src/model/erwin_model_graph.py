@@ -331,7 +331,7 @@ if __name__ == '__main__':
 
     # ####4.元数据对象生成Neo4J图数据库信息。
     entity_code_list = ["xx_Lifecycle",
-                   "xx_Rel"]
-    entity_catagory='XXX'#分类，增加一大类标签。
+                        "xx_Rel"]
+    entity_catagory = 'XXX'  # 分类，增加一大类标签。
     # entity_code_list = None 为None，则初始化全部实体。
-    re = mdi.ini_entity_model_graph(tenant_id, entity_code_list, entity_catagory, schema)
+    #re = mdi.ini_entity_model_graph(tenant_id, entity_code_list, entity_catagory, schema)
