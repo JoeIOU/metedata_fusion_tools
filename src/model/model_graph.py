@@ -17,7 +17,8 @@ def name_format(name):
 # 创建图数据库实体对象
 def create_object_from_metadata(entity_list, entity_catagory, schema):
     global DATA_ENTITY
-    if entity_list is None:
+    if entity_list is None or len(entity_list) <= 0:
+        logger.warning("create_object_from_metadata,entity_list is none.")
         return None
     entity_catagory = name_format(entity_catagory)
     cql_create_node_template = "CREATE ({name}:{labels}:%s {fields})" % (entity_catagory)
@@ -39,7 +40,7 @@ def create_object_from_metadata(entity_list, entity_catagory, schema):
             else:
                 fileds_str += "," + kv_template.format(key=key, value=value)
         fileds_str = "{" + fileds_str + "}"
-        name = name_format(name)
+        # name = name_format(name)
         labels = name_format(labels)
         cql = cql_create_node_template.format(name=labels, labels=labels, fields=fileds_str)
 
@@ -163,6 +164,10 @@ def query_all_node_by_name(graph, node_name):
     data = nm.data()
     logger.info("query_all_node_by_name,result:{}".format(data))
     return data
+
+
+def delete_all():
+    graph().delete_all()
 
 
 if __name__ == "__main__":
