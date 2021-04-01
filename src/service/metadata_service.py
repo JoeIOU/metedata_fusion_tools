@@ -160,9 +160,13 @@ def query_Metadata_Entity():
         (md_entity_id, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
 
     if md_entity_id is None:
-        msg = "queryEntityByCodeOrID Input params [{}] or[{}] at least one should be none or not match,please checked.".format(
-            utl.GLOBAL_ENTITY_ID,
-            utl.GLOBAL_ENTITY_CODE)
+        msg = None
+        if md_entity_id is None and md_entity_code is None:
+            msg = "queryEntityByCodeOrID, Input params [{}] or[{}] at least one should not none,please confirm.".format(
+                utl.GLOBAL_ENTITY_ID, utl.GLOBAL_ENTITY_CODE)
+        else:
+            msg = "queryEntityByCodeOrID,the entity not found,input parma=(ID={},Code={})".format(md_entity_id,
+                                                                                                  md_entity_code)
         re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
