@@ -132,7 +132,7 @@ def find_entity_setup():
     re = None
     if (result is not None and len(result) > 0):
         ent_id = result[0].get('md_entity_id')
-        (bool, re) = utl.query_privilege_check('findEntitySetup', ent_id)
+        (bool, re) = utl.query_privilege_check('findEntitySetup', ent_id, 'md_fields')
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     user = utl.get_login_user()
@@ -171,7 +171,7 @@ def query_Metadata_Entity():
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
     # 权限校验
-    (bool, re) = utl.query_privilege_check('queryEntityByCodeOrID', md_entity_id)
+    (bool, re) = utl.query_privilege_check('queryEntityByCodeOrID', md_entity_id, md_entity_code)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     res = md.get_md_entities(tenant_id, [md_entity_id])
@@ -203,7 +203,7 @@ def query_Metadata_Fields():
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
     # 权限校验
-    (bool, re) = utl.query_privilege_check('queryFieldsByCodeOrID', md_entity_id)
+    (bool, re) = utl.query_privilege_check('queryFieldsByCodeOrID', md_entity_id, md_entity_code)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     res = md.get_md_fields(tenant_id, md_entity_id)
@@ -333,7 +333,7 @@ def query_entity_list():
                                    message=msg)
         return Response(json.dumps(re), mimetype='application/json')
     # 权限校验
-    (bool, re) = utl.query_privilege_check('queryEntityList', md_entity_id)
+    (bool, re) = utl.query_privilege_check('queryEntityList', md_entity_id, md_entity_code)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
     res = md.get_md_entities_list(tenant_id)
