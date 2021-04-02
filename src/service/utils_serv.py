@@ -89,14 +89,10 @@ def have_privilege(md_entity_id, method):
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         logger.warning(output)
         return b_privilege
-    if isinstance(md_entity_id, str):
-        i_md_entity_id = int(md_entity_id)
-    else:
-        i_md_entity_id = md_entity_id
     for item in user_privilege_list:
         privllege_entity_id = item.get("md_entity_id")
         privilege_type = item.get("privilege_type")
-        if privllege_entity_id == i_md_entity_id:
+        if str(privllege_entity_id) == str(md_entity_id):
             if method == SERVICE_METHOD_GET:
                 if privilege_type == const.PRIVILEGE_TYPE_READ:
                     b_privilege = True
@@ -213,7 +209,7 @@ def ids2_where(ids):
     return id_list
 
 
-def query_privilege_check(method_name, md_entity_id):
+def query_privilege_check(method_name, md_entity_id, entity_code):
     if md_entity_id is not None and not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
@@ -226,8 +222,8 @@ def query_privilege_check(method_name, md_entity_id):
         user = get_login_user()
         user_privilege_list = get_login_user_privilege()
         if user_privilege_list is None or len(user_privilege_list) == 0:
-            msg = 'Access {} service, user({}) does not have privilege,entity=[{}] ,please check or ask the service center for help.'.format(
-                method_name, user.get("account_number"), md_entity_id)
+            msg = 'Access {} service, user({}) does not have privilege of the Entity(entityID={},entityCode={}),please check or ask the service center for help.'.format(
+                method_name, user.get("account_number"), md_entity_id, entity_code)
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
@@ -235,8 +231,8 @@ def query_privilege_check(method_name, md_entity_id):
             return (False, output)
         b_privilege = have_privilege(md_entity_id, SERVICE_METHOD_GET)
         if not b_privilege:
-            msg = 'Hi,{},you do not have the privilege to access the {} service,entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
-                user.get("account_number"), method_name, md_entity_id)
+            msg = 'Hi,{},you do not have the privilege to access the {} service about Entity(entityID={},entityCode={}),please check and confirm,any question please ask the service center for help,thanks.'.format(
+                user.get("account_number"), method_name, md_entity_id, entity_code)
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
