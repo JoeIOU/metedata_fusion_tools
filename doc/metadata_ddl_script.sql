@@ -682,7 +682,7 @@ CREATE TABLE  IF NOT EXISTS `data_privileges` (
   `data_privilege_id` bigint(20) NOT NULL COMMENT '数据权限ID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `md_entity_id` bigint(20) DEFAULT NULL COMMENT '元数据实体ID/View ID',
-  `md_entity_type` varchar(100) NOT NULL COMMENT '元数据实体类型，Entity/View',
+  `md_entity_type` varchar(100) COMMENT '元数据实体类型，Entity/View',
   `data_privilege_code` varchar(100) NOT NULL COMMENT '权限码',
   `data_privilege_type` varchar(100) NOT NULL COMMENT '权限码类型，按dept组织维度，customer客户维度、product产品维度，还是其他。',
   `data_privilege_desc` varchar(500) NOT NULL COMMENT '数据权限范围描述，组织、客户、产品等维度的权限。',
