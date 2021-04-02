@@ -34,6 +34,7 @@ def serialize_model(model):
         'entity_code': model['entity_code'],
         'title': model['name'],
         'entity_name': model['entity_name'],
+        'entity_desc': model['entity_desc'],
         'schema': model['schema']
     }
 
