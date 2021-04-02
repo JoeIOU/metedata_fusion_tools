@@ -641,7 +641,7 @@ CREATE TABLE  IF NOT EXISTS `user_groups` (
 -- Table structure for user_groups_rel
 -- ----------------------------
 CREATE TABLE  IF NOT EXISTS `user_groups_rel` (
-  `group_rel_id` int(11) NOT NULL,
+  `group_rel_id` bigint(20) NOT NULL,
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `group_id` bigint(20) NOT NULL COMMENT '用户群组ID',
   `user_id` bigint(20) NOT NULL COMMENT 'user id唯一标识',
@@ -718,7 +718,7 @@ CREATE TABLE  IF NOT EXISTS `data_privileges` (
 -- Table structure for data_privileges_rel
 -- ----------------------------
 CREATE TABLE  IF NOT EXISTS `data_privileges_rel` (
-  `data_privilege_rel_id` int(11) NOT NULL COMMENT '用户和数据权限关系ID',
+  `data_privilege_rel_id` bigint(20) NOT NULL COMMENT '用户和数据权限关系ID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `data_privilege_id` bigint(20) NOT NULL COMMENT '数据权限ID',
   `group_id` bigint(20) NOT NULL COMMENT '用户群组ID',
@@ -798,7 +798,7 @@ CREATE TABLE  IF NOT EXISTS `data_entity_rel` (
 -- Table structure for data_privilege_field
 -- ----------------------------
 CREATE TABLE  IF NOT EXISTS `data_privilege_field` (
-  `privilege_fields_id` int(11) NOT NULL COMMENT '业务数据字段权限映射ID',
+  `privilege_fields_id` bigint(20) NOT NULL COMMENT '业务数据字段权限映射ID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `md_fields_id` bigint(20) NOT NULL COMMENT '元数据属性ID/视图viewID',
   `condition_sign` varchar(100) DEFAULT '=' COMMENT '条件符号，=<>,like,in,between等',
