@@ -47,6 +47,7 @@ SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
                 e.md_entity_id frm_md_entity_id,
                 e.md_entity_code frm_md_entity_code,
                 e.md_entity_name frm_md_entity_name,
+                e.md_entity_desc frm_md_entity_desc,
                 e.tenant_id frm_tenant_id,
                 e.public_flag frm_public_flag,
                 f.md_fields_id frm_md_fields_id,
@@ -54,6 +55,7 @@ SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
                 e1.md_entity_id to_md_entity_id,
                 e1.md_entity_code to_md_entity_code,
                 e1.md_entity_name to_md_entity_name,
+                e1.md_entity_desc to_md_entity_desc,
                 e1.tenant_id to_tenant_id,
                 e1.public_flag to_public_flag,
                 f1.md_fields_id to_md_fields_id,
@@ -391,6 +393,7 @@ def graph_data_mapping(entiies_rel_list):
             frm_md_entity_id = item.get("frm_md_entity_id")
             frm_md_entity_code = item.get("frm_md_entity_code")
             frm_md_entity_name = item.get("frm_md_entity_name")
+            frm_md_entity_desc = item.get("frm_md_entity_desc")
             frm_md_fields_id = item.get("frm_md_fields_id")
             frm_md_fields_name = item.get("frm_md_fields_name")
             frm_tenant_id = item.get("frm_tenant_id")
@@ -398,6 +401,7 @@ def graph_data_mapping(entiies_rel_list):
             to_md_entity_id = item.get("to_md_entity_id")
             to_md_entity_code = item.get("to_md_entity_code")
             to_md_entity_name = item.get("to_md_entity_name")
+            to_md_entity_desc = item.get("to_md_entity_desc")
             to_md_fields_id = item.get("to_md_fields_id")
             to_md_fields_name = item.get("to_md_fields_name")
             to_tenant_id = item.get("to_tenant_id")
@@ -427,6 +431,7 @@ def graph_data_mapping(entiies_rel_list):
             entity_dict["entity_id"] = frm_md_entity_id
             entity_dict["entity_code"] = frm_md_entity_code
             entity_dict["entity_name"] = frm_md_entity_name
+            entity_dict["entity_desc"] = frm_md_entity_desc
             if not is_entity_in_list("entity_id", frm_md_entity_id, list_entity):
                 list_entity.append(entity_dict)
             entity_dict = {}
@@ -437,6 +442,7 @@ def graph_data_mapping(entiies_rel_list):
             entity_dict["entity_id"] = to_md_entity_id
             entity_dict["entity_code"] = to_md_entity_code
             entity_dict["entity_name"] = to_md_entity_name
+            entity_dict["entity_desc"] = to_md_entity_desc
             if not is_entity_in_list("entity_id", to_md_entity_id, list_entity):
                 list_entity.append(entity_dict)
     return list_entity, list_rel
