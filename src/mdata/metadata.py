@@ -4,7 +4,7 @@ import decimal
 from common.guid import get_guid
 from db.db_conn import db_connection_metedata as db_md
 from config.config import cfg as config
-from privilege import data_privilege as dp, user_mngt as ur
+from privilege import data_privilege as dp, role_privilege as rp, user_mngt as ur
 from common import constants as const
 
 logger = config.logger
@@ -668,6 +668,10 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
                                                                              data_list_new))
         re = exec_output_status(type=DB_EXEC_TYPE_INSERT, status=sStatus, rows=irows, data=data, message=message)
         conn.commit()
+        # 插入元数据实体，就要增加权限码
+        if table_name is not None and table_name.lower() == 'md_entities':
+            rp.insert_entity_privilege(user_id, tenant_id, const.ENTITY_TYPE_ENTITY, ids)
+            dp.insert_data_privilege(user_id, tenant_id, const.ENTITY_TYPE_ENTITY, ids)
         return re
     except Exception as e:
         logger.error('sql insert error,sql:[%s],message:%s' % (sql, e))
