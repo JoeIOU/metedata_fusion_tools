@@ -77,7 +77,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                     distinct *
                 FROM
                     (
-                        SELECT 
+                        SELECT 'N' blank_flag,
                             e.md_entity_id,
                             e.md_entity_code,
                             e.md_entity_name,
@@ -120,7 +120,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                         AND e.md_entity_id = %s
                         AND e.active_flag = 'Y'
                         UNION
-                            SELECT 
+                            SELECT 'Y' blank_flag,
                                 e.md_entity_id,
                                 e.md_entity_code,
                                 e.md_entity_name,
@@ -164,7 +164,7 @@ SQL_QUERY_ENTITY_FIELDS_COLUMNS_FORMAT = """
                             AND f.md_columns_id IS NULL
                     ) aaa
                 ORDER BY
-                    md_columns_id,md_fields_id
+                    blank_flag,md_fields_id,md_columns_id
                 """
 
 
