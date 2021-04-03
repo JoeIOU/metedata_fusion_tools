@@ -154,7 +154,13 @@ def sql_execute_method(md_entity_id, method, service_name, data_list=None, where
     re = None
     try:
         if method == SERVICE_METHOD_GET:
-            re = md.query_execute(user_id, tenant_id, md_entity_id, where_list[0])
+            wh_dict = None
+            if where_list is not None:
+                if isinstance(where_list, list) and len(where_list) > 0:
+                    wh_dict = where_list[0]
+                elif isinstance(where_list, dict):
+                    wh_dict = where_list
+            re = md.query_execute(user_id, tenant_id, md_entity_id, wh_dict)
         elif method == SERVICE_METHOD_INSERT:
             re = md.insert_execute(user_id, tenant_id, md_entity_id, data_list)
             # 插入索引数据
