@@ -130,6 +130,17 @@ def test_entity_relation_2_neo4j():
     logger.info("ini_entity_model_graph ,re={}".format(re))
     return re
 
+# 插入默认字段
+def test_entity_default_fields_insert():
+    user = ur.get_user("admin")
+    user_id = user.get("user_id")
+    tenant_id = user.get("tenant_id")
+    # Noe4j模型关系初始化
+    md_entity_ids = [1378186464011710464]
+    entity_relative_tables_ids_list=[10003]
+    re = md.insert_default_fields(user_id, tenant_id, md_entity_ids, entity_relative_tables_ids_list)
+    logger.info("insert_default_fields ,re={}".format(re))
+    return re
 
 test_md()
 test_view()
@@ -138,3 +149,4 @@ test_erwin_table_ini()
 test_entity_ini_from_tables()
 test_erwin_entity_relation_ini()
 test_entity_relation_2_neo4j()
+test_entity_default_fields_insert()
