@@ -2,6 +2,8 @@
 # 用户数据范围权限维护
 from config.config import cfg as config
 from privilege import user_mngt as ur
+from mdata import metadata as md
+from data import data_view as vw
 from db.db_conn import db_connection_metedata as db_md
 from common import util
 from common import constants as const
@@ -83,7 +85,7 @@ sql_query_privilege_view = """
                         AND dv.data_view_id = dp.md_entity_id
                         LEFT JOIN md_entities AS me ON me.active_flag = 'Y'
                         AND me.tenant_id = u.tenant_id
-                        AND me.md_entity_id = dv.md_main_entity_id
+                        AND me.md_entity_id = dv.md_entity_id
                         WHERE
                             u.active_flag = 'Y'
                         AND u.tenant_id = %s
@@ -154,6 +156,44 @@ sql_query_privilege_fields_view = """
                         AND dp.data_privilege_id in %s
                         """
 
+
+# 插入视图或实体的权限模型CRUD权限码数据
+def insert_data_privilege(user_id, tenant_id, entity_type, md_entity_ids):
+    privilege_entity=md.get_md_entities_id_by_code(["data_privileges"])
+    if privilege_entity is None:
+        logger.warning("insert_data_privilege,the Entity[data_privileges] is NULL.")
+        return None
+
+    insert_entity_id=privilege_entity[0].get("md_entity_id")
+    if entity_type == const.ENTITY_TYPE_ENTITY:
+        re = md.get_md_entities(tenant_id, md_entity_ids)
+    else:
+        re = vw.get_data_view(tenant_id, md_entity_ids)
+
+    if re is None or len(re) <= 0:
+        logger.warning("insert_data_privilege,get_md_entities is NULL,input params={}".format(md_entity_ids))
+    data_privilege_list = []
+    for item in re:
+        if entity_type == const.ENTITY_TYPE_ENTITY:
+            id = item.get("md_entity_id")
+            str0 = str(item.get("md_entity_id")) + ":" + item.get("md_entity_name")
+        else:
+            id = item.get("data_view_id")
+            str0 = str(item.get("data_view_id")) + ":" + item.get("data_view_name")
+
+        new_set = {}
+        new_set["md_entity_id"] = id
+        new_set["tenant_id"] = tenant_id
+        new_set["data_privilege_code"] = str0[:100]
+        new_set["data_privilege_type"] = 'All'
+        new_set["md_entity_type"] = entity_type
+        new_set["data_privilege_desc"] = str0[:600]
+
+        data_privilege_list.append(new_set)
+
+    re = md.insert_execute(user_id, tenant_id, insert_entity_id, data_privilege_list)
+    logger.info('insert_data_privilege,params={},insert result={}'.format(md_entity_ids, re))
+    return re
 
 def query_data_privilege(tenant_id, user_id, entity_id, object_type):
     sql1 = sql_query_privilege_entity
@@ -261,4 +301,3 @@ if __name__ == '__main__':
     ## View
     # md_entity_id = 50001
     # re = query_data_privilege_info(tenant_id, user_id, md_entity_id,const.ENTITY_TYPE_VIEW)
-
