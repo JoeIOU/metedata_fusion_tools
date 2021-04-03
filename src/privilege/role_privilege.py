@@ -49,7 +49,13 @@ sql_query_privilege = """
 
 
 # 插入视图或实体的权限模型CRUD权限码数据
-def insert_entity_privilege(user_id, tenant_id, insert_entity_id, entity_type, md_entity_ids):
+def insert_entity_privilege(user_id, tenant_id, entity_type, md_entity_ids):
+    privilege_entity=md.get_md_entities_id_by_code(["entity_privileges"])
+    if privilege_entity is None:
+        logger.warning("insert_entity_privilege,the Entity[entity_privileges] is NULL.")
+        return None
+
+    insert_entity_id=privilege_entity[0].get("md_entity_id")
     if entity_type == const.ENTITY_TYPE_ENTITY:
         re = md.get_md_entities(tenant_id, md_entity_ids)
     else:
