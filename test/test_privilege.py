@@ -35,12 +35,12 @@ def test_role_privilege():
 
     # #1.实体权限导入
     md_entity_ids = [30015]
-    re = rp.insert_entity_privilege(user_id, tenant_id, insert_entity_id, const.ENTITY_TYPE_ENTITY, md_entity_ids)
+    re = rp.insert_entity_privilege(user_id, tenant_id, const.ENTITY_TYPE_ENTITY, md_entity_ids)
     assert re is not None
 
     # #2.视图权限写入
     view_ids = [50002]
-    re = rp.insert_entity_privilege(user_id, tenant_id, insert_entity_id, const.ENTITY_TYPE_VIEW, view_ids)
+    re = rp.insert_entity_privilege(user_id, tenant_id, const.ENTITY_TYPE_VIEW, view_ids)
     assert re is not None
 
     # re = query_user_priv_by_user_account(user_account)
