@@ -38,7 +38,6 @@ sql_query_privilege_entity = """
                         LEFT JOIN data_privileges AS dp ON dp.active_flag = 'Y'
                         AND dp.tenant_id = u.tenant_id
                         AND dp.data_privilege_id = dr.data_privilege_id
-                        and dp.md_entity_type='Entity'
                         LEFT JOIN md_entities AS me ON me.active_flag = 'Y'
                         AND (me.tenant_id = u.tenant_id or me.public_flag='Y')
                         AND me.md_entity_id = dp.md_entity_id
@@ -79,7 +78,6 @@ sql_query_privilege_view = """
                         LEFT JOIN data_privileges AS dp ON dp.active_flag = 'Y'
                         AND dp.tenant_id = u.tenant_id
                         AND dp.data_privilege_id = dr.data_privilege_id
-                        AND dp.md_entity_type = 'View'
                         LEFT JOIN data_views AS dv ON dv.active_flag = 'Y'
                         AND dv.tenant_id = u.tenant_id
                         AND dv.data_view_id = dp.md_entity_id
