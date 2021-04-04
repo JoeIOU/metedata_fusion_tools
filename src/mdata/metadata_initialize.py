@@ -328,7 +328,8 @@ def ini_fields(user_id, tenant_id, obj_id, columns):
         field_dict["md_columns_id"] = col.get("md_columns_id")
         field_dict["md_fields_name"] = col.get("md_columns_name")
         field_dict["md_fields_name_en"] = col.get("md_columns_name")
-        field_dict["md_fields_type"] = col.get("md_columns_type")
+        type1 = col.get("md_columns_type")
+        field_dict["md_fields_type"] = field_type_mapping(type1, col.get("md_dec_length"))
         field_dict["md_fields_length"] = col.get("md_columns_length")
         field_dict["md_decimals_length"] = col.get("md_dec_length")
         field_dict["is_null"] = col.get("is_cols_null")
@@ -339,6 +340,25 @@ def ini_fields(user_id, tenant_id, obj_id, columns):
         fields_list.append(field_dict)
     re = md.insert_execute(user_id, tenant_id, md_entity_id, fields_list)
     return re
+
+
+def field_type_mapping(type, deci):
+    new_type = None
+    if (type is not None):
+        if type.lower() == 'number' or type.lower() == 'smallint' or type.lower() == 'integer' \
+                or type.lower() == 'numeric' or type.lower() == 'real' or type.lower() == 'money':
+            if deci is not None and int(deci) > 0:
+                new_type = 'decimal'
+            else:
+                new_type = 'bigint'
+        elif type.lower() == 'date' or type.lower() == 'datetime':
+            new_type = 'timestamp'
+        elif type.lower() == 'bit' or type.lower() == 'boolean':
+            new_type = 'char'
+        else:
+            new_type = type.lower()
+
+    return new_type
 
 
 def insert_metadata_table(user_id, tenant_id, tables):
