@@ -609,6 +609,7 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
     table_name = None
     exist_fields = False
     data_mapping = {}
+    entity_relative_tables_list = []
     if isinstance(data_list, list) and len(data_list) > 0:
         count = 0
         for data_dict in data_list:
@@ -630,6 +631,10 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
                         if key.upper() == field_name.upper():
                             v = data_dict[key]
                             exist_fields = True
+                            if (
+                                    table_name is not None and table_name.lower() == 'md_entities' and key.lower() == 'md_tables_id'):
+                                if entity_relative_tables_list.count(v) <= 0:
+                                    entity_relative_tables_list.append(v)
                             break
                 if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
                     data_mapping[field.get('md_columns_name')] = v
@@ -668,17 +673,76 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
                                                                              data_list_new))
         re = exec_output_status(type=DB_EXEC_TYPE_INSERT, status=sStatus, rows=irows, data=data, message=message)
         conn.commit()
-        # 插入元数据实体，就要增加权限码
-        if table_name is not None and table_name.lower() == 'md_entities':
-            rp.insert_entity_privilege(user_id, tenant_id, const.ENTITY_TYPE_ENTITY, ids)
-            dp.insert_data_privilege(user_id, tenant_id, const.ENTITY_TYPE_ENTITY, ids)
-        return re
+        # 插入到元数据实体表或者数据视图表，就要增加权限码；以及创建默认的实体字段，即填写不为空的字段（包括主键ID）。
+        if table_name is not None and (table_name.lower() == 'md_entities' or table_name.lower() == 'data_views'):
+            entity_type = const.ENTITY_TYPE_ENTITY
+            if table_name.lower() == 'data_views':
+                entity_type = const.ENTITY_TYPE_VIEW
+            # 角色权限
+            rp.insert_entity_privilege(user_id, tenant_id, entity_type, ids)
+            # 数据范围权限
+            dp.insert_data_privilege(user_id, tenant_id, entity_type, ids)
+            # 插入默认实体字段
+            if entity_type == const.ENTITY_TYPE_ENTITY:
+                insert_default_fields(user_id, tenant_id, ids, entity_relative_tables_list)
+            return re
     except Exception as e:
         logger.error('sql insert error,sql:[%s],message:%s' % (sql, e))
         conn.rollback()
         raise e
     finally:
         conn.close()
+
+
+def insert_default_fields(user_id, tenant_id, md_entity_ids, entity_relative_tables_ids_list):
+    field_entity = get_md_entities_id_by_code(["md_fields"])
+    if field_entity is None:
+        logger.warning("insert_default_fields,the Entity[data_privileges] is NULL.")
+        return None
+
+    insert_entity_id = field_entity[0].get("md_entity_id")
+    columns = get_md_columns_multi_table(tenant_id, entity_relative_tables_ids_list)
+
+    if columns is None or len(columns) <= 0:
+        logger.warning("insert_default_fields,get_md_columns_multi_table is NULL,input params={}".format(
+            entity_relative_tables_ids_list))
+    insert_fields_list = []
+    ii = 0
+    for sel_entity_id in md_entity_ids:
+        table_id = entity_relative_tables_ids_list[ii]
+        for item in columns:
+            if item.get('md_tables_id') != table_id:
+                continue
+            # 系统字段，跳过
+            if item is None or item.get('md_columns_name').lower() == 'create_by' \
+                    or item.get('md_columns_name').lower() == 'create_date' \
+                    or item.get('md_columns_name').lower() == 'last_update_by' \
+                    or item.get('md_columns_name').lower() == 'last_update_date':
+                continue
+            if item is not None and (item.get('is_key') == 'Y' or item.get('is_cols_null') == 'N'):
+                new_set = {}
+                new_set["md_entity_id"] = sel_entity_id
+                new_set["tenant_id"] = tenant_id
+                new_set["md_columns_id"] = item.get("md_columns_id")
+                new_set["md_fields_name"] = item.get("md_columns_name")
+                new_set["md_fields_name_en"] = item.get("md_columns_name")
+                new_set["md_fields_type"] = item.get("md_columns_type")
+                new_set["md_fields_length"] = item.get("md_columns_length")
+                new_set["md_decimals_length"] = item.get("md_dec_length")
+                new_set["is_null"] = item.get("is_cols_null")
+                new_set["is_indexed"] = "N"
+                new_set["is_unique"] = "N"
+                new_set["md_fields_desc"] = item.get("md_columns_desc")
+                new_set["lookup_flag"] = "N"
+                new_set["public_flag"] = "N"
+                new_set["is_key"] = item.get("is_key")
+
+                insert_fields_list.append(new_set)
+        ii += 1
+
+    re = insert_execute(user_id, tenant_id, insert_entity_id, insert_fields_list)
+    logger.info('insert_default_fields,params={},insert result={}'.format(md_entity_ids, re))
+    return re
 
 
 def exec_output_status(type, status, rows, data, message):
