@@ -221,7 +221,7 @@ def query_Metadata_Fields():
 @auth.login_required
 def find_entity():
     # GET入参：{"$_ENTITY_ID":30025,"user_id":"123"}
-    # POST入参：{"$_ENTITY_ID":30025,"where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
+    # POST入参：{"$_ENTITY_ID":30025,"where":{"user_id":1348844049557229568}}
     data_list = []
     data = utl.request_parse(request)
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
@@ -249,7 +249,7 @@ def find_entity():
 @auth.login_required
 def find_entity_by_code():
     # GET入参：{"$_ENTITY_CODE":"users","user_id":"123"}
-    # POST入参：{"$_ENTITY_CODE":"users","where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
+    # POST入参：{"$_ENTITY_CODE":"users","where":{"user_id":1348844049557229568}}
     data = utl.request_parse(request)
     data_list = []
     if request.method == 'POST':
@@ -350,7 +350,7 @@ def query_entity_list():
 @app.route(domain_root + '/services/insertEntity', methods=['POST'])
 @auth.login_required
 def insert_entity():
-    # 入参：{"abc":"123"}
+    # 入参：{"$_ENTITY_ID":30001,"data":[{"test_fields":"Mark","test_fields1":"Mark0001"}]}
     data = utl.request_parse(request)
     if data is None:
         msg = 'insert Entity, input param[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
