@@ -335,6 +335,8 @@ ALTER  TABLE  `md_entities`  ADD  INDEX md_entity_name_idx1 (  `md_entity_name` 
   `md_fields_desc` varchar(2000) DEFAULT NULL COMMENT '元数据属性描述',
   `md_columns_id` bigint(20) DEFAULT NULL COMMENT '元数据-数据表列ID',
   `lookup_flag` char(1) NOT NULL DEFAULT 'N' COMMENT 'lookup类型，包括多值字段或者关联其他lookup对象标识，Y为是，N为否,多值字段则关联lookup表的数据。',
+  `lookup_entity` varchar(512) DEFAULT NULL COMMENT 'lookup选择对应的实体',
+  `lookup_type` varchar(512) DEFAULT NULL COMMENT 'lookup类型，对应lookup_classify大类lookup_code',
   `public_flag` char(1) NOT NULL DEFAULT 'N' COMMENT '全局公共标识，Y是，N否',
   `default_value` varchar(512)  COMMENT '属性的默认值',
   `text_column1` varchar(2000) COMMENT '预留文本字段1',
