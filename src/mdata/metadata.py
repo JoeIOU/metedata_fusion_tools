@@ -37,6 +37,38 @@ def get_md_entities(tenant_id, md_entity_ids):
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
 
+# lookup数据实体
+def get_lookup_items(tenant_id, lookup_codes):
+    if lookup_codes is None or len(lookup_codes) <= 0:
+        logger.warning("get_lookup_items,lookup_codes is None")
+        return None
+    conn = db_md()
+    cursor = conn.cursor()
+    sql = """SELECT DISTINCT
+                c.lookup_classify_id,
+                c.lookup_code,
+                c.lookup_name,
+                c.lookup_name_en,
+                c.tenant_id,
+                i.lookup_item_id,
+                i.lookup_item_code,
+                i.lookup_item_name,
+                i.lookup_item_name_en
+            FROM
+                lookup_classify c,
+                lookup_item i
+            WHERE
+                c.active_flag = 'Y'
+            AND c.lookup_classify_id = i.lookup_classify_id
+            AND i.active_flag = 'Y'
+            AND c.tenant_id =%s
+            AND c.lookup_code IN %s"""
+    cursor.execute(sql, args=(tenant_id, lookup_codes,))
+    result = cursor.fetchall()
+    result = data_type_convert(result)
+    logger.info("get_lookup_items,result:{}".format(result))
+    conn.close()  # 不是真正关闭，而是重新放回了连接池
+    return result
 
 # 元数据实体清单list
 def get_md_entities_list(tenant_id):
