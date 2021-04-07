@@ -281,6 +281,40 @@ def find_entity_by_code():
     return Response(json.dumps(re), mimetype='application/json')
 
 
+# Lookup条目查询by entity code
+@app.route(domain_root + '/services/findLookupItemByCode', methods=['POST', 'GET'])
+@auth.login_required
+def find_lookupItem_by_code():
+    # GET入参：{"lookup_code":"123"}
+    # POST入参：{"lookup_code":['CODE1','CODE2']}
+    data = utl.request_parse(request)
+    data_list = []
+    if request.method == 'POST':
+        data_list = data.get('lookup_code')
+    else:
+        data_list.append(data.get('lookup_code'))
+    user = utl.get_login_user()
+    tenant_id = user.get("tenant_id")
+    # user_id = user.get("user_id")
+    res = md.get_md_entities_id_by_code(["lookup_classify"])
+    md_entity_id = None
+    if res is not None and len(res) > 0:
+        md_entity_id = res[0].get("md_entity_id")
+    else:
+        s = 'findLookupItemByCode. Params:{},the Entity is not exists'.format(data_list)
+        logger.warning(s)
+        return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                     message=s)
+    res = md.get_lookup_items(tenant_id, data_list)
+    sz = 0
+    if (res is not None):
+        sz = len(res)
+    re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=sz, data=res,
+                               message="query lookup success.")
+    logger.info('findLookupItemByCode. Params:{},result:{}'.format(data_list, re))
+    return Response(json.dumps(re), mimetype='application/json')
+
+
 # 实体表查询by table name list
 @app.route(domain_root + '/services/findTableByName', methods=['POST', 'GET'])
 @auth.login_required
