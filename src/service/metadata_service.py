@@ -315,6 +315,62 @@ def find_lookupItem_by_code():
     return Response(json.dumps(re), mimetype='application/json')
 
 
+# 实体和Lookup组合查询by entity code，lookup_classify
+@app.route(domain_root + '/services/findLookupByEntityCode', methods=['POST', 'GET'])
+@auth.login_required
+def find_Lookup_By_EntityCode():
+    # GET/POST入参：{"lookup_code":"123",entity_code:"xxx"}
+    data = utl.request_parse(request)
+    user = utl.get_login_user()
+    tenant_id = user.get("tenant_id")
+    lookup_code = data.get('lookup_code')
+    entity_code = data.get('entity_code')
+    if lookup_code is None or len(lookup_code.strip()) <= 0:
+        lookup_code = entity_code
+    res_lk = md.get_lookup_items(tenant_id, [lookup_code])
+    res = md.get_md_entities_by_code(tenant_id, [entity_code])
+    md_entity_id = None
+    if res is not None and len(res) > 0:
+        md_entity_id = res[0].get("md_entity_id")
+    else:
+        s = 'findLookupByEntityCode. Params:{},the Entity is not exists'.format(data)
+        logger.warning(s)
+        return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                     message=s)
+    result = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findLookupByEntityCode", data_list=None,
+                                    where_list=[data])
+    mp = entity_lookup_mapping(res_lk, result.get("data"))
+    size1 = 0
+    if (mp is not None):
+        size1 = len(mp)
+    re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=size1, data=mp,
+                               message="findLookupByEntityCode Success")
+    logger.info('findLookupByEntityCode. Params:{},result:{}'.format(data, re))
+    return Response(json.dumps(re), mimetype='application/json')
+
+
+def entity_lookup_mapping(lk, data):
+    if lk is None or len(lk) <= 0:
+        return [{"key": "NaNa", "value": "NaNa", "label": "没有定义该实体的映射lookup", "disabled": True}]
+    lp_list = []
+    for rd in data:
+        dict_mp = {}
+        af = rd.get("active_flag")
+        disabled = False
+        if af is not None and af == 'N':
+            disabled = True
+        dict_mp['disabled'] = disabled
+        for item in lk:
+            key = item.get('lookup_item_code')
+            field = item.get('lookup_item_name')
+            v = rd.get(field)
+            if key == 'disabled' and v is not None and (str(v) == 'Y' or str(v) == '1'):
+                v = True
+            dict_mp[key] = v
+        lp_list.append(dict_mp)
+    return lp_list
+
+
 # 实体表查询by table name list
 @app.route(domain_root + '/services/findTableByName', methods=['POST', 'GET'])
 @auth.login_required
