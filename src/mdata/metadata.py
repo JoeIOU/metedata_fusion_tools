@@ -37,6 +37,7 @@ def get_md_entities(tenant_id, md_entity_ids):
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
 
+
 # lookup数据实体
 def get_lookup_items(tenant_id, lookup_codes):
     if lookup_codes is None or len(lookup_codes) <= 0:
@@ -69,6 +70,7 @@ def get_lookup_items(tenant_id, lookup_codes):
     logger.info("get_lookup_items,result:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
+
 
 # 元数据实体清单list
 def get_md_entities_list(tenant_id):
