@@ -130,6 +130,7 @@ CREATE TABLE  IF NOT EXISTS `lookup_classify` (
   `lookup_code` varchar(100) NOT NULL COMMENT 'lookup编码',
   `lookup_name` varchar(100) NOT NULL COMMENT 'lookup分类名称',
   `lookup_name_en` varchar(200) NOT NULL COMMENT 'lookup分类英文名称',
+  `public_flag` char(1) NOT NULL DEFAULT 'N' COMMENT '全局公共标识，Y是，N否',
   `text_column1` varchar(2000) COMMENT '预留文本字段1',
   `text_column2` varchar(2000) COMMENT '预留文本字段2',
   `text_column3` varchar(2000) COMMENT '预留文本字段3',
