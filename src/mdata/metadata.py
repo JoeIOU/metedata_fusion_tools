@@ -61,7 +61,7 @@ def get_lookup_items(tenant_id, lookup_codes):
                 c.active_flag = 'Y'
             AND c.lookup_classify_id = i.lookup_classify_id
             AND i.active_flag = 'Y'
-            AND c.tenant_id =%s
+            AND (c.tenant_id =%s or c.public_flag='Y')
             AND c.lookup_code IN %s"""
     cursor.execute(sql, args=(tenant_id, lookup_codes,))
     result = cursor.fetchall()
