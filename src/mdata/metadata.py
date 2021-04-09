@@ -134,13 +134,18 @@ def get_md_entities_by_name(tenant_id, md_entity_names):
 
 
 # 元数据属性
-def get_md_fields(tenant_id, md_entity_id):
+def get_md_fields(tenant_id, md_entity_id, only_active=True):
     if md_entity_id is None:
         logger.warning("get_md_fields,md_entity_id is None")
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select distinct * from md_fields where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id=%s"
+    # sql = "select distinct * from md_fields where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id=%s"
+    sql = """select distinct f.* from md_fields f
+            inner join md_entities e on e.md_entity_id=f.md_entity_id
+            where  (e.tenant_id=%s or e.public_flag='Y') and e.md_entity_id=%s"""
+    if (only_active):
+        sql += " and f.active_flag='Y'"
     cursor.execute(sql, args=(tenant_id, md_entity_id,))
     result = cursor.fetchall()
     result = data_type_convert(result)
@@ -198,13 +203,19 @@ def get_md_tables_by_name(tenant_id, md_table_names):
 
 
 # 元数据数据表字段映射
-def get_md_columns(tenant_id, md_table_id):
+def get_md_columns(tenant_id, md_table_id, only_active=True):
     if md_table_id is None:
         logger.warning("get_md_columns,md_table_id is None")
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select distinct * from md_columns where active_flag='Y' and (tenant_id=%s or public_flag='Y') and  md_tables_id =%s"
+    # sql = "select distinct * from md_columns where active_flag='Y' and (tenant_id=%s or public_flag='Y') and  md_tables_id =%s"
+    sql = """select distinct c.* from md_columns c 
+            INNER JOIN md_tables t on t.md_tables_id=c.md_tables_id
+            where (t.tenant_id=%s or t.public_flag='Y') and  t.md_tables_id =%s
+          """
+    if (only_active):
+        sql += " and c.active_flag='Y'"
     cursor.execute(sql, args=(tenant_id, md_table_id,))
     result = cursor.fetchall()
     result = data_type_convert(result)
