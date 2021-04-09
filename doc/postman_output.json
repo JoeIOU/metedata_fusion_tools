@@ -469,6 +469,110 @@
 			"response": []
 		},
 		{
+			"name": "findLookupItemByCode",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "ww",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findLookupItemByCode?lookup_code=COMMON_YN_SELECT",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findLookupItemByCode"
+					],
+					"query": [
+						{
+							"key": "lookup_code",
+							"value": "COMMON_YN_SELECT"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findLookupByEntityCode",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "ww",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findLookupByEntityCode?entity_code=md_entities",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findLookupByEntityCode"
+					],
+					"query": [
+						{
+							"key": "entity_code",
+							"value": "md_entities"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "query_user",
 			"request": {
 				"auth": {
@@ -853,7 +957,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"$_VIEW_ID\":30001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}",
+					"raw": "{\"$_VIEW_ID\":50001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -861,7 +965,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/queryView?$_VIEW_ID=30001",
+					"raw": "http://127.0.0.1:8888/md/services/queryView?$_VIEW_ID=50001",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -878,7 +982,7 @@
 					"query": [
 						{
 							"key": "$_VIEW_ID",
-							"value": "30001"
+							"value": "50001"
 						}
 					]
 				}
