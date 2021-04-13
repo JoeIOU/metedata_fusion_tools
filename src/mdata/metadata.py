@@ -923,9 +923,9 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
             message = "update rows=0,input params{}".format(where_list)
             where_mapping = None
 
-        logger.warning(
-            "update entity,user=[{}],entity={},where={},new_values={}".format(user_id, md_entity_id, where_list,
-                                                                              values_new))
+        logger.warning("update entity,user=[{}],entity={},where={}".format(user_id, md_entity_id, where_list))
+        logger.info("update entity,user=[{}],entity={},where={},new_values={}".format(user_id, md_entity_id, where_list,
+                                                                                      values_new))
         data = {"entity_id": md_entity_id, "ids": obj_list}
         re = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=sStatus, rows=irows, data=data,
                                 message=message)
