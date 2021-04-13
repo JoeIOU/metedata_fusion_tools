@@ -676,8 +676,7 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
                         if key.upper() == field_name.upper():
                             v = data_dict[key]
                             exist_fields = True
-                            if (
-                                    table_name is not None and table_name.lower() == 'md_entities' and key.lower() == 'md_tables_id'):
+                            if table_name is not None and table_name.lower() == 'md_entities' and key.lower() == 'md_tables_id':
                                 if entity_relative_tables_list.count(v) <= 0:
                                     entity_relative_tables_list.append(v)
                             break
@@ -800,10 +799,7 @@ def exec_output_status(type, status, rows, data, message):
     return re
 
 
-def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn=None):
-    commit_flag = True
-    if conn is not None:
-        commit_flag = False
+def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
     irows = 0
     if user_id is None or tenant_id is None or md_entity_id is None:
         msg = 'update execute warning:user_id,tenant_id,md_entity_id or or more is None,user={},tenant_id={},entity_id={}'.format(
@@ -929,8 +925,7 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
         data = {"entity_id": md_entity_id, "ids": obj_list}
         re = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=sStatus, rows=irows, data=data,
                                 message=message)
-        if commit_flag:
-            conn.commit()
+        conn.commit()
         return re
 
     except Exception as e:
@@ -938,7 +933,6 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list, conn
         conn.rollback()
         raise e
     finally:
-        if commit_flag:
             conn.close()
 
 
