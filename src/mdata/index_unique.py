@@ -1,5 +1,5 @@
 # ######index_unique.py
-# 唯一值或索引值逻辑处理，在insert或者update数据时，同时要处理对应的索引表或者唯一键索引表，尽量放到一个事务处理或线程处理。
+# 索引值逻辑处理，在insert或者update数据时，同时要处理对应的索引表。
 from db.db_conn import db_connection_metedata as db_md
 from mdata import metadata as md
 from privilege import user_mngt as ur
@@ -19,10 +19,10 @@ MD_ENTITY_INDEX_INT = "index_int_t"
 MD_ENTITY_INDEX_DEC = "index_decimal_t"
 MD_ENTITY_INDEX_DATE = "index_date_t"
 # MD_UNIQUE_ENTITY_MAPPING_NAME = "unique_mapping_t"
-MD_ENTITY_UNIQUE_TEXT = "unique_text_t"
-MD_ENTITY_UNIQUE_INT = "unique_int_t"
-MD_ENTITY_UNIQUE_DEC = "unique_decimal_t"
-MD_ENTITY_UNIQUE_DATE = "unique_date_t"
+# MD_ENTITY_UNIQUE_TEXT = "unique_text_t"
+# MD_ENTITY_UNIQUE_INT = "unique_int_t"
+# MD_ENTITY_UNIQUE_DEC = "unique_decimal_t"
+# MD_ENTITY_UNIQUE_DATE = "unique_date_t"
 
 # 保存索引值的字段
 MD_ENTITY_INDEX_FIELD_TEXT = "text_value"
@@ -70,41 +70,29 @@ def query_index_all_type_list(tenant_id):
     code_list.append(MD_ENTITY_INDEX_DEC)
     code_list.append(MD_ENTITY_INDEX_INT)
     code_list.append(MD_ENTITY_INDEX_DATE)
-    code_list.append(MD_ENTITY_UNIQUE_TEXT)
-    code_list.append(MD_ENTITY_UNIQUE_DEC)
-    code_list.append(MD_ENTITY_UNIQUE_INT)
-    code_list.append(MD_ENTITY_UNIQUE_DATE)
+    # code_list.append(MD_ENTITY_UNIQUE_TEXT)
+    # code_list.append(MD_ENTITY_UNIQUE_DEC)
+    # code_list.append(MD_ENTITY_UNIQUE_INT)
+    # code_list.append(MD_ENTITY_UNIQUE_DATE)
     index_list = md.get_md_entities_by_code(tenant_id, code_list)
     return index_list
 
 
-def get_mapping_table_fields(mapping_type, unique_flag):
+def get_mapping_table_fields(mapping_type):
     mapping_code, value_field = None, None
     if mapping_type is not None and (
             mapping_type.upper() == FIELD_TYPE_TEXT.upper() or mapping_type.upper() == FIELD_TYPE_CHAR.upper()):
         value_field = MD_ENTITY_INDEX_FIELD_TEXT
-        if unique_flag is not None and unique_flag == "Y":
-            mapping_code = MD_ENTITY_UNIQUE_TEXT
-        else:
-            mapping_code = MD_ENTITY_INDEX_TEXT
+        mapping_code = MD_ENTITY_INDEX_TEXT
     elif mapping_type is not None and mapping_type.upper() == FIELD_TYPE_INT.upper():
         value_field = MD_ENTITY_INDEX_FIELD_INT
-        if unique_flag is not None and unique_flag == "Y":
-            mapping_code = MD_ENTITY_UNIQUE_INT
-        else:
-            mapping_code = MD_ENTITY_INDEX_INT
+        mapping_code = MD_ENTITY_INDEX_INT
     elif mapping_type is not None and mapping_type.upper() == FIELD_TYPE_DECIMAL.upper():
         value_field = MD_ENTITY_INDEX_FIELD_DEC
-        if unique_flag is not None and unique_flag == "Y":
-            mapping_code = MD_ENTITY_UNIQUE_DEC
-        else:
-            mapping_code = MD_ENTITY_INDEX_DEC
+        mapping_code = MD_ENTITY_INDEX_DEC
     elif mapping_type is not None and mapping_type.upper() == FIELD_TYPE_DATE.upper():
         value_field = MD_ENTITY_INDEX_FIELD_DATE
-        if unique_flag is not None and unique_flag == "Y":
-            mapping_code = MD_ENTITY_UNIQUE_DATE
-        else:
-            mapping_code = MD_ENTITY_INDEX_DATE
+        mapping_code = MD_ENTITY_INDEX_DATE
     return mapping_code, value_field
 
 
@@ -112,27 +100,13 @@ def gen_index_mapping(tenant_id, data_list):
     index_list = query_index_all_type_list(tenant_id)
     classify_dict = {}
     for item in data_list:
-        unique_flag = item.get("unique_flag")
+        # unique_flag = item.get("unique_flag")
         mapping_type = item.get("mapping_type")
         # 删除非元数据存储字段信息，避免影响保存动作
         item.pop("mapping_type")
         item.pop("unique_flag")
-        if unique_flag == "Y":
-            mapping_code, value_field = get_mapping_table_fields(mapping_type, unique_flag)
-            for itm in index_list:
-                code = itm.get("md_entity_code")
-                if code == mapping_code:
-                    entity_id = itm.get("md_entity_id")
-                    obj_list = classify_dict.get(str(entity_id))
-                    if obj_list is None:
-                        tmp_li = []
-                        tmp_li.append(item)
-                        classify_dict[str(entity_id)] = tmp_li
-                    else:
-                        obj_list.append(item)
-                    break
-        # 不管索引，还是唯一索引，都在index对应的表有存记录。
-        mapping_code, value_field = get_mapping_table_fields(mapping_type, "N")
+        # 是索引，在index对应的表有存记录。
+        mapping_code, value_field = get_mapping_table_fields(mapping_type)
         for itm in index_list:
             code = itm.get("md_entity_code")
             if code == mapping_code:
@@ -187,9 +161,9 @@ def get_mapping_list(data_list, mapping_list, ids):
             mapping_entity_id = item.get("md_entity_id")
             mapping_field_id = item.get("md_fields_id")
             mapping_field_name = item.get("md_fields_name")
-            unique_flag = item.get("unique_flag")
+            # unique_flag = item.get("unique_flag")
             mapping_type = item.get("mapping_type")
-            mapping_code, value_field = get_mapping_table_fields(mapping_type, unique_flag)
+            mapping_code, value_field = get_mapping_table_fields(mapping_type)
             i = 0
             for itm in data_list:
                 id = ids[i]
@@ -204,7 +178,7 @@ def get_mapping_list(data_list, mapping_list, ids):
                 if mapping_field_name is not None and mapping_field_name in itm.keys() and mapping_entity_id == i_entity_id:
                     item_new = {}
                     item_new["md_entity_id"] = mapping_entity_id
-                    item_new["unique_flag"] = unique_flag
+                    item_new["unique_flag"] = "N"
                     item_new["mapping_type"] = mapping_type
                     item_new["md_fields_id"] = mapping_field_id
                     item_new[value_field] = itm.get(mapping_field_name)
