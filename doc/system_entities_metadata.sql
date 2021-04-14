@@ -104,6 +104,7 @@ CREATE TABLE  IF NOT EXISTS `system_entities` (
   `date_column7` datetime COMMENT '预留日期字段7',
   `date_column8` datetime COMMENT '预留日期字段8',
   `date_column9` datetime COMMENT '预留日期字段9',
+  `public_flag` char(1) NOT NULL DEFAULT 'N' COMMENT '跨租户共享标识，Y则共享，N不共享',
   `active_flag` char(1) NOT NULL DEFAULT 'Y' COMMENT '有效标识，Y有效，N无效',
   `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `create_by` bigint(20) NOT NULL COMMENT '创建人ID，对用用户ID',
