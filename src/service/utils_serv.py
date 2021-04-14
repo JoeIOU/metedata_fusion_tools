@@ -128,20 +128,20 @@ def sql_execute_method(md_entity_id, method, service_name, data_list=None, where
     user_privilege_list = cache.get(user_id + '_privilege')
     user = cache.get(user_id)
     if user is None:
-        msg = 'access service, user does not login ,please login first.'
+        msg = '{}，您访问服务{}受阻,用户未登录或登录过期，请重新登录。'.format(user_id,service_name)
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN, rows=0, data=None, message=msg)
         return output
     if user_privilege_list is None or len(user_privilege_list) == 0:
-        msg = 'access service, user({}) does not have privilege,entity=[{}] ,please check or ask the service center for help.'.format(
-            user.get("account_number"), md_entity_id)
+        msg = '{}，您无权访问服务{}受阻，实体ID=[{}]，请申请权限或找业务管理员寻求帮忙，谢谢。'.format(user.get("account_number"),service_name,
+             md_entity_id)
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         return output
     b_privilege = have_privilege(md_entity_id, method)
     if not b_privilege:
-        msg = '{},you do not have the privilege to access the service[{}],entity=[{}],please check and confirm,any question please ask the service center for help,thanks.'.format(
-            user.get("account_number"), service_name, md_entity_id)
+        msg = '{}，您无权访问这个实体（实体ID={}）的这个服务[{}],请申请权限或找业务管理员寻求帮忙，谢谢。'.format(
+            user.get("account_number"), md_entity_id, service_name)
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         return output
@@ -219,7 +219,7 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
     if md_entity_id is not None and not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = 'Access {},input entity params[{}] should not be None.'.format(method_name, GLOBAL_ENTITY_ID)
+        msg = '[Privilege Validation]:Access Service={},entity=[{}] should not be None.'.format(method_name, GLOBAL_ENTITY_ID)
         logger.warning(msg)
         output = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                        message=msg)
@@ -228,8 +228,8 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
         user = get_login_user()
         user_privilege_list = get_login_user_privilege()
         if user_privilege_list is None or len(user_privilege_list) == 0:
-            msg = 'Access {} service, user({}) does not have privilege of the Entity(entityID={},entityCode={}),please check or ask the service center for help.'.format(
-                method_name, user.get("account_number"), md_entity_id, entity_code)
+            msg = '{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。'.format(
+                 user.get("account_number"),method_name, md_entity_id, entity_code)
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
@@ -237,7 +237,7 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
             return (False, output)
         b_privilege = have_privilege(md_entity_id, SERVICE_METHOD_GET)
         if not b_privilege:
-            msg = 'Hi,{},you do not have the privilege to access the {} service about Entity(entityID={},entityCode={}),please check and confirm,any question please ask the service center for help,thanks.'.format(
+            msg = '{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。'.format(
                 user.get("account_number"), method_name, md_entity_id, entity_code)
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
