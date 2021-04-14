@@ -44,11 +44,11 @@ def login():
     uname = data.get('username')
     pwd = data.get('password')
     if uname is None or len(uname.strip()) <= 0 or pwd is None or len(pwd.strip()) <= 0:
-        logger.warning("user account[{}] or password is NULL,please input again".format(uname))
+        logger.warning("[{}]用户账号或密码不正确，请确认并重试！".format(uname))
         return None
     vr = au.verify_password(uname, pwd, force=True)
     if not vr:
-        logger.warning("user account[{}] login failed,please input the right username and password.".format(uname))
+        logger.warning("用户账号=[{}]，用户登录失败，请输入正确的账号或密码！".format(uname))
         return None
     (token, expire_time) = au.generate_auth_token(g.user_id)
     re = g.user
@@ -184,13 +184,17 @@ def query_Metadata_Entity():
     return Response(json.dumps(re), mimetype='application/json')
 
 
-# 实体元数据对象属性信息查询,入参：{"$_ENTITY_ID":"123",$_ENTITY_CODE:""}
+# 实体元数据对象属性信息查询,入参：{"$_ENTITY_ID":"123",$_ENTITY_CODE:"","only_active":Y/N}
 @app.route(domain_root + '/services/queryFieldsByCodeOrID', methods=['POST', 'GET'])
 @auth.login_required
 def query_Metadata_Fields():
     data = utl.request_parse(request)
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     md_entity_code = data.get(utl.GLOBAL_ENTITY_CODE)
+    only_active = data.get("only_active")
+    b_onlyActive = True
+    if only_active is not None and only_active == 'N':
+        b_onlyActive = False
     user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
@@ -206,7 +210,7 @@ def query_Metadata_Fields():
     (bool, re) = utl.query_privilege_check('queryFieldsByCodeOrID', md_entity_id, md_entity_code)
     if not bool:
         return Response(json.dumps(re), mimetype='application/json')
-    res = md.get_md_fields(tenant_id, md_entity_id)
+    res = md.get_md_fields(tenant_id, md_entity_id, b_onlyActive)
     irows = 0
     if res is not None:
         irows = len(res)
@@ -315,7 +319,7 @@ def find_lookupItem_by_code():
     return Response(json.dumps(re), mimetype='application/json')
 
 
-# 实体和Lookup组合查询by entity code，lookup_classify
+# 实体和Lookup mappig关系查询by entity code，lookup_classify
 @app.route(domain_root + '/services/findLookupByEntityCode', methods=['POST', 'GET'])
 @auth.login_required
 def find_Lookup_By_EntityCode():
@@ -325,6 +329,8 @@ def find_Lookup_By_EntityCode():
     tenant_id = user.get("tenant_id")
     lookup_code = data.get('lookup_code')
     entity_code = data.get('entity_code')
+    if lookup_code == '':
+        data.pop('lookup_code')
     if lookup_code is None or len(lookup_code.strip()) <= 0:
         lookup_code = entity_code
     res_lk = md.get_lookup_items(tenant_id, [lookup_code])
@@ -457,15 +463,30 @@ def insert_entity():
         re = md.exec_output_status(type=utl.SERVICE_METHOD_INSERT, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        list_data = []
+        data_list = []
         if data and data['data']:
             if isinstance(data['data'], list):
-                list_data = data['data']
+                data_list = data['data']
             else:
-                list_data = [data['data']]
-        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity", data_list=list_data)
+                data_list = [data['data']]
+        data_list = value2str(data_list)
+        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity", data_list=data_list)
         logger.info('insert Entity Params:%s' % data)
     return Response(json.dumps(re), mimetype='application/json')
+
+
+def value2str(data):
+    if data is not None and isinstance(data, list):
+        for item in data:
+            for key in item:
+                if item[key] is not None and (isinstance(item[key], list) or isinstance(item[key], dict)):
+                    item[key] = str(item[key])
+    elif data is not None and isinstance(data, dict):
+        item = data
+        for key in item:
+            if item[key] is not None and (isinstance(item[key], list) or isinstance(item[key], dict)):
+                item[key] = str(item[key])
+    return data
 
 
 # 单个或多个实体更新，入参：{"$_ENTITY_ID":30025,"data":[{"user_name":"test01"},{"user_name":"test02"}],"where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
@@ -484,6 +505,7 @@ def update_entity():
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     where_list = data.get("where")
     data_list = data.get("data")
+    data_list = value2str(data_list)
     re = update_entity_common(md_entity_id, data_list, where_list)
     return Response(json.dumps(re), mimetype='application/json')
 
