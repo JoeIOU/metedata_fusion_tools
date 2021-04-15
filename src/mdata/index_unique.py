@@ -168,14 +168,7 @@ def get_mapping_list(data_list, mapping_list, ids):
             for itm in data_list:
                 id = ids[i]
                 i += 1
-                entity_id = itm.get("md_entity_id")
-                i_entity_id = -1
-                if isinstance(entity_id, str):
-                    i_entity_id = int(entity_id)
-                else:
-                    i_entity_id = entity_id
-                # field_id = itm.get("md_fields_id")
-                if mapping_field_name is not None and mapping_field_name in itm.keys() and mapping_entity_id == i_entity_id:
+                if mapping_field_name is not None and mapping_field_name in itm.keys():
                     item_new = {}
                     item_new["md_entity_id"] = mapping_entity_id
                     item_new["unique_flag"] = "N"
