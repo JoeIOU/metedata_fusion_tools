@@ -828,6 +828,10 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
     exist_fields = False
     data_mapping = {}
     where_mapping = {}
+    last_data_mapping = {}
+    last_where_mapping = {}
+    last_data = None
+    last_where = None
     obj_list = []
     if isinstance(data_list, list) and len(data_list) > 0:
         i = 0
@@ -878,15 +882,12 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
             if sys_flag is not None and sys_flag == "Y":
                 b_flag = True
             # wehere条件为空，则不允许操作
-            if where_mapping is None or len(where_mapping) <= 0 or not is_key_fields_in_where:
+            if where_mapping is None or len(where_mapping) <= 0 or len(where_mapping) < len(where):
                 kk = None
                 if where is not None:
                     kk = where.keys()
-                msg = "update_execute,the input condition fields[{}] is NULL or not Key Fields in the Condition or not match the fields of the entity={},by user={}.".format(
-                    kk,
-                    md_entity_id, user_id)
-                res = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=DB_EXEC_STATUS_FAIL, rows=0,
-                                         data=None,
+                msg = "更新操作警告：操作人：{}，由于输入条件参数[{}] 不匹配实体[{}]的属性或为空，不能更新操作！".format(user_id, where, md_entity_id)
+                res = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=msg)
                 logger.warning(res)
                 return res
@@ -899,6 +900,25 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
             where_list_new.append(where_mapping)
             new_dict = dict(data_mapping, **where_mapping)
             values_new.append(new_dict)
+            if last_data_mapping is None or len(last_data_mapping) <= 0:
+                last_data_mapping = data_mapping
+                last_data = data_dict
+            if last_where_mapping is None or len(last_where_mapping) <= 0:
+                last_where_mapping = where_mapping
+                last_where = where
+
+            if (last_data_mapping.keys() != data_mapping.keys() or last_where_mapping.keys() != where_mapping.keys()):
+                msg = "更新操作警告：操作人：{}，批量更新实体{}，存在某个对象的输入参数[data:{},where:{}] 不匹配另外对象的参数[data:{}，where:{}]参数,不能更新！".format(
+                    user_id,
+                    md_entity_id,
+                    last_data.keys(),
+                    last_where.keys(),
+                    data_dict.keys(),
+                    where.keys())
+                res = exec_output_status(type=DB_EXEC_TYPE_UPDATE, status=DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                         message=msg)
+                logger.warning(res)
+                return res
 
     s = None
     for item in data_mapping.keys():
@@ -915,6 +935,7 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
             s1 += ' and ' + wh + '=%s'
     sql_where = '{param}'.format(param=s1)
     sql += sql_where
+
     conn = db_md()
     try:
         cursor = sql_exec(conn, sql, values_new)
@@ -965,6 +986,8 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
     exist_fields = False
     data_mapping = {}
     where_mapping = {}
+    last_where_mapping = {}
+    last_where = None
     if isinstance(where_list, list) and len(where_list) > 0:
         for data_dict in where_list:
             where = data_dict
@@ -976,6 +999,7 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
                 break
 
             where_mapping = {}
+            include_key = False
             for key1 in where.keys():
                 v = None
                 field = None
@@ -984,40 +1008,31 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
                     exist_fields = False
                     if field.get('is_key') == 'Y' and key1 == KEY_FIELDS_ID:  # key关键字赋值，guid
                         obj_list.append(where.get(key1))
+                        include_key = True
                         exist_fields = True
                         break
                     if key1.upper() == field_name1.upper():
                         if field.get('is_key') == 'Y':
                             obj_list.append(where.get(key1))
+                            include_key = True
                         exist_fields = True
                         break
                 if exist_fields:  # 有数据输入，匹配元数据实体，才赋值和引入
                     v = where.get(key1)
                     where_mapping[field.get('md_columns_name')] = v
-                else:  # 输入的fields不存在,且不是实体key，则不执行
-                    if key1 != "md_entity_id":
-                        msg = "delete_execute,the input field[{}] is not exists".format(key1)
-                        res = exec_output_status(type=DB_EXEC_TYPE_DELETE, status=DB_EXEC_STATUS_FAIL, rows=0,
-                                                 data=None,
-                                                 message=msg)
-                        logger.warning(res)
-                        return res
+
+                # 输入的fields不存在,且不是实体key，则不执行
+            if where_mapping is None or len(where_mapping) <= 0 or len(where_mapping) < len(where):
+                msg = "删除操作警告：操作人{},由于输入条件不满足，即输入参数[{}]不匹配实体[{}]属性或为空，不能做删除动作!".format(user_id, where,
+                                                                                       md_entity_id)
+                res = exec_output_status(type=DB_EXEC_TYPE_DELETE, status=DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                         message=msg)
+                logger.warning(res)
+                return res
 
             b_flag = False
             if sys_flag is not None and sys_flag == 'Y':
                 b_flag = True
-            if where_mapping is None or len(where_mapping) <= 0:
-                kk = None
-                if where is not None:
-                    kk = where.keys()
-                msg = "delete_execute,the input fields[{}] is NULL or not match the fields of the entity={},by user={}.".format(
-                    kk,
-                    md_entity_id, user_id)
-                res = exec_output_status(type=DB_EXEC_TYPE_DELETE, status=DB_EXEC_STATUS_FAIL, rows=0,
-                                         data=None,
-                                         message=msg)
-                logger.warning(res)
-                return res
 
             # 系统字段赋值
             where_mapping['tenant_id'] = tenant_id
@@ -1026,6 +1041,21 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
             where_list_new.append(where_mapping)
             new_dict = where_mapping
             values_new.append(new_dict)
+
+            if last_where_mapping is None or len(last_where_mapping) <= 0:
+                last_where_mapping = where_mapping
+                last_where = where
+
+            if (last_where_mapping.keys() != where_mapping.keys()):
+                msg = "删除操作警告：操作人：{}，批量删除实体{}，存在某个对象的输入参数[where:{}] 不匹配另外对象的参数[where:{}]参数,不能删除！".format(
+                    user_id,
+                    md_entity_id,
+                    last_where.keys(),
+                    where.keys())
+                res = exec_output_status(type=DB_EXEC_TYPE_DELETE, status=DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                         message=msg)
+                logger.warning(res)
+                return res
 
     s = None
     for item in data_mapping.keys():
