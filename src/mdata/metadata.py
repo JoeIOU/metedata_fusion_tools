@@ -108,7 +108,7 @@ def get_md_entities_id_by_code(md_entity_codes):
         return None
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select distinct md_entity_id,md_entity_code,md_tables_id from md_entities where active_flag='Y' and md_entity_code in %s"
+    sql = "select distinct md_entity_id,md_entity_code,md_tables_id,public_flag from md_entities where active_flag='Y' and md_entity_code in %s"
     cursor.execute(sql, args=(md_entity_codes,))
     result = cursor.fetchall()
     result = data_type_convert(result)
@@ -561,9 +561,14 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
         return exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_FAIL, rows=irows, data=None,
                                   message=msg)
     entity_sys_flag = None
+    public_flag = False
+    public_col = None
     for field in all_fields:
         field_name = field.get('md_fields_name')
         entity_sys_flag = field.get('sys_flag')
+        if field_name is not None and field_name.lower() == 'public_flag':
+            public_flag = True
+            public_col = field.get('md_columns_name')
         table_name = field.get('md_tables_name')
         data_mapping[field.get('md_columns_name')] = field_name
     select_str = None
@@ -606,6 +611,9 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
             s1 = wh + '=%s'
         else:
             s1 += ' and ' + wh + '=%s'
+    if public_flag is not None and public_flag and public_col is not None:
+        srep = "(tenant_id=%s or " + public_col + "='Y')"
+        s1 = s1.replace("tenant_id=%s", srep)
     sql_where = '{param}'.format(param=s1)
     # 限制查询最大数量1000
     icount = 1000
@@ -933,7 +941,7 @@ def update_execute(user_id, tenant_id, md_entity_id, data_list, where_list):
         conn.rollback()
         raise e
     finally:
-            conn.close()
+        conn.close()
 
 
 def delete_execute(user_id, tenant_id, md_entity_id, where_list):
