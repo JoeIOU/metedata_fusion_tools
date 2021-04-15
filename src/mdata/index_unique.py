@@ -152,7 +152,7 @@ def get_delete_list(del_list):
     return list_res
 
 
-def get_mapping_list(data_list, mapping_list, ids):
+def get_mapping_list(data_list, mapping_list, ids, delete_only=False):
     data_list_new = []
     if data_list is None or len(data_list) <= 0:
         return None
@@ -174,36 +174,8 @@ def get_mapping_list(data_list, mapping_list, ids):
                     item_new["unique_flag"] = "N"
                     item_new["mapping_type"] = mapping_type
                     item_new["md_fields_id"] = mapping_field_id
-                    item_new[value_field] = itm.get(mapping_field_name)
-                    item_new[MD_ENTITY_INDEX_DATA_FIELD] = id
-                    data_list_new.append(item_new)
-    return data_list_new
-
-
-def get_mapping_del_list(md_entity_id, mapping_list, ids):
-    data_list_new = []
-    if mapping_list is not None and len(mapping_list) >= 0:
-        for item in mapping_list:
-            mapping_entity_id = item.get("md_entity_id")
-            mapping_field_id = item.get("md_fields_id")
-            # mapping_field_name = item.get("md_fields_name")
-            unique_flag = item.get("unique_flag")
-            mapping_type = item.get("mapping_type")
-            # mapping_code, value_field = get_mapping_table_fields(mapping_type, unique_flag)
-            i = 0
-            i_entity_id = -1
-            if isinstance(md_entity_id, str):
-                i_entity_id = int(md_entity_id)
-            else:
-                i_entity_id = md_entity_id
-            for id in ids:
-                if mapping_entity_id == i_entity_id:
-                    item_new = {}
-                    item_new["md_entity_id"] = mapping_entity_id
-                    item_new["unique_flag"] = unique_flag
-                    item_new["mapping_type"] = mapping_type
-                    item_new["md_fields_id"] = mapping_field_id
-                    # item_new[value_field] = itm.get(mapping_field_name)
+                    if (not delete_only):
+                        item_new[value_field] = itm.get(mapping_field_name)
                     item_new[MD_ENTITY_INDEX_DATA_FIELD] = id
                     data_list_new.append(item_new)
     return data_list_new
@@ -245,7 +217,7 @@ def delete_index_data(user_id, tenant_id, md_entity_id, data_list, ids):
     re, new_list = None, None
     if md_entity_id is not None:
         mapping_list = query_index_mapping(tenant_id, md_entity_id)
-        new_list = get_mapping_del_list(md_entity_id, mapping_list, ids)
+        new_list = get_mapping_list(md_entity_id, mapping_list, ids, delete_only=True)
         if new_list is not None:
             re = exec_index_action(user_id, tenant_id, new_list, delete_only=True)
     if re is None:
