@@ -74,7 +74,7 @@ def query_index_all_type_list(tenant_id):
     # code_list.append(MD_ENTITY_UNIQUE_DEC)
     # code_list.append(MD_ENTITY_UNIQUE_INT)
     # code_list.append(MD_ENTITY_UNIQUE_DATE)
-    index_list = md.get_md_entities_by_code(tenant_id, code_list)
+    index_list = md.get_md_entities_id_by_code(code_list)
     return index_list
 
 
