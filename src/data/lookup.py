@@ -10,7 +10,7 @@ MD_LOOKUP_METADATA_ENTITY_NAME = "data_lookup_set"
 
 
 def insert_lookup_data(user_id, tenant_id, data_list):
-    rr = md.get_md_entities_by_code(tenant_id, [MD_LOOKUP_METADATA_ENTITY_NAME])
+    rr = md.get_md_entities_id_by_code([MD_LOOKUP_METADATA_ENTITY_NAME])
     re = None
     if rr is not None and len(rr) > 0:
         entity_id = rr[0].get("md_entity_id")
@@ -23,7 +23,7 @@ def insert_lookup_data(user_id, tenant_id, data_list):
 
 
 def update_lookup_data(user_id, tenant_id, md_entity_id, md_field_id, data_id, data_list):
-    rr = md.get_md_entities_by_code(tenant_id, [MD_LOOKUP_METADATA_ENTITY_NAME])
+    rr = md.get_md_entities_id_by_code([MD_LOOKUP_METADATA_ENTITY_NAME])
     re = None
     entity_id = None
     if rr is not None and len(rr) > 0:
@@ -47,7 +47,7 @@ def update_lookup_data(user_id, tenant_id, md_entity_id, md_field_id, data_id, d
 
 
 def delete_lookup_data(user_id, tenant_id, md_entity_id, md_field_id, data_id):
-    rr = md.get_md_entities_by_code(tenant_id, [MD_LOOKUP_METADATA_ENTITY_NAME])
+    rr = md.get_md_entities_id_by_code([MD_LOOKUP_METADATA_ENTITY_NAME])
     re = None
     entity_id = None
     if rr is not None and len(rr) > 0:
@@ -67,7 +67,7 @@ def delete_lookup_data(user_id, tenant_id, md_entity_id, md_field_id, data_id):
 
 
 def query_lookup_data(user_id, tenant_id, where_dict):
-    rr = md.get_md_entities_by_code(tenant_id, [MD_LOOKUP_METADATA_ENTITY_NAME])
+    rr = md.get_md_entities_id_by_code([MD_LOOKUP_METADATA_ENTITY_NAME])
     re = None
     if rr is not None and len(rr) > 0:
         entity_id = rr[0].get("md_entity_id")
