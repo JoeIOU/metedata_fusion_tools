@@ -372,7 +372,7 @@ def field_type_mapping(type, deci):
 def insert_metadata_table(user_id, tenant_id, tables):
     # 数据表md_tables的元数据实体ID
     # entity_id = 30018
-    rr = md.get_md_entities_by_code(tenant_id, [MD_TABLES_NAME])
+    rr = md.get_md_entities_id_by_code([MD_TABLES_NAME])
     re = None
     if rr is not None and len(rr) > 0:
         entity_id = rr[0].get("md_entity_id")
@@ -386,7 +386,7 @@ def insert_metadata_table(user_id, tenant_id, tables):
 def insert_metadata_columns(user_id, tenant_id, columns):
     # 数据字段表md_columns的元数据实体ID
     # entity_id = 30014
-    rr = md.get_md_entities_by_code(tenant_id, [MD_COLUMNS_NAME])
+    rr = md.get_md_entities_id_by_code([MD_COLUMNS_NAME])
     re = None
     if rr is not None and len(rr) > 0:
         entity_id = rr[0].get("md_entity_id")
@@ -398,7 +398,7 @@ def insert_metadata_columns(user_id, tenant_id, columns):
 
 
 def insert_metadata_entities_rel(user_id, tenant_id, entities_rel):
-    rr = md.get_md_entities_by_code(tenant_id, [MD_ENTITY_REL_NAME])
+    rr = md.get_md_entities_id_by_code([MD_ENTITY_REL_NAME])
     re = None
     if rr is not None and len(rr) > 0:
         entity_id = rr[0].get("md_entity_id")
