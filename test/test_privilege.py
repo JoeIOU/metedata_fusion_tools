@@ -26,7 +26,7 @@ def test_role_privilege():
     user = ur.get_user(user_account)
     user_id = user.get("user_id")
     tenant_id = user.get("tenant_id")
-    re = md.get_md_entities_by_code(tenant_id, ["entity_privileges"])
+    re = md.get_md_entities_id_by_code(["entity_privileges"])
     if re is not None and len(re) > 0:
         insert_entity_id = re[0].get("md_entity_id")
     else:
