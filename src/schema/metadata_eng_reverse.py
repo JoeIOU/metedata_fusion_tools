@@ -186,9 +186,9 @@ if __name__ == '__main__':
     database_name = "MySql"
     ##1.初始化实体和字段信息，反向从数据库
     # intialize_md_tables_from_schema(user_id, tenant_id, database_name, schema, tables_list)
-    table_consts = None  # ["data_lookup_set"] ,为None则处理当前Schema下的所有关系。
+    tables = None  # ["data_lookup_set"] ,为None则处理当前Schema下的所有关系。
     ##1.初始化实体关系，反向从数据库的外键关系
-    re = intialize_entity_rel_from_schema(user_id, tenant_id, schema, table_consts)
+    re = intialize_entity_rel_from_schema(user_id, tenant_id, schema, tables)
 
     # ####get all tables in the schema
     schema = "test"
