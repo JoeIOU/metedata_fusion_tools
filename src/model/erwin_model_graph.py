@@ -307,31 +307,21 @@ def reverse_constraint(user_id, tenant_id, schema, file_name):
 
 
 if __name__ == '__main__':
-    user = ur.get_user("test1")
+    user = ur.get_user("admin")
     user_id = user.get("user_id")
     tenant_id = user.get("tenant_id")
-    schema = "XXX"
-    database_name = "XXX"
+    schema = "common"
+    database_name = "mysql"
+    # 数据库类类型mysql/oracle/pb
+    db_type='mysql'
 
     # ##### 1.初始化表结构从erWin文件(注意文件路径写法d:/downloads/eSpace_File/xxx.erwin)。
     file_name = "d:/downloads/eSpace_File/123-new.erwin"
     # re = reverse_tables_columns(user_id, tenant_id, database_name, schema, file_name)
     # logger.info("all tables in[{}],re={}".format(schema, re))
 
-    # ####2.从数据库反向工程，初始化表和字段元数据
-    # entity_list = [{"entity_code": "Contract", "table_name": "data_t"}, {"entity_code": "BoQ", "table_name": "data_t"}]
-    # entity_list = [{"entity_code":"Part_Lifecycle","table_name":"xx生命周期状态信息"},
-    # {"entity_code":"Sub_Branch_Code_Rel","table_name":"子公司编码关系"}]
-    # re = mdi.initialize_md_entities_from_tables(user_id, tenant_id, entity_list)
-    # logger.info("all entity import[{}],re={}".format(schema, re))
-    #
-    # ####3.erwin的外键关系转成元数据实体关系。
-    # re = reverse_constraint(user_id, tenant_id, schema, file_name)
-    # logger.info("all rels in[{}],re={}".format(schema, re))
-
     # ####4.元数据对象生成Neo4J图数据库信息。
-    entity_code_list = ["xx_Lifecycle",
-                        "xx_Rel"]
+    entity_code_list = ["xx_Lifecycle","xx_Rel"]
     entity_catagory = 'XXX'  # 分类，增加一大类标签。
     # entity_code_list = None 为None，则初始化全部实体。
-    #re = mdi.ini_entity_model_graph(tenant_id, entity_code_list, entity_catagory, schema)
+    # re = mdi.ini_entity_model_graph(tenant_id, entity_code_list, entity_catagory, schema)
