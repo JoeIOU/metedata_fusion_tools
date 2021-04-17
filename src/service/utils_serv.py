@@ -128,13 +128,13 @@ def sql_execute_method(md_entity_id, method, service_name, data_list=None, where
     user_privilege_list = cache.get(user_id + '_privilege')
     user = cache.get(user_id)
     if user is None:
-        msg = '{}，您访问服务{}受阻,用户未登录或登录过期，请重新登录。'.format(user_id,service_name)
+        msg = '{}，您访问服务{}受阻,用户未登录或登录过期，请重新登录。'.format(user_id, service_name)
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN, rows=0, data=None, message=msg)
         return output
     if user_privilege_list is None or len(user_privilege_list) == 0:
-        msg = '{}，您无权访问服务{}受阻，实体ID=[{}]，请申请权限或找业务管理员寻求帮忙，谢谢。'.format(user.get("account_number"),service_name,
-             md_entity_id)
+        msg = '{}，您无权访问服务{}受阻，实体ID=[{}]，请申请权限或找业务管理员寻求帮忙，谢谢。'.format(user.get("account_number"), service_name,
+                                                                     md_entity_id)
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0, data=None, message=msg)
         return output
@@ -219,7 +219,8 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
     if md_entity_id is not None and not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
-        msg = '[Privilege Validation]:Access Service={},entity=[{}] should not be None.'.format(method_name, GLOBAL_ENTITY_ID)
+        msg = '[Privilege Validation]:Access Service={},entity=[{}] should not be None.'.format(method_name,
+                                                                                                GLOBAL_ENTITY_ID)
         logger.warning(msg)
         output = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                        message=msg)
@@ -229,7 +230,7 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
         user_privilege_list = get_login_user_privilege()
         if user_privilege_list is None or len(user_privilege_list) == 0:
             msg = '{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。'.format(
-                 user.get("account_number"),method_name, md_entity_id, entity_code)
+                user.get("account_number"), method_name, md_entity_id, entity_code)
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
@@ -250,12 +251,50 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
 def getEntityIDByCode(tenant_id, md_entity_code, data):
     res = md.get_md_entities_id_by_code([md_entity_code])
     md_entity_id = None
+    public_flag = None
     msg = None
     if res is not None and len(res) > 0:
         md_entity_id = res[0].get("md_entity_id")
+        public_flag = res[0].get("public_flag")
     else:
         s = 'findEntityByCode. Params:{},the Entity is not exists'.format(data)
         logger.warning(s)
         msg = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                     message=s)
-    return (md_entity_id, msg)
+    return (md_entity_id, public_flag, msg)
+
+def value2str(data):
+    if data is not None and isinstance(data, list):
+        for item in data:
+            for key in item:
+                if item[key] is not None and (isinstance(item[key], list) or isinstance(item[key], dict)):
+                    item[key] = str(item[key])
+    elif data is not None and isinstance(data, dict):
+        item = data
+        for key in item:
+            if item[key] is not None and (isinstance(item[key], list) or isinstance(item[key], dict)):
+                item[key] = str(item[key])
+    return data
+
+
+def entity_lookup_mapping(lk, data):
+    if lk is None or len(lk) <= 0:
+        return [{"key": "NaNa", "value": "NaNa", "label": "没有定义该实体的映射lookup", "disabled": True}]
+    lp_list = []
+    if data is not None:
+        for rd in data:
+            dict_mp = {}
+            af = rd.get("active_flag")
+            disabled = False
+            if af is not None and af == 'N':
+                disabled = True
+            dict_mp['disabled'] = disabled
+            for item in lk:
+                key = item.get('lookup_item_code')
+                field = item.get('lookup_item_name')
+                v = rd.get(field)
+                if key == 'disabled' and v is not None and (str(v) == 'Y' or str(v) == '1'):
+                    v = True
+                dict_mp[key] = v
+            lp_list.append(dict_mp)
+    return lp_list
