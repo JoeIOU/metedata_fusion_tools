@@ -76,14 +76,13 @@ def get_rules(tenant_id, md_entity_id, rule_codes=None, n_rule_codes=None):
 
 
 def validate_rules(rules, data):
-    result = None
     is_pass = True
     pass_list = []
     not_pass_list = []
     for item in rules:
         script = item.get("rule_script")
         # rule_code = item.get("rule_code")
-        field_name = item.get("field_name")
+        field_name = item.get("md_fields_name")
         d = None
         if data is not None:
             if isinstance(data, dict) and field_name is not None:
@@ -93,8 +92,8 @@ def validate_rules(rules, data):
         # desc = item.get("rule_desc")
         rule_category = item.get("rule_category")
         type = item.get("rule_type")
-        result = None
-        output=None
+        result = False
+        output = None
         d_str = None
         if d is None:
             logger.warning("validate_rules,data is None.")
@@ -109,7 +108,7 @@ def validate_rules(rules, data):
                     res = rule.search(reg, d_str)
                 if res is not None:
                     result = True
-                    output=res.group()
+                    output = res.group()
                 else:
                     is_pass = False
                 logger.info("validate_rules,rule=[{}],data:[{}],result:[{}]".format(reg, d, result))
@@ -117,8 +116,8 @@ def validate_rules(rules, data):
                 data_dict = data
                 exec(script, data_dict)
                 result = data_dict.get("result")
-                if result is not None :
-                      is_pass = False
+                if result is not None:
+                    is_pass = False
             else:
                 # service invoke
                 pass
