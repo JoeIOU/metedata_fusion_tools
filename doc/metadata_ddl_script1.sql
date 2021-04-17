@@ -46,7 +46,7 @@ CREATE TABLE  IF NOT EXISTS `rules` (
 CREATE TABLE  IF NOT EXISTS `rules_entity_rel` (
   `rule_entity_rel_id` bigint(20) NOT NULL COMMENT '规则与实体关系ID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
-  `entity_type` bigint(20) NOT NULL COMMENT '元数据类型，Entity实体，View视图',
+  `entity_type` varchar(200) NOT NULL COMMENT '元数据类型，Entity实体，View视图',
   `md_entity_id` bigint(20) NOT NULL COMMENT '元数据实体ID或数据视图ID',
   `md_fields_id` bigint(20) COMMENT '元数据属性ID',
   `rule_id` bigint(20) NOT NULL COMMENT '规则ID',
