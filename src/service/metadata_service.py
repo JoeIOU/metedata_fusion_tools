@@ -1,7 +1,7 @@
 # #metadata_service.py
 from flask import request, session, Response, g, jsonify
 import json
-from mdata import metadata as md, metadata_initialize as mdi
+from mdata import metadata as md, metadata_initialize as mdi, validate_rules as vr
 from httpserver import httpserver
 from config.config import cfg as config
 from flask_httpauth import HTTPBasicAuth
@@ -157,7 +157,7 @@ def query_Metadata_Entity():
     user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
-        (md_entity_id, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
+        (md_entity_id, public_flag, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
 
     if md_entity_id is None:
         msg = None
@@ -198,7 +198,7 @@ def query_Metadata_Fields():
     user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
-        (md_entity_id, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
+        (md_entity_id, public_flag, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
     if md_entity_id is None:
         msg = "queryFieldsByCodeOrID Input params [{}] or[{}] at least one should be none or not match,please checked.".format(
             utl.GLOBAL_ENTITY_ID,
@@ -270,7 +270,7 @@ def find_entity_by_code():
         user = utl.get_login_user()
         tenant_id = user.get("tenant_id")
         # user_id = user.get("user_id")
-        res = md.get_md_entities_by_code(tenant_id, [md_entity_code])
+        res = md.get_md_entities_id_by_code([md_entity_code])
         md_entity_id = None
         if res is not None and len(res) > 0:
             md_entity_id = res[0].get("md_entity_id")
@@ -334,7 +334,7 @@ def find_Lookup_By_EntityCode():
     if lookup_code is None or len(lookup_code.strip()) <= 0:
         lookup_code = entity_code
     res_lk = md.get_lookup_items(tenant_id, [lookup_code])
-    res = md.get_md_entities_by_code(tenant_id, [entity_code])
+    res = md.get_md_entities_id_by_code([entity_code])
     md_entity_id = None
     if res is not None and len(res) > 0:
         md_entity_id = res[0].get("md_entity_id")
@@ -345,7 +345,7 @@ def find_Lookup_By_EntityCode():
                                      message=s)
     result = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findLookupByEntityCode", data_list=None,
                                     where_list=[data])
-    mp = entity_lookup_mapping(res_lk, result.get("data"))
+    mp = utl.entity_lookup_mapping(res_lk, result.get("data"))
     size1 = 0
     if (mp is not None):
         size1 = len(mp)
@@ -353,28 +353,6 @@ def find_Lookup_By_EntityCode():
                                message="findLookupByEntityCode Success")
     logger.info('findLookupByEntityCode. Params:{},result:{}'.format(data, re))
     return Response(json.dumps(re), mimetype='application/json')
-
-
-def entity_lookup_mapping(lk, data):
-    if lk is None or len(lk) <= 0:
-        return [{"key": "NaNa", "value": "NaNa", "label": "没有定义该实体的映射lookup", "disabled": True}]
-    lp_list = []
-    for rd in data:
-        dict_mp = {}
-        af = rd.get("active_flag")
-        disabled = False
-        if af is not None and af == 'N':
-            disabled = True
-        dict_mp['disabled'] = disabled
-        for item in lk:
-            key = item.get('lookup_item_code')
-            field = item.get('lookup_item_name')
-            v = rd.get(field)
-            if key == 'disabled' and v is not None and (str(v) == 'Y' or str(v) == '1'):
-                v = True
-            dict_mp[key] = v
-        lp_list.append(dict_mp)
-    return lp_list
 
 
 # 实体表查询by table name list
@@ -422,7 +400,7 @@ def query_entity_list():
     user = utl.get_login_user()
     tenant_id = user.get("tenant_id")
     if md_entity_id is None and md_entity_code is not None:
-        (md_entity_id, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
+        (md_entity_id, public_flag, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
     if md_entity_id is None:
         msg = "queryEntityList ,md_entity_code not exists,please checked."
         re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
@@ -469,24 +447,10 @@ def insert_entity():
                 data_list = data['data']
             else:
                 data_list = [data['data']]
-        data_list = value2str(data_list)
+        data_list = utl.value2str(data_list)
         re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity", data_list=data_list)
         logger.info('insert Entity Params:%s' % data)
     return Response(json.dumps(re), mimetype='application/json')
-
-
-def value2str(data):
-    if data is not None and isinstance(data, list):
-        for item in data:
-            for key in item:
-                if item[key] is not None and (isinstance(item[key], list) or isinstance(item[key], dict)):
-                    item[key] = str(item[key])
-    elif data is not None and isinstance(data, dict):
-        item = data
-        for key in item:
-            if item[key] is not None and (isinstance(item[key], list) or isinstance(item[key], dict)):
-                item[key] = str(item[key])
-    return data
 
 
 # 单个或多个实体更新，入参：{"$_ENTITY_ID":30025,"data":[{"user_name":"test01"},{"user_name":"test02"}],"where":[{"user_id":1348844049557229568},{"user_id":1348892817107324928}]}
@@ -505,7 +469,7 @@ def update_entity():
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     where_list = data.get("where")
     data_list = data.get("data")
-    data_list = value2str(data_list)
+    data_list = utl.value2str(data_list)
     re = update_entity_common(md_entity_id, data_list, where_list)
     return Response(json.dumps(re), mimetype='application/json')
 
@@ -528,7 +492,7 @@ def update_entity_common(md_entity_id, data_list, where_list):
 @app.route(domain_root + '/services/deleteEntity', methods=['POST'])
 @auth.login_required
 def delete_entity():
-    # 入参：{"abc":"123"}
+    # 入参：{"abc":"123"},必须要有主键ID参数
     data = utl.request_parse(request)
     md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
     where_list = data.get("where")
@@ -544,6 +508,99 @@ def delete_entity():
                                     where_list=where_list)
         logger.info('delete Entity Params:{}'.format(where_list))
     return Response(json.dumps(re), mimetype='application/json')
+
+
+@app.route(domain_root + '/services/validateRules', methods=['POST', "GET"])
+@auth.login_required
+def run_rule_script():
+    return rule_validate(request)
+
+
+def rule_validate(http_request, insideInvoke=False):
+    # 输入GET参数： {$_ENTITY_ID:123,rule_code:"xxxname",field_name:"xxxname",data:xxx}
+    # 输入POST参数： {$_ENTITY_ID:123,rules:[{rule_code:1,field_name:"xxxname"},{rule_code:2,field_name:"xxxname1"}],n_roles:[],data:{rule_code:1,name:xxx}},
+    # POST方式，rules=None，则校验所有规则，排除法就是n_rules={}。
+    # output返回验证结果：
+    # {
+    #     "action": "VALIDATION",
+    #     "status": 200,
+    #     "rows": 1,
+    #     "data": [
+    #         {
+    #             "rule_id": 6000003,
+    #             "md_entity_id": 30015,
+    #             "md_entity_code": "md_entities",
+    #             "md_entity_name": "元数据实体",
+    #             "md_entity_name_en": "md_entities"
+    #             "rule_code": "rule_email",
+    #             "rule_category": "Validation",
+    #             "rule_type": "regex",
+    #             "rule_name": "电子邮件(Email)",
+    #             "rule_script": "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*",
+    #             "rule_desc": "电子邮件(Email)",
+    #             "rule_desc_en": "",
+    #             "input": "aMark@abc.com,www@ccc.com",#输入参数
+    #             "output": "aMark@abc.com",#输出结果
+    #             "result": true #验证通过与否
+    #         }
+    #     ],
+    #     "message": "Validation Pass."
+    # }
+    if http_request is None:
+        return
+    data = utl.request_parse(http_request)
+    md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+    rule_data = None
+    rules = None
+    n_rules = None
+    user = utl.get_login_user()
+    tenant_id = user.get("tenant_id")
+    if http_request.method == 'GET':
+        rules = []
+        r_set = {}
+        code = data.get("rule_code")
+        if code is not None:
+            r_set['rule_code'] = code
+        f = data.get("field_name")
+        if f is not None and len(f.strip()) > 0:
+            r_set['field_name'] = f
+        if r_set is not None and len(r_set) > 0:
+            rules.append(r_set)
+        d_set = {}
+        if f is not None:
+            d_set[f] = data.get("data")
+        else:
+            d_set = data.get("data")
+        rule_data = d_set
+    else:
+        rules = data.get("rules")
+        n_rules = data.get("n_rules")
+        rule_data = data.get("data")
+    rules_list = vr.get_rules(tenant_id, md_entity_id, rules, n_rules)
+    size = 0
+    if rules_list is not None:
+        size = len(rules_list)
+    is_pass, pass_list, not_pass_list = False, [], None
+    if size == 0:
+        logger.warning("get rules is nothing.input param:{}".format(data))
+        is_pass = True
+    else:
+        (is_pass, pass_list, not_pass_list) = vr.validate_rules(rules_list, rule_data)
+    message = "Validation Pass."
+    iStatus = 200
+    output_data = pass_list
+    if not is_pass:
+        message = "Validation not Pass."
+        iStatus = 500
+        output_data = not_pass_list
+
+    if (insideInvoke):
+        re = (is_pass, pass_list, not_pass_list)
+        return re
+    else:
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_VALIDATE, status=iStatus, rows=size, data=output_data,
+                                   message=message)
+        return Response(json.dumps(re), mimetype='application/json')
 
 
 if __name__ == '__main__':
