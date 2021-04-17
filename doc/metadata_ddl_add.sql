@@ -80,6 +80,46 @@ CREATE TABLE  IF NOT EXISTS `rules_entity_rel` (
   KEY `rule_entity_rel_id_entity_id_fk0` (`md_entity_id`),
   CONSTRAINT `rule_entity_rel_id_entity_id_fk0` FOREIGN KEY (`md_entity_id`) REFERENCES `md_entities` (`md_entity_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='规则与实体关系';
+
+
+-- ----------------------------
+-- Table structure for rules_ui_rel
+-- ----------------------------
+CREATE TABLE  IF NOT EXISTS `rules_ui_rel` (
+  `rule_ui_rel_id` bigint(20) NOT NULL COMMENT '规则与UI关系ID',
+  `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
+  `ui_template_id` bigint(20) NOT NULL COMMENT 'UI模板ID',
+  `ui_fields_id` bigint(20) COMMENT 'UI属性ID',
+  `rule_id` bigint(20) NOT NULL COMMENT '规则ID',
+  `rule_ui_desc` varchar(2000) DEFAULT NULL COMMENT '规则UI关系描述',
+  `public_flag` char(1) NOT NULL DEFAULT 'N' COMMENT '全局公共标识，Y是，N否',
+  `text_column1` varchar(2000) COMMENT '预留文本字段1',
+  `text_column2` varchar(2000) COMMENT '预留文本字段2',
+  `text_column3` varchar(2000) COMMENT '预留文本字段3',
+  `text_column4` varchar(2000) COMMENT '预留文本字段4',
+  `text_column5` varchar(2000) COMMENT '预留文本字段5',
+  `int_column1` bigint(20) COMMENT '预留整数字段1',
+  `int_column2` bigint(20) COMMENT '预留整数字段2',
+  `int_column3` bigint(20) COMMENT '预留整数字段3',
+  `num_column1` decimal(30,8) COMMENT '预留数值字段1',
+  `num_column2` decimal(30,8) COMMENT '预留数值字段2',
+  `num_column3` decimal(30,8) COMMENT '预留数值字段3',
+  `date_column1` datetime COMMENT '预留日期字段1',
+  `date_column2` datetime COMMENT '预留日期字段2',
+  `date_column3` datetime COMMENT '预留日期字段3',
+  `active_flag` char(1) NOT NULL DEFAULT 'Y' COMMENT '有效标识，Y有效，N无效',
+  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_by` bigint(20) NOT NULL COMMENT '创建人ID，对应用户ID',
+  `last_update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP  COMMENT '最后更新时间',
+  `last_update_by` bigint(20) NOT NULL COMMENT '最后更新人ID，对应用户ID',
+  PRIMARY KEY (`rule_ui_rel_id`),
+  UNIQUE KEY `rule_ui_rel_id` (`rule_ui_rel_id`),
+  KEY `rule_ui_rel_id_tenant_id_fk0` (`tenant_id`),
+  CONSTRAINT `rule_ui_rel_id_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`),
+  KEY `rule_ui_rel_id_rule_id_fk0` (`rule_id`),
+  CONSTRAINT `rule_ui_rel_id_rule_id_fk0` FOREIGN KEY (`rule_id`) REFERENCES `rules` (`rule_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='规则与UI关系';
+
 -- ----------------------------
 -- Table structure for system_entities
 -- ----------------------------
