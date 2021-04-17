@@ -236,6 +236,73 @@
 			"response": []
 		},
 		{
+			"name": "validateRules",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/validateRules?rule_code=rule_email&$_ENTITY_ID=30015&data=aMark@abc.com",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"validateRules"
+					],
+					"query": [
+						{
+							"key": "rule_code",
+							"value": "rule_email"
+						},
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30015"
+						},
+						{
+							"key": "data",
+							"value": "aMark@abc.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "findTableByName",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -309,13 +376,13 @@
 					"type": "basic",
 					"basic": [
 						{
-							"key": "username",
-							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"key": "password",
+							"value": "111",
 							"type": "string"
 						},
 						{
-							"key": "password",
-							"value": "",
+							"key": "username",
+							"value": "admin",
 							"type": "string"
 						}
 					]
@@ -548,7 +615,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/findLookupByEntityCode?entity_code=md_entities",
+					"raw": "http://127.0.0.1:8888/md/services/findLookupByEntityCode?entity_code=lookup_classify&lookup_code=",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -565,7 +632,11 @@
 					"query": [
 						{
 							"key": "entity_code",
-							"value": "md_entities"
+							"value": "lookup_classify"
+						},
+						{
+							"key": "lookup_code",
+							"value": ""
 						}
 					]
 				}
@@ -751,7 +822,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"$_ENTITY_ID\":30047,\"data\":[{\"text_value\":1233444},{\"text_value\":\"test02\"}],\"where\":[{\"index_text_id\":1348844049557229568},{\"index_text_id\":1348892817107324928}]}",
+					"raw": "{\"$_ENTITY_ID\":30001,\"data\":[{\"text_value\":1233444},{\"text_value\":\"test02\"}],\"where\":[{\"id\":800001},{\"id\":1348892817107324928}]}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -858,7 +929,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"$_ENTITY_ID\":30047,\"where\":[{\"index_text_id\":1348844049557229568}]}",
+					"raw": "{\"$_ENTITY_ID\":30047,\"where\":[{\"index_text_id\":1348844049557229568},{\"index_text_id\":11222}]}",
 					"options": {
 						"raw": {
 							"language": "json"
