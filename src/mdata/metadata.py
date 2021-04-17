@@ -13,6 +13,7 @@ DB_EXEC_TYPE_INSERT = "INSERT"
 DB_EXEC_TYPE_UPDATE = "UPDATE"
 DB_EXEC_TYPE_DELETE = "DELETE"
 DB_EXEC_TYPE_QUERY = "QUERY"
+DB_EXEC_TYPE_VALIDATE = "VALIDATION"
 # 执行sql的返回状态
 DB_EXEC_STATUS_SUCCESS = 200
 DB_EXEC_STATUS_FAIL = 500
@@ -278,17 +279,23 @@ def get_md_entities_rel(tenant_id, from_entity_ids, to_entity_ids):
     cursor = conn.cursor()
     if (from_entity_ids is None or len(from_entity_ids) <= 0) and (to_entity_ids is None or len(to_entity_ids) <= 0):
         return None
-    sql = "select distinct * from md_entities_rel where active_flag='Y' and tenant_id=%s "
+    # sql = "select distinct * from md_entities_rel where active_flag='Y' and tenant_id=%s "
+    sql = """
+    select distinct r.* from md_entities_rel r
+    inner join md_entities e on r.from_entity_id=e.md_entity_id and (e.tenant_id=%s or e.public_flag='Y')
+    inner join md_entities e1 on r.to_entity_id=e1.md_entity_id and (e1.tenant_id=%s or e1.public_flag='Y')
+    where r.active_flag='Y' 
+    """
     if (from_entity_ids is not None and len(from_entity_ids) > 0) and (
             to_entity_ids is not None and len(to_entity_ids) > 0):
-        sql += "and (from_entity_id in %s and to_entity_id in %s)"
-        arg = (tenant_id, from_entity_ids, to_entity_ids,)
+        sql += "and (r.from_entity_id in %s and r.to_entity_id in %s)"
+        arg = (tenant_id, tenant_id, from_entity_ids, to_entity_ids,)
     elif (from_entity_ids is not None and len(from_entity_ids) > 0):
-        sql += "and (from_entity_id in %s)"
-        arg = (tenant_id, from_entity_ids,)
+        sql += "and (r.from_entity_id in %s)"
+        arg = (tenant_id, tenant_id, from_entity_ids,)
     elif (to_entity_ids is not None and len(to_entity_ids) > 0):
-        sql += "and (to_entity_id in %s)"
-        arg = (tenant_id, to_entity_ids,)
+        sql += "and (r.to_entity_id in %s)"
+        arg = (tenant_id, tenant_id, to_entity_ids,)
     else:
         return None
     cursor.execute(sql, args=arg)
@@ -737,7 +744,7 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
             # 插入默认实体字段
             if entity_type == const.ENTITY_TYPE_ENTITY:
                 insert_default_fields(user_id, tenant_id, ids, entity_relative_tables_list)
-            return re
+        return re
     except Exception as e:
         logger.error('sql insert error,sql:[%s],message:%s' % (sql, e))
         conn.rollback()
