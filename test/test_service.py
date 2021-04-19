@@ -1,5 +1,6 @@
 # ######test_service.py
 import requests
+import json
 
 domain_url = "http://127.0.0.1:8888/md"
 auth_token = 'Basic dGVzdDE6MTIzNDU='
@@ -21,7 +22,11 @@ def login():
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
 
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -41,7 +46,11 @@ def md_insert():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -65,7 +74,11 @@ def md_query():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -84,7 +97,11 @@ def md_update():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -103,7 +120,11 @@ def md_delete():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -122,8 +143,33 @@ def view_query():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
-
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        # print(data.get("message").decode("utf-8"))
+        status = data.get("status")
+    if status is not None and status < 300:
+        return "success"
+    else:
+        return None
+
+
+def queryEntityList():
+    url = domain_url + "/services/queryEntityList"
+
+    payload = {}
+    headers = {
+        'Authorization': auth_token
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    print(response.text)
+    status = None
+    if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -140,7 +186,11 @@ def findEntitySetup():
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -156,7 +206,11 @@ def queryEntityByCodeOrID():
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -172,7 +226,11 @@ def queryFieldsByCodeOrID():
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -191,7 +249,54 @@ def findTableByName():
     response = requests.request("GET", url, headers=headers, data=payload)
 
     print(response.text)
+    status = None
     if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
+        return "success"
+    else:
+        return None
+
+
+def findLookupByEntityCode():
+    url = domain_url + "/services/findLookupByEntityCode?entity_code=lookup_classify&lookup_code="
+
+    payload = {}
+    headers = {
+        'Authorization': auth_token
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    print(response.text)
+    status = None
+    if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
+        return "success"
+    else:
+        return None
+
+
+def validateRules():
+    url = domain_url + "/services/validateRules?rule_code=rule_email&$_ENTITY_ID=30015&data=abc@hhcp.com"
+
+    payload = "{\"$_ENTITY_ID\":30015,\r\n\"rules\":[{\"rule_code\":\"rule_alphabet_underline\"},{\"rule_code\":\"rule_discount_amount_calc\",\"field_name\":[\"x\",\"y\"]}],\r\n\"n_rules\":[{\"rule_code\":\"rule_discount_amount_calc\"}],\r\n\"data\":{\"md_entity_code\":\"branchs\",\"x\":200,\"y\":5}\r\n}"
+    headers = {
+        'Authorization': auth_token,
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+    status = None
+    if response is not None:
+        data = json.loads(response.text)
+        status = data.get("status")
+    if status is not None and status < 300:
         return "success"
     else:
         return None
@@ -213,9 +318,15 @@ def test_dm():
     assert re == "success"
     re = queryEntityByCodeOrID()
     assert re == "success"
-    re = queryEntityByCodeOrID()
+    re = queryFieldsByCodeOrID()
     assert re == "success"
     re = findTableByName()
+    assert re == "success"
+    re = queryEntityList()
+    assert re == "success"
+    re = findLookupByEntityCode()
+    assert re == "success"
+    re = validateRules()
     assert re == "success"
 
 
