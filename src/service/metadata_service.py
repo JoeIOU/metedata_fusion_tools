@@ -588,7 +588,7 @@ def insert_entity():
             isPass = True
             output = None
             # 规则校验
-            (isPass, output) = rule_validate(request, validateOnly=True, insideInvoke=True)
+            (isPass, output) = rule_validate(request, validateOnly=1)
             if isPass is not None and isPass:
                 re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity",
                                             data_list=data_list)
@@ -631,7 +631,7 @@ def update_entity():
         isPass = True
         output = None
         # 规则校验
-        (isPass, output) = rule_validate(request, validateOnly=True, insideInvoke=True)
+        (isPass, output) = rule_validate(request, validateOnly=1)
         if isPass is not None and isPass:
             re = update_entity_common(md_entity_id, data_list, where_list)
         else:
@@ -697,6 +697,47 @@ def delete_entity():
         pass
 
 
+@app.route(domain_root + '/services/findEntityRules', methods=['POST', "GET"])
+@auth.login_required
+def get_entity_rule_by_codes():
+    # 输入GET参数： {$_ENTITY_ID:123,rule_category:"Computing",rule_code:"xxxname"}，rule_code为空，则是全部
+    # 输入POST参数： {$_ENTITY_ID:123,rules:[{rule_code:1},{rule_code:2}]},rules为空，则是全部
+    data = None
+    try:
+        data = utl.request_parse(request)
+        md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+        rules = None
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
+        if request.method == 'GET':
+            rules = []
+            r_set = {}
+            code = data.get("rule_code")
+            if code is not None:
+                r_set['rule_code'] = code
+            if r_set is not None and len(r_set) > 0:
+                rules.append(r_set)
+        else:
+            rules = data.get("rules")
+        rule_category = data.get("rule_category")
+        res = vr.get_rules_entity(tenant_id, md_entity_id, rule_category, rules)
+        size = 0
+        if res is not None:
+            size = len(res)
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=size, data=res,
+                                   message="findEntityRules success.")
+        return Response(json.dumps(re), mimetype='application/json')
+    except Exception as ex:
+        msg = "findEntityRules error.input:{},message:{}".format(data, ex)
+        logger.error(msg)
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
+        # raise ex
+    finally:
+        pass
+
+
 @app.route(domain_root + '/services/findValidateRules', methods=['POST', "GET"])
 @auth.login_required
 def get_rule_by_codes():
@@ -719,7 +760,12 @@ def get_rule_by_codes():
                 rules.append(r_set)
         else:
             rules = data.get("rules")
-        re = vr.get_rules_ui_template(tenant_id, ui_template_id, rules)
+        res = vr.get_rules_ui_template(tenant_id, ui_template_id, rules)
+        size = 0
+        if res is not None:
+            size = len(res)
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=size, data=res,
+                                   message="findValidateRules success.")
         return Response(json.dumps(re), mimetype='application/json')
     except Exception as ex:
         msg = "findValidateRules error.input:{},message:{}".format(data, ex)
@@ -732,16 +778,35 @@ def get_rule_by_codes():
         pass
 
 
+# 规则计算
+@app.route(domain_root + '/services/computeRules', methods=['POST', "GET"])
+@auth.login_required
+def compute_rule():
+    (is_pass, re) = rule_validate(request, 2)
+    return Response(json.dumps(re), mimetype='application/json')
+
+
+# 规则计算+校验
+@app.route(domain_root + '/services/runRules', methods=['POST', "GET"])
+@auth.login_required
+def run_rule():
+    (is_pass, re) = rule_validate(request, 0)
+    return Response(json.dumps(re), mimetype='application/json')
+
+
+# 规则校验
 @app.route(domain_root + '/services/validateRules', methods=['POST', "GET"])
 @auth.login_required
-def run_rule_script():
-    return rule_validate(request)
+def validate_rule():
+    (is_pass, re) = rule_validate(request, 1)
+    return Response(json.dumps(re), mimetype='application/json')
 
 
-def rule_validate(http_request, validateOnly=False, insideInvoke=False):
-    # 输入GET参数： {$_ENTITY_ID:123,rule_code:"xxxname",field_name:"xxxname",data:xxx}
-    # 输入POST参数： {$_ENTITY_ID:123,rules:[{rule_code:1,field_name:"xxxname"},{rule_code:2,field_name:"xxxname1"}],n_rules:[],data:{rule_code:1,name:xxx}},
-    # POST方式，rules=None，则校验所有规则，排除法就是n_rules={}。
+def rule_validate(http_request, validateOnly=0):
+    # validateOnly参数说明，0：规则校验+计算；1：规则校验，2：规则计算。
+    # 输入GET参数： {$_ENTITY_ID:123,rule_code:"xxxname",input_params:"xxxname","output_params":"123",data:xxx}
+    # 输入POST参数：{"$_ENTITY_ID":30015, "rules":[{"rule_code":"rule_alphabet_underline"},{"rule_code":"rule_discount_amount_calc","input_params":["x","y"],"output_params":["discount_amount"]}],"n_rules":[],"data":{"md_entity_code":"branchs","x":200,"y":5}},
+    # POST方式，rules=None，则校验所有规则，排除法就是n_rules=[],data={}输入计算和校验参数。
     # output返回验证结果：
     # {
     #     "action": "VALIDATION",
@@ -761,12 +826,15 @@ def rule_validate(http_request, validateOnly=False, insideInvoke=False):
     #             "rule_script": "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*",
     #             "rule_desc": "电子邮件(Email)",
     #             "rule_desc_en": "",
-    #             "input": "aMark@abc.com,www@ccc.com",#输入参数
-    #             "output": "aMark@abc.com",#输出结果
-    #             "result": true #验证通过与否
+    #             "$rule_input": "aMark@abc.com",#输入参数
+    #             "$rule_output": "aMark@abc.com",#输出结果
+    #             "$rule_result": true #验证通过与否
     #         }
     #     ],
-    #     "message": "Validation Pass."
+    #     "message": "Validation Pass.",
+    #     "$rule_output": { //规则计算输出
+    #         "discount_amount": 165.0
+    #     }
     # }
     data = None
     re = None
@@ -809,13 +877,13 @@ def rule_validate(http_request, validateOnly=False, insideInvoke=False):
         if rules_list is not None:
             size = len(rules_list)
             rules_list = vr.rule_field_mapping(rules_list, rules)
-        is_pass, pass_list, not_pass_list = False, [], None
+        is_pass, pass_list, not_pass_list, out_data = False, [], None, {}
         if size == 0:
             logger.info("Rule validate,user:{},no rules for validate.input param:{}".format(user_account, data))
             is_pass = True
         else:
-            (is_pass, pass_list, not_pass_list, error_msg) = vr.validate_rules(rules_list, rule_data)
-        message = "校验通过！"
+            (is_pass, pass_list, not_pass_list, out_data, error_msg) = vr.validate_rules(rules_list, rule_data)
+        message = "规则计算或校验通过！"
         iStatus = 200
         output_data = pass_list
         if not is_pass:
@@ -832,17 +900,17 @@ def rule_validate(http_request, validateOnly=False, insideInvoke=False):
 
         re = md.exec_output_status(type=md.DB_EXEC_TYPE_VALIDATE, status=iStatus, rows=size, data=output_data,
                                    message=message)
-        if insideInvoke:
-            res = (is_pass, re)
-            return res
-        else:
-            return Response(json.dumps(re), mimetype='application/json')
+        if out_data is not None and len(out_data) > 0 and isinstance(re, dict):
+            re["$rule_output"] = out_data
+        res = (is_pass, re)
+        return res
     except Exception as ex:
+        is_pass = False
         msg = "Rules validate error.input:{},message:{}".format(data, ex)
         logger.error(msg)
         re = md.exec_output_status(type=md.DB_EXEC_TYPE_VALIDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
-        return Response(json.dumps(re), mimetype='application/json')
+        return (is_pass, re)
         # raise ex
     finally:
         pass
