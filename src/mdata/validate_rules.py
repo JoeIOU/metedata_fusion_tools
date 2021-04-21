@@ -203,10 +203,11 @@ def validate_rules(rules, data):
     item = None
     error_msg = None
     try:
-        if data is None or not isinstance(data, dict):
-            logger.warning("validate_rules,data is None.")
-            is_pass = False
-            error_msg = '输入校验数据{}，为空或不是对象，请修改确认后，再重新执行。'.format(data)
+        if data is None or not (isinstance(data, dict) or isinstance(data, list)):
+            if rules is not None and len(rules) > 0:
+                logger.warning("validate_rules,data is None.")
+                is_pass = False
+                error_msg = '输入校验数据{}，为空或不是对象，请修改确认后，再重新执行。'.format(data)
         else:
             for item in rules:
                 script = item.get("rule_script")
