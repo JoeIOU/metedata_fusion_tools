@@ -995,6 +995,7 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
     where_mapping = {}
     last_where_mapping = {}
     last_where = None
+    b_flag = False
     if isinstance(where_list, list) and len(where_list) > 0:
         for data_dict in where_list:
             where = data_dict
