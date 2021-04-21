@@ -263,6 +263,7 @@ def getEntityIDByCode(tenant_id, md_entity_code, data):
                                     message=s)
     return (md_entity_id, public_flag, msg)
 
+
 def value2str(data):
     if data is not None and isinstance(data, list):
         for item in data:
