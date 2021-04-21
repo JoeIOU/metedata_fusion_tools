@@ -6,7 +6,7 @@ CREATE TABLE  IF NOT EXISTS `ui_template` (
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `ui_template_name` varchar(200) NOT NULL COMMENT 'UI页面模板名称',
   `ui_template_type` varchar(200) NOT NULL COMMENT '模板类型，html/html5/android',
-  `ui_template_model` varchar(200) NOT NULL default 'Waterflow' COMMENT '模板模式，套模板，瀑布式：Waterflow,多页签：MultiTab等',
+  `ui_template_model` varchar(200) NOT NULL default 'Waterfall' COMMENT '模板模式，套模板，瀑布式：Waterfall,多页签：MultiTab等',
   `ui_template_desc` varchar(2000) DEFAULT NULL COMMENT 'UI模板描述',
   `public_flag` char(1) NOT NULL DEFAULT 'N' COMMENT '跨租户共享标识，Y是，N否',
   `text_column1` varchar(2000) COMMENT '预留文本字段1',
