@@ -894,7 +894,7 @@ def rule_validate(http_request, validateOnly=0):
             if error_msg is not None:
                 message += "Error Message:{}".format(error_msg)
             if (not_pass_list is not None and len(not_pass_list) > 0):
-                message += ",有关校验未通过的详情，请参考浏览器的Console控制台Logs日志。"
+                message += ",有任何问题，请找在线客户咨询。"
             iStatus = 500
             output_data = not_pass_list
 
