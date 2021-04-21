@@ -1071,6 +1071,9 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
         else:
             s += ',' + item + '=%s'
     sql = 'DELETE FROM {table}  WHERE '.format(table=table_name)
+    if b_flag:  # 系统表只失效，不删除。
+        sql = "UPDATE {table} SET active_flag='N' WHERE ".format(table=table_name)
+
     s1 = None
     for wh in where_mapping.keys():
         if s1 is None:
