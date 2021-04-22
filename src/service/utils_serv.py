@@ -280,7 +280,7 @@ def value2str(data):
 
 def entity_lookup_mapping(lk, data):
     if lk is None or len(lk) <= 0:
-        return [{"key": "NaNa", "value": "NaNa", "label": "没有定义该实体的映射lookup", "disabled": True}]
+        return [{"key": "NaNa", "value": "NaNa", "label": "没有定义该实体的映射lookup", "label_en": "", "disabled": True}]
     lp_list = []
     if data is not None:
         for rd in data:
