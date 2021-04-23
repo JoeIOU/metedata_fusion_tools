@@ -773,11 +773,11 @@ def insert_default_fields(user_id, tenant_id, md_entity_ids, entity_relative_tab
             if item.get('md_tables_id') != table_id:
                 continue
             # 系统字段，跳过
-            if item is None or item.get('md_columns_name').lower() == 'create_by' \
-                    or item.get('md_columns_name').lower() == 'create_date' \
-                    or item.get('md_columns_name').lower() == 'last_update_by' \
-                    or item.get('md_columns_name').lower() == 'last_update_date':
-                continue
+            # if item is None or item.get('md_columns_name').lower() == 'create_by' \
+            #         or item.get('md_columns_name').lower() == 'create_date' \
+            #         or item.get('md_columns_name').lower() == 'last_update_by' \
+            #         or item.get('md_columns_name').lower() == 'last_update_date':
+            #     continue
             if item is not None and (item.get('is_key') == 'Y' or item.get('is_cols_null') == 'N'):
                 new_set = {}
                 new_set["md_entity_id"] = sel_entity_id
