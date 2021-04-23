@@ -281,7 +281,9 @@ def get_columns_by_tables_id(table_id, columns):
     cols = []
     for col in columns:
         md_tables_id = col.get("md_tables_id")
-        if md_tables_id == table_id:
+        is_cols_null = col.get("is_cols_null")
+        # 排除必填字段，因为必填字段在创建实体对象时，已经写入。
+        if md_tables_id == table_id and is_cols_null is not None and is_cols_null != 'N':
             cols.append(col)
     return cols
 
@@ -325,7 +327,7 @@ def ini_fields(user_id, tenant_id, obj_id, columns):
     if res is None:
         logger.warning("ini_fields,entity is None ,name:{}".format(MD_FIELDS_NAME))
         return None
-    if columns is None:
+    if columns is None or len(columns) <= 0:
         logger.warning("ini_fields,columns is None ")
         return None
     md_entity_id = res[0].get("md_entity_id")
