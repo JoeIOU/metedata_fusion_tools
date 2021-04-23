@@ -39,7 +39,7 @@ CREATE TABLE  IF NOT EXISTS `ui_template` (
 -- ----------------------------
 CREATE TABLE  IF NOT EXISTS `ui_entity_rel` (
   `ui_entity_rel_id` bigint(20) NOT NULL COMMENT 'UI模板和实体关系ID',
-  `ui_template_id` bigint(20) NOT NULL COMMENT 'UI模板ID',
+  `ui_template_id` bigint(20) COMMENT 'UI模板ID，为空，则为但对象，参考entity_id',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `entity_type` varchar(200) NOT NULL COMMENT '实体类型，Entity、View',
   `entity_id` bigint(20) NOT NULL COMMENT '元数据实体ID',
