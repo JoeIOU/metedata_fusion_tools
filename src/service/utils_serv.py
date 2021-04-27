@@ -18,6 +18,9 @@ SERVICE_METHOD_GET = "Query"
 SERVICE_METHOD_VIEW = "ViewQuery"
 # 全局实体元数据ID。
 GLOBAL_ENTITY_ID = "$_ENTITY_ID"
+GLOBAL_PARENT_ENTITY_ID = "$PARENT_ENTITY_ID"
+GLOBAL_PARENT_DATA_ID = "$parent_data_id"
+GLOBAL_PARENT_ENTITY_CODE = "$PARENT_ENTITY_CODE"
 GLOBAL_ENTITY_CODE = "$_ENTITY_CODE"
 
 logger = config.logger
@@ -123,7 +126,7 @@ def get_index_data_ids(data):
     return ids
 
 
-def sql_execute_method(md_entity_id, method, service_name, data_list=None, where_list=None):
+def sql_execute_method(md_entity_id, method, service_name, data_list=None, where_list=None, parent_entity_id=None):
     user_id = g.user_id
     user_privilege_list = cache.get(user_id + '_privilege')
     user = cache.get(user_id)
@@ -160,9 +163,9 @@ def sql_execute_method(md_entity_id, method, service_name, data_list=None, where
                     wh_dict = where_list[0]
                 elif isinstance(where_list, dict):
                     wh_dict = where_list
-            re = md.query_execute(user_id, tenant_id, md_entity_id, wh_dict)
+            re = md.query_execute(user_id, tenant_id, md_entity_id, wh_dict, parent_entity_id)
         elif method == SERVICE_METHOD_INSERT:
-            re = md.insert_execute(user_id, tenant_id, md_entity_id, data_list)
+            re = md.insert_execute(user_id, tenant_id, md_entity_id, data_list, parent_entity_id)
             # 插入索引数据
             if re is not None:
                 iRows = re.get("rows")
