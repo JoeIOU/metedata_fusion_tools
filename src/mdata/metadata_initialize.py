@@ -44,6 +44,7 @@ SQL_QUERY_ENTITY_FORMAT = """
 
 SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
             SELECT DISTINCT r.md_entity_rel_id,r.rel_type,r.md_entity_rel_desc,
+                r.md_tables_id,r.from_columns_id,to_columns_id,
                 e.md_entity_id frm_md_entity_id,
                 e.md_entity_code frm_md_entity_code,
                 e.md_entity_name frm_md_entity_name,
@@ -58,6 +59,7 @@ SQL_QUERY_ENTITY_ALL_REL_FORMAT = """
                 e1.md_entity_desc to_md_entity_desc,
                 e1.tenant_id to_tenant_id,
                 e1.public_flag to_public_flag,
+                e1.sys_flag,
                 f1.md_fields_id to_md_fields_id,
                 f1.md_fields_name  to_md_fields_name
             FROM md_entities_rel r
