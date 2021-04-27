@@ -281,11 +281,31 @@ def get_md_entities_rel(tenant_id, from_entity_ids, to_entity_ids):
         return None
     # sql = "select distinct * from md_entities_rel where active_flag='Y' and tenant_id=%s "
     sql = """
-    select distinct r.* from md_entities_rel r
-    inner join md_entities e on r.from_entity_id=e.md_entity_id and (e.tenant_id=%s or e.public_flag='Y')
-    inner join md_entities e1 on r.to_entity_id=e1.md_entity_id and (e1.tenant_id=%s or e1.public_flag='Y')
-    where r.active_flag='Y' 
-    """
+            SELECT DISTINCT
+                e.md_entity_code from_entity_code,
+                e1.md_entity_code to_entity_code,
+                f.md_fields_name from_field_name,
+                f1.md_fields_name to_field_name,
+                r.*
+            FROM
+                md_entities_rel r
+            INNER JOIN md_entities e ON r.from_entity_id = e.md_entity_id
+            AND (
+                e.tenant_id = %s
+                OR e.public_flag = 'Y'
+            )
+            LEFT JOIN md_fields f ON r.from_field_id = f.md_fields_id
+            AND f.active_flag = 'Y'
+            INNER JOIN md_entities e1 ON r.to_entity_id = e1.md_entity_id
+            AND (
+                e1.tenant_id = %s
+                OR e1.public_flag = 'Y'
+            )
+            LEFT JOIN md_fields f1 ON r.to_field_id = f1.md_fields_id
+            AND f1.active_flag = 'Y'
+            WHERE
+                r.active_flag = 'Y'
+        """
     if (from_entity_ids is not None and len(from_entity_ids) > 0) and (
             to_entity_ids is not None and len(to_entity_ids) > 0):
         sql += "and (r.from_entity_id in %s and r.to_entity_id in %s)"
@@ -302,6 +322,130 @@ def get_md_entities_rel(tenant_id, from_entity_ids, to_entity_ids):
     result = cursor.fetchall()
     result = data_type_convert(result)
     logger.info("md_entitire_rel:{}".format(result))
+    conn.close()  # 不是真正关闭，而是重新放回了连接池
+    return result
+
+
+# 实体关系对应的存储表关系
+def get_md_entities_rel_tables_columns(tenant_id, from_entity_id, to_entity_id):
+    if from_entity_id is None and to_entity_id is None:
+        logger.warning("get_md_entities_rel_tables_columns,to_entity_id and from_entity_id is None")
+        return None
+    conn = db_md()
+    cursor = conn.cursor()
+    sql = """
+            SELECT DISTINCT
+                r.md_entity_rel_id,
+                r.from_entity_id,
+                r.rel_type,
+                r.md_entity_rel_desc,
+                e1.md_entity_id to_md_entity_id,
+                e1.md_entity_code to_md_entity_code,
+                e1.md_entity_name to_md_entity_name,
+                e1.md_entity_desc to_md_entity_desc,
+                e1.tenant_id to_tenant_id,
+                e1.public_flag to_public_flag,
+                e1.sys_flag,
+                r.md_tables_id,
+                t.schema_code,
+                t.md_tables_name,
+                r.from_columns_id,
+                c.md_columns_name AS from_columns_name,
+                r.to_columns_id,
+                c1.md_columns_name AS to_columns_name
+            FROM
+                md_entities e1
+            INNER JOIN md_entities_rel r ON e1.md_entity_id = r.to_entity_id
+            LEFT JOIN md_tables t ON t.md_tables_id = r.md_tables_id
+            AND t.active_flag = 'Y'
+            LEFT JOIN md_columns c ON c.md_columns_id = r.from_columns_id
+            AND c.active_flag = 'Y'
+            LEFT JOIN md_columns c1 ON c1.md_columns_id = r.to_columns_id
+            AND c1.active_flag = 'Y'
+            WHERE
+                (
+                    e1.tenant_id = %s
+                    OR e1.public_flag = 'Y'
+                )
+            
+        """
+    arg = (tenant_id,)
+    if (from_entity_id is not None):
+        sql += " AND r.from_entity_id = %s"
+        arg += (from_entity_id,)
+    if (to_entity_id is not None):
+        sql += " AND e1.md_entity_id = %s"
+        arg += (to_entity_id,)
+    else:
+        return None
+    cursor.execute(sql, args=arg)
+    result = cursor.fetchall()
+    result = data_type_convert(result)
+    logger.info("get_md_entities_rel_tables_columns:{}".format(result))
+    conn.close()  # 不是真正关闭，而是重新放回了连接池
+    return result
+
+
+# 系统表的实体关系对应的存储表关系
+def get_md_entities_rel_tables_columns_sys(tenant_id, from_entity_id, to_entity_id):
+    if from_entity_id is None and to_entity_id is None:
+        logger.warning("get_md_entities_rel_tables_columns_sys,to_entity_id and from_entity_id is None")
+        return None
+    conn = db_md()
+    cursor = conn.cursor()
+    sql = """
+            SELECT DISTINCT
+                r.md_entity_rel_id,
+                r.from_entity_id,
+                r.rel_type,
+                r.md_entity_rel_desc,
+                e1.md_entity_id to_md_entity_id,
+                e1.md_entity_code to_md_entity_code,
+                e1.md_entity_name to_md_entity_name,
+                e1.md_entity_desc to_md_entity_desc,
+                e1.tenant_id to_tenant_id,
+                e1.public_flag to_public_flag,
+                e1.sys_flag,
+                e1.md_tables_id,
+                t.schema_code,
+                t.md_tables_name,
+                r.from_columns_id,
+                c.md_columns_name AS from_columns_name,
+                cc.md_columns_id AS to_columns_id,
+                cc.md_columns_name AS to_columns_name
+            FROM
+                md_entities e1
+            INNER JOIN md_entities_rel r ON e1.md_entity_id = r.to_entity_id
+            LEFT JOIN md_tables t ON t.md_tables_id = e1.md_tables_id
+            AND t.active_flag = 'Y'
+            LEFT JOIN md_fields f ON f.md_fields_id = r.from_field_id
+            AND f.active_flag = 'Y'
+            LEFT JOIN md_columns c ON c.md_columns_id = f.md_columns_id
+            AND c.active_flag = 'Y'
+            LEFT JOIN md_fields ff ON ff.md_fields_id = r.to_field_id
+            AND ff.active_flag = 'Y'
+            LEFT JOIN md_columns cc ON cc.md_columns_id = ff.md_columns_id
+            AND cc.active_flag = 'Y'
+            WHERE
+                (
+                    e1.tenant_id = %s
+                    OR e1.public_flag = 'Y'
+                )
+
+        """
+    arg = (tenant_id,)
+    if (from_entity_id is not None):
+        sql += " AND r.from_entity_id = %s"
+        arg += (from_entity_id,)
+    if (to_entity_id is not None):
+        sql += " AND e1.md_entity_id = %s"
+        arg += (to_entity_id,)
+    else:
+        return None
+    cursor.execute(sql, args=arg)
+    result = cursor.fetchall()
+    result = data_type_convert(result)
+    logger.info("get_md_entities_rel_tables_columns_sys:{}".format(result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
 
@@ -544,7 +688,7 @@ def set_system_fields_values(values_dict, user_id, tenant_id, md_entity_id, is_u
     return values_dict
 
 
-def query_execute(user_id, tenant_id, md_entity_id, where_dict):
+def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id=None):
     irows = 0
     if md_entity_id is None or tenant_id is None:
         msg = 'query_execute,tenant_id or md_entity_id is none'
@@ -570,23 +714,57 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     entity_sys_flag = None
     public_flag = False
     public_col = None
+    key_col_name = None
     for field in all_fields:
         field_name = field.get('md_fields_name')
         entity_sys_flag = field.get('sys_flag')
+        is_key = field.get('is_key')
+        if is_key is not None and is_key == 'Y':
+            key_col_name = field.get('md_columns_name')
+
         if field_name is not None and field_name.lower() == 'public_flag':
             public_flag = True
             public_col = field.get('md_columns_name')
         table_name = field.get('md_tables_name')
         data_mapping[field.get('md_columns_name')] = field_name
     select_str = None
+    # 非系统表，其实体关系数据时存放在关系表，查询时，把关联父ID作为条件，查询某个父实体的所有子实体。
+    select_parent_field, join_str, parent_data_id = None, None, None
+    if parent_entity_id is not None:
+        (select_parent_field, join_str, parent_data_id) = join_relation(tenant_id, md_entity_id, parent_entity_id,
+                                                                        key_col_name,
+                                                                        entity_sys_flag)
+    if select_parent_field is not None:
+        select_str = select_parent_field
+    key = None
     for key in data_mapping.keys():
         if select_str is None:
-            select_str = key + " as " + data_mapping[key]
+            select_str = "t." + key + " as " + data_mapping[key]
         else:
-            select_str += "," + key + " as " + data_mapping[key]
+            select_str += ",t." + key + " as " + data_mapping[key]
 
-    sql = 'SELECT {keys} FROM {table} WHERE '.format(keys=select_str, table=table_name)
+    sql = 'SELECT {keys} FROM {table} as t '.format(keys=select_str, table=table_name)
     where_mapping = {}
+    if entity_sys_flag is not None and entity_sys_flag == 'Y':
+        if (parent_data_id is not None and isinstance(parent_data_id, dict) and len(parent_data_id) > 0):
+            keys = parent_data_id.keys()
+            key = None
+            for key in keys:
+                break
+            where_mapping[key] = parent_data_id[key]
+        sql += " WHERE "
+    elif select_parent_field is not None and join_str is not None:
+        if (parent_data_id is not None):
+            keys = parent_data_id.keys()
+            key = None
+            for key in keys:
+                break
+            value = parent_data_id.get(key)
+            join_str = join_str % (value)
+        sql += join_str + " WHERE "
+    else:
+        sql += " WHERE "
+
     if where_dict is not None and len(where_dict) > 0:
         for key1 in where_dict.keys():
             field = None
@@ -610,17 +788,20 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     dp_list = dp.query_data_privilege_info(tenant_id, user_id, md_entity_id, const.ENTITY_TYPE_ENTITY)
     # 假如是系统表，则查询时不做实体ID限制，否则，则要增加。
     if entity_sys_flag is not None and entity_sys_flag == "N":
-        where_mapping['md_entity_id'] = md_entity_id
+        md_id = -1
+        if md_entity_id is not None and isinstance(md_entity_id, str):
+            md_id = int(md_entity_id)
+        where_mapping['md_entity_id'] = md_id
     where_list_new.append(where_mapping)
     s1 = None
     for wh in where_mapping.keys():
         if s1 is None:
-            s1 = wh + '=%s'
+            s1 = "t." + wh + '=%s'
         else:
-            s1 += ' and ' + wh + '=%s'
+            s1 += ' and t.' + wh + '=%s'
     if public_flag is not None and public_flag and public_col is not None:
-        srep = "(tenant_id=%s or " + public_col + "='Y')"
-        s1 = s1.replace("tenant_id=%s", srep)
+        srep = "(t.tenant_id=%s or t." + public_col + "='Y')"
+        s1 = s1.replace("t.tenant_id=%s", srep)
     sql_where = '{param}'.format(param=s1)
     # 限制查询最大数量1000
     icount = 1000
@@ -646,7 +827,61 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict):
     return re
 
 
-def insert_execute(user_id, tenant_id, md_entity_id, data_list):
+# 关联实体关系，进行元数据实体关联关系查询（如：通过父实体ID查询子实体信息）
+def join_relation(tenant_id, md_entity_id, parent_entity_id, key_col_name, sys_flag):
+    select_field = None
+    join_str = None
+    parent_data_id = None
+    if parent_entity_id is not None and isinstance(parent_entity_id, dict):
+        parent_key = None
+        for key in parent_entity_id:
+            parent_key = key
+            parent_data_id = parent_entity_id.get(key)
+            break
+
+        if sys_flag is not None and sys_flag == "Y":  # 系统表，则字段直接查询关联。
+            if parent_data_id is not None and key_col_name is not None:
+                # select_field = ""
+                res = get_md_entities_rel_tables_columns_sys(tenant_id, parent_key, md_entity_id)
+                if res is not None and len(res) > 0:
+                    rec = res[0]
+                    parent_rel_col = rec.get("from_columns_name")
+                    if parent_rel_col is not None:
+                        dict1 = {}
+                        dict1[parent_rel_col] = parent_data_id
+                        parent_data_id = dict1
+                        select_field = " t.{} as $parent_data_id ".format(parent_rel_col)
+        else:
+            rres = get_md_entities_rel_tables_columns(tenant_id, parent_key, md_entity_id)
+            if (rres is not None and len(rres) > 0):
+                item = rres[0]
+                schema_code = item.get("schema_code")
+                alias = "rel"
+                md_entity_rel_id = item.get("md_entity_rel_id")
+                rel_table_name = item.get("md_tables_name")
+                from_col_name = item.get("from_columns_name")
+                to_col_name = item.get("to_columns_name")
+                select_field = "{}.{} as $parent_data_id ".format(alias, from_col_name)
+                join_str = ' join {table} as {alias} on {alias}.md_entity_rel_id={entity_rel_id} and {alias}.{to_col_name}=t.{col}'.format(
+                    table=rel_table_name, alias=alias, entity_rel_id=md_entity_rel_id,
+                    to_col_name=to_col_name, col=key_col_name)
+                join = ""
+                if parent_data_id is not None:
+                    parent_condition_str = ' and {alias}.{parent_id}=%s'.format(alias=alias, parent_id=from_col_name)
+                    join_str += parent_condition_str
+                    dict1 = {}
+                    dict1[from_col_name] = parent_data_id
+                    parent_data_id = dict1
+                    join = ' inner '
+                else:
+                    join = ' left '
+
+                join_str = join + join_str
+
+        return (select_field, join_str, parent_data_id)
+
+
+def insert_execute(user_id, tenant_id, md_entity_id, data_list, parent_entity_dict=None):
     irows = 0
     if md_entity_id is None or tenant_id is None:
         msg = 'insert_execute,tenant_id or md_entity_id is none'
@@ -668,6 +903,7 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
                                   message=msg)
     table_name = None
     exist_fields = False
+    b_flag = False
     data_mapping = {}
     entity_relative_tables_list = []
     if isinstance(data_list, list) and len(data_list) > 0:
@@ -732,6 +968,8 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
                                                                              data_list_new))
         re = exec_output_status(type=DB_EXEC_TYPE_INSERT, status=sStatus, rows=irows, data=data, message=message)
         conn.commit()
+        if not b_flag:  # 凡是非系统表，存在实体关系的，写入关系表。
+            insert_entity_relation(user_id, tenant_id, md_entity_id, ids, parent_entity_dict)
         # 插入到元数据实体表或者数据视图表，就要增加权限码；以及创建默认的实体字段，即填写不为空的字段（包括主键ID）。
         if table_name is not None and (table_name.lower() == 'md_entities' or table_name.lower() == 'data_views'):
             entity_type = const.ENTITY_TYPE_ENTITY
@@ -753,6 +991,68 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list):
         conn.close()
 
 
+# 写入实体关系数据表（一般是创建子实体的时候）
+def insert_entity_relation(user_id, tenant_id, md_entity_id, data_ids, parent_data_dict):
+    if parent_data_dict is None or not isinstance(parent_data_dict, dict) or data_ids is None:
+        logger.info(
+            "insert entity relaiton,md_entity_id={},parent_data_dict={} is None or data_ids={} is None.".format(
+                md_entity_id, parent_data_dict, data_ids))
+        return None
+
+    item = None
+    for item in parent_data_dict:
+        break
+    parent_entity_id = item
+    parent_data_id = parent_data_dict.get(item)
+    if parent_data_id is None:
+        logger.warning(
+            "insert entity relaiton,md_entity_id={},parent_data_id is None.".format(
+                md_entity_id))
+        return None
+    data_list = []
+    rres = get_md_entities_rel_tables_columns(tenant_id, parent_entity_id, md_entity_id)
+    re = None
+    if (rres is not None and len(rres) > 0):
+        item = rres[0]
+        schema_code = item.get("schema_code")
+        rel_type = item.get("rel_type")
+        md_entity_rel_id = item.get("md_entity_rel_id")
+        rel_table_name = item.get("md_tables_name")
+        # from_col_name = item.get("from_columns_name")
+        # to_col_name = item.get("to_columns_name")
+        # select_field = "{} as $parent_data_id ".format(from_col_name)
+        if rel_table_name is None:
+            logger.warning(
+                "insert entity relaiton,md_entity_id={},entity_code={} is None Exists.".format(
+                    md_entity_id, rel_table_name))
+            return None
+        # 要求关系表的元数据实体名称和表名称一致
+        res = get_md_entities_id_by_code([rel_table_name])
+        rel_entity_id = None
+        if (res is not None):
+            rel_entity_id = res[0].get("md_entity_id")
+        else:
+            logger.warning(
+                "insert entity relaiton,md_entity_id={},entity_code={} is None Exists or not Authorized.".format(
+                    md_entity_id, rel_table_name))
+            return None
+
+        for id in data_ids:
+            # rel_ids = get_guid(1)
+            data_dict = {}
+            # data_dict[KEY_FIELDS_ID] = rel_ids[0]
+            data_dict["md_entity_rel_id"] = md_entity_rel_id
+            data_dict["rel_type"] = rel_type
+            data_dict["from_data_id"] = parent_data_id
+            data_dict["to_data_id"] = id
+            data_dict["active_flag"] = "Y"
+            set_system_fields_values(data_dict, user_id, tenant_id, md_entity_id, is_update=False, is_sys_flag=True)
+            data_list.append(data_dict)
+        re = insert_execute(user_id, tenant_id, rel_entity_id, data_list, parent_entity_dict=None)
+    return re
+
+
+# 把数据表不为空的字段，插入到实体属性表，作为元数据实体的默认字段
 def insert_default_fields(user_id, tenant_id, md_entity_ids, entity_relative_tables_ids_list):
     field_entity = get_md_entities_id_by_code(["md_fields"])
     if field_entity is None:
