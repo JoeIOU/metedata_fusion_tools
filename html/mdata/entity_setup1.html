@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<title>Entity Metadata Setup</title>
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<style>
+			.bg-purple-light {
+        background: #e5e9f2;
+       }
+      .el-dropdown {
+        vertical-align: top;
+       }
+      .el-dropdown + .el-dropdown {
+        margin-left: 15px;
+      }
+
+	  .demo-table-expand {
+		font-size: 8;
+	  }
+	  .demo-table-expand label {
+		width: 800px;
+		color: #99a9bf;
+	  }
+	  .demo-table-expand .el-form-item {
+		margin-right: 0;
+		margin-bottom: 0;
+		width: 200px;
+		height:80px;
+		font-size: 8px;
+	  }
+
+    </style>
+	</head>
+	<body>
+		<div id="app">
+			<div style="margin:0px;padding:5px;">
+				<el-row>
+					<span v-if="master_user.sel">
+						<el-col span="24">
+							实体ID:
+							<el-input size="mini" :rows="1" placeholder="Input Something"
+									  v-model="master_user.sel['md_entity_id']" style="width:130px" maxlength="30"
+									  disabled>
+							</el-input>
+							实体编码:
+							<el-input size="mini" :rows="1" placeholder="Input Something"
+									  v-model="master_user.sel['md_entity_code']" style="width:150px"
+									  maxlength="256" id="md_entity_code100001"
+									  @change="onchange('md_entity_code',master_user.sel,100001)" disabled>
+							</el-input>
+							实体名称:
+							<el-input size="mini" :rows="1" placeholder="Input Something"
+									  v-model="master_user.sel['md_entity_name']" style="width:170px"
+									  maxlength="256" id="md_entity_name100001"
+									  @change="onchange('md_entity_name',master_user.sel,100001)" :disabled="isReadonly">
+							</el-input>
+							实体英文名称:
+							<el-input type="textarea" size="mini" :rows="1" placeholder="Input Something"
+									  v-model="master_user.sel['md_entity_name_en']" style="width:190px"
+									  maxlength="256" id="md_entity_name_en100001"
+									  @change="onchange('md_entity_name_en',master_user.sel,100001)" :disabled="isReadonly">
+							</el-input>
+							实体描述:
+							<el-input type="textarea" size="mini" :rows="1" placeholder="Input Something"
+									  v-model="master_user.sel['md_entity_desc']" style="width:220px"
+									  maxlength="256" id="md_entity_desc100001"
+									  @change="onchange('md_entity_desc',master_user.sel,100001)" :disabled="isReadonly">
+							</el-input>
+                            租户共享标识:
+                            <el-select size="mini" id="public_flag100001" v-model="master_user.sel['entity_public_flag']" style="width:120px" disabled>
+                                <el-option
+                                           key="Y"
+                                           label="Yes"
+                                           value="Y">
+                                </el-option>
+                                <el-option
+                                           key="N"
+                                           label="No"
+                                           value="N">
+                                </el-option>
+                            </el-select>
+						</el-col>
+					</span>
+				</el-row>
+			</div>
+			<el-row>
+				<el-col span="24">
+					<el-table size="mini" :data="master_user.data.slice((currentPage-1)*pagesize,currentPage*pagesize)"
+							  highlight-current-row
+							  v-loading="loading"
+							  element-loading-text="稍安勿躁，拼命加载中..."
+							  element-loading-spinner="el-icon-loading"
+							  element-loading-background="rgba(220, 220, 220,2)" border style="width:100%"
+							  :header-cell-style="{'background-color': '#dddddd','color': 'rgb(0, 0, 0)','border-bottom': '1px rgb(250, 250, 250) solid'}">
+						<el-table-column type="index" label="No."  width="45">
+
+						</el-table-column>
+						<el-table-column label="操作" width="45">
+							<template slot-scope="scope">
+								<span v-if="scope.row.active_flag=='Y'&&!isReadonly" class="el-tag el-tag--danger el-tag--mini"
+									  style="cursor: pointer;"
+									  @click="pwdChange(scope.row,scope.row['$$_id_'],false)">
+									<span v-if="scope.row.isDel">
+										<el-tooltip placement="top">
+											<div slot="content">还原</div>
+											<i class="el-icon-edit-outline"></i>
+										</el-tooltip>
+									</span>
+									<span v-else>
+										<el-tooltip placement="top">
+											<div slot="content">删除</div>
+											<i class="el-icon-delete"></i>
+										</el-tooltip>
+									</span>
+								</span>
+								<span v-else-if="(scope.row.md_fields_id===''||scope.row.md_fields_id===null)&&!isReadonly"
+									  class="el-tag el-tag--warning el-tag--mini"
+									  style="cursor: pointer;"
+									  @click="pwdChange(scope.row,scope.row['$$_id_'],false)">
+									<el-tooltip placement="top">
+										<div slot="content">重置</div>
+										<i class="el-icon-refresh"></i>
+									</el-tooltip>
+								</span>
+							</template>
+						</el-table-column>
+						<el-table-column label="" width="25" type="expand">
+							<template slot-scope="scope">
+								<el-form label-position="left" inline class="demo-table-expand">
+								  <el-form-item label="数据表名称">
+									<span>{{ scope.row['md_tables_name'] }}</span>
+								  </el-form-item>
+								  <el-form-item label="数据表描述">
+									<span>{{ scope.row['md_tables_desc'] }}</span>
+								  </el-form-item>
+								  <el-form-item label="字段名称">
+									<span>{{ scope.row['md_columns_name'] }}</span>
+								  </el-form-item>
+								  <el-form-item label="字段类型">
+									<span>{{ scope.row['md_columns_type'] }}</span>
+								  </el-form-item>
+								  <el-form-item label="字段描述">
+									<span>{{ scope.row['md_columns_desc'] }}</span>
+								  </el-form-item>
+								  <el-form-item label="字段长度">
+									<span>{{ scope.row['md_columns_length'] }}</span>
+								  </el-form-item>
+								  <el-form-item label="字段小数位">
+									<span>{{ scope.row['md_dec_length'] }}</span>
+								  </el-form-item>
+								  <el-form-item label="">
+									<span>{{ scope.row[''] }}</span>
+								  </el-form-item>
+								</el-form>
+							</template>
+						</el-table-column>
+						<el-table-column v-for="(v,i) in master_user.columns" :prop="v.field" :label="v.title" :type="v.type"
+										 :width="v.width" v-if="v.visible">
+							<template slot-scope="scope">
+								<span v-if="isReadonly">
+									{{scope.row[v.field]}}
+								</span>
+								<span v-else>
+									<span v-if="scope.row['active_flag']=='Y' || scope.row.md_fields_id===''||scope.row.md_fields_id===null">
+										<span v-if="v.type=='bigint' ||v.type=='int'">
+											<el-input v-model="scope.row[v.field]" :rows="1" size="mini"
+													  oninput="value=value.replace(/[^0-9]/g,'')"
+													  maxlength="20" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
+													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])">
+											</el-input>
+										</span>
+										<span v-else-if="v.field=='md_fields_type'">
+											<el-select size="mini" v-model="scope.row[v.field]" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"  clearable filterable
+													   @change="onchange(v.field,scope.row,scope.row['$$_id_'])">
+												<el-option
+														   v-for="item in options"
+														   :key="item.value"
+														   :label="item.label"
+														   :value="item.value">
+												</el-option>
+											</el-select>
+										</span>
+										<span v-else-if="v.field=='lookup_entity'">
+											<el-select size="mini" v-model="scope.row[v.field]" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
+													   @change="onchange(v.field,scope.row,scope.row['$$_id_'])"  clearable filterable>
+												<el-option
+														   v-for="item in entity_options"
+														   :key="item.value"
+														   :label="item.label"
+														   :value="item.value">
+												</el-option>
+											</el-select>
+										</span>
+										<span v-else-if="v.field=='lookup_flag'||v.field=='is_null'||v.field=='is_indexed'||v.field=='is_unique'||v.field=='public_flag'">
+											<el-select size="mini" v-model="scope.row[v.field]" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
+													   @change="onchange(v.field,scope.row,scope.row['$$_id_'])">
+												<el-option
+														   key="Y"
+														   label="Yes"
+														   value="Y">
+												</el-option>
+												<el-option
+														   key="N"
+														   label="No"
+														   value="N">
+												</el-option>
+											</el-select>
+										</span>
+										<span v-else-if="v.type=='float' ||v.type=='numeric'">
+											<el-input-number size="mini" v-model="scope.row[v.field]" :rows="1" :precision="8"
+															 :controls="false" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
+															 @change="onchange(v.field,scope.row,scope.row['$$_id_'])"></el-input-number>
+										</span>
+										<span v-else-if="v.type=='char' ||v.type=='boolean'">
+											<el-input size="mini" :rows="1"
+													  v-model="scope.row[v.field]" maxlength="10" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
+													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])"></el-input>
+										</span>
+										<span v-else-if="v.field=='md_fields_name'&&(scope.row.md_fields_id==null||scope.row.md_fields_id=='')">
+											<el-input size="mini" :rows="1"
+													  v-model="scope.row[v.field]" maxlength="200" :id="v.field+scope.row['$$_id_']"
+													  onkeyup="value=value.replace(/[^\w\.\/]/ig,'')"
+													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])"></el-input>
+										</span>
+										<span v-else-if="v.field=='md_fields_name_en'">
+											<el-input size="mini" :rows="1"
+													  v-model="scope.row[v.field]" maxlength="200" :id="v.field+scope.row['$$_id_']"
+													  onkeyup="value=value.replace(/[\u4e00-\u9fa5]/g,'')"
+													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])" :disabled="v.readonly"></el-input>
+										</span>
+										<span v-else>
+											<el-input size="mini" :rows="1"
+													  v-model="scope.row[v.field]" maxlength="500" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
+													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])">
+											</el-input>
+										</span>
+									</span>
+									<span v-else>
+										<el-input size="mini" :rows="1"
+												  v-model="scope.row[v.field]" disabled :id="v.field+scope.row['$$_id_']">
+										</el-input>
+									</span>
+								</span>
+							</template>
+						</el-table-column>
+					</el-table>
+					<div class="pagination">
+						<el-pagination
+									   @size-change="handleSizeChange"
+									   @current-change="handleCurrentChange"
+									   :current-page="currentPage"
+									   :page-sizes="[10, 20, 50, 100]"
+									   :page-size="pagesize"
+									   layout="total, sizes,prev, pager, next"
+									   :total="master_user.data.length"
+									   prev-text="上一页"
+									   next-text="下一页">
+						</el-pagination>
+					</div>
+				</el-col>
+			</el-row>
+			<br />
+			<el-row>
+				<span v-if="!isReadonly">
+					<el-col span="24">
+						<div class="grid-content bg-purple-light">
+							<el-button type="primary" @click="submitData()">保存</el-button>
+							<!-- <el-button type="primary" @click="close()">Close</el-button> -->
+						</div>
+					</el-col>
+				</span>
+			</el-row>
+		</div>
+		<!-- import Vue before Element -->
+		<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+		<script src="js/main.js"></script>
+		<script src="js/entity_setup1.js"></script>
+	</body>
+
+</html>
