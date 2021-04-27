@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Entity Setup</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+       .bg-purple-light {
+        background: #e5e9f2;
+    }
+
+    .el-dropdown {
+        vertical-align: top;
+    }
+    .el-dropdown + .el-dropdown {
+        margin-left: 15px;
+    }
+    .el-icon-arrow-down {
+        font-size: 12px;
+    }
+    </style>
+</head>
+<body>
+<div id="app1">
+    <el-row>
+        <el-col span="24">
+            <div class="grid-content bg-purple-light">
+                <span class="demonstration">实体选择: </span>
+                <el-select v-model="select1" placeholder="请选择实体" @change="handleClick">
+                    <el-option
+                            v-for="item in options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="{ value: item.value, label: item.label }">
+                    </el-option>
+                </el-select>
+                <!-- <el-button type="primary" @click="setup(select_value)">Entity Config</el-button> -->
+                <el-button type="primary" icon='el-icon-plus' @click="entity_add">新增</el-button>
+                <el-button type="primary" icon='el-icon-delete' @click="entity_del">删除</el-button>
+                <el-button type="primary" icon='el-icon-circle-check' @click="entity_author">授权</el-button>
+            </div>
+        </el-col>
+    </el-row>
+
+    <el-row>
+        <!-- Add Entity Form dialog -->
+        <span v-if="form_data">
+        <el-dialog title="元数据实体新增" :visible.sync="addFormVisible" width="500px">
+            <el-form :model="form_data" ref="formSubmit01">
+                <el-row>  
+                <span>   
+                    <el-form-item label="实体编码" prop="entity_code" label-width="160px">
+                        <el-input size="mini" placeholder="Input Something"
+                                  v-model="form_data.md_entity_code" style="width:250px" onkeyup="value=value.replace(/[^\w\.\/]/ig,'')"
+                                   maxlength="200" ></el-input>
+                    </el-form-item>   
+               </span> 
+                <span>             
+                <el-form-item label="实体名称" prop="entity_name" label-width="160px">
+                    <el-input size="mini" placeholder="Input Something"
+                              v-model="form_data.md_entity_name" style="width:250px"
+                               maxlength="200" ></el-input>
+                </el-form-item>  
+               </span> 
+                <span>                     
+                <el-form-item label="实体英文名称" prop="entity_name_en" label-width="160px">
+                    <el-input size="mini" placeholder="Input Something" onkeyup="value=value.replace(/[\u4e00-\u9fa5]/g,'')"
+                              v-model="form_data.md_entity_name_en" style="width:250px"
+                               maxlength="200" ></el-input>
+                </el-form-item>  
+               </span>
+                <span>
+                <el-form-item label="跨租户共享标识" prop="public_flag" label-width="160px">
+                        <el-select size="mini" v-model="form_data.public_flag" style="width:250px">
+                            <el-option
+                                       key="Y"
+                                       label="Yes"
+                                       value="Y">
+                            </el-option>
+                            <el-option
+                                       key="N"
+                                       label="No"
+                                       value="N">
+                            </el-option>
+                        </el-select>
+                </el-form-item>
+               </span>
+                <span>                      
+                <el-form-item label="存放数据表"  label-width="160px">
+                    <el-select size="mini" v-model="form_data.md_tables_id" placeholder="请选择实体数据表"  filterable style="width:250px">
+                        <el-option
+                                v-for="item in table_options"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+
+                </el-form-item>  
+               </span> 
+                <span>               
+                <el-form-item label="实体描述" prop="md_entity_desc" label-width="160px">
+                    <el-input type="textarea" :rows="2" size="mini" placeholder="Input Something"
+                              v-model="form_data.entity_desc" style="width:250px" maxlength="500"></el-input>
+                </el-form-item> 
+               </span>          
+          </el-row>
+       </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="addFormVisible =false">取 消</el-button>
+            <el-button type="primary" @click="submit_entity">确 定</el-button>
+        </div>
+    </el-dialog>
+    </span>
+
+        <el-dialog title="元数据实体授权" :visible.sync="authorFormVisible" width="1024px">
+            <el-form :model="author_data" ref="formSubmit01">
+                <el-row>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="entity_id" prop="entity_id" label-width="160px">
+                            <el-input size="mini" placeholder="Input Something"
+                                      v-model="author_data.md_entity_id" style="width:250px"
+                                      show-word-limit="true" disabled></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="entity_name" prop="entity_name" label-width="160px">
+                            <el-input size="mini" placeholder="Input Something"
+                                      v-model="author_data.md_entity_name" style="width:250px"
+                                      show-word-limit="true" disabled></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="群组选择" label-width="160px">
+                            <el-select size="mini" v-model="author_data.data_group_id" placeholder="请选择群组" filterable
+                                       collapse-tags style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in group_options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="数据权限范围" label-width="160px">
+                            <el-select size="mini" v-model="author_data.data_privilege_id" placeholder="请选择数据权限"
+                                       @change=""
+                                       filterable collapse-tags style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in data_privilege_options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                    <span style="float: left">{{ item.label }}</span>
+                                    <span style="float: right; color: #8492a6; font-size: 13px">{{ item.key }}</span>
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="角色选择" label-width="160px">
+                            <el-select size="mini" v-model="author_data.role_id" placeholder="请选择角色" filterable
+                                       collapse-tags @change=""
+                                       style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in role_options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="操作权限" label-width="160px">
+                            <el-select size="mini" v-model="author_data.authorization_id" placeholder="请选择操作权限"
+                                       filterable collapse-tags @change="handleAuthChange"
+                                       style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in authorize_options"
+                                        :key="item.key"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="authorFormVisible =false">取 消</el-button>
+                <el-button type="primary" @click="submit_auth">确 定</el-button>
+            </div>
+        </el-dialog>
+    </el-row>
+    <iframe :src="iframe_url" style="width:100%;height:650px;border:0"></iframe>
+</div>
+<!-- import Vue before Element -->
+<!--<script src="https://unpkg.com/vue/dist/vue.js"></script>-->
+<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/entity_setup.js"></script>
+</body>
+
+</html>
