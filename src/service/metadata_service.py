@@ -7,6 +7,7 @@ from config.config import cfg as config
 from flask_httpauth import HTTPBasicAuth
 from common import authorization as au
 from service import utils_serv as utl
+from ui import ui_metadata as ui
 
 logger = config.logger
 app = httpserver.getApp()
@@ -286,31 +287,135 @@ def query_Metadata_Fields():
 def find_entity():
     # GET入参：{"$_ENTITY_ID":30025,"user_id":"123"}
     # POST入参：{"$_ENTITY_ID":30025,"where":{"user_id":1348844049557229568}}
+    # POST入参，通过父实体，找到子实体{"$_ENTITY_ID":30014,"$PARENT_ENTITY_ID":30018,"$parent_data_id":10016, "where": [{"$_row_id_": 3161}]}
+    # POST入参，通过父实体，找到子实体{"$_ENTITY_ID":30002,"$PARENT_ENTITY_ID":30001,"$parent_data_id":800001,"where": [{"$_row_id_": 2001}]}
     re = None
     data = None
     try:
         data_list = []
         data = utl.request_parse(request)
         md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
-        if not isinstance(md_entity_id, str):
-            md_entity_id = str(md_entity_id)
-        if request.method == 'POST':
-            data_list = data.get('where')
-        else:
-            data_list.append(data)
+        parent_entity_id = data.get(utl.GLOBAL_PARENT_ENTITY_ID)
+        parent_data_id = data.get(utl.GLOBAL_PARENT_DATA_ID)
+        parent_dict = None
+        if (parent_entity_id is not None and parent_data_id is None):
+            msg = 'findEntity,input entity params[{}] is not null and {}should not be None too.'.format(
+                utl.GLOBAL_PARENT_ENTITY_ID, utl.GLOBAL_PARENT_DATA_ID)
+            logger.warning(msg)
+            re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                       message=msg)
+            return Response(json.dumps(re), mimetype='application/json')
 
+        if (parent_entity_id is not None and parent_data_id is not None):
+            parent_dict = {}
+            parent_dict[str(parent_entity_id)] = parent_data_id
+        if md_entity_id is not None:
+            md_entity_id = str(md_entity_id)
         if md_entity_id is None or len(md_entity_id) <= 0:
             msg = 'findEntity,input entity params[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
             logger.warning(msg)
             re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                        message=msg)
+            return Response(json.dumps(re), mimetype='application/json')
+
+        if request.method == 'POST':
+            data_list = data.get('where')
         else:
-            re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntity", data_list=None,
-                                        where_list=data_list)
-            logger.info('find Entity. Params:{},result:{}'.format(data, re))
+            data_list.append(data)
+
+        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntity", data_list=None,
+                                    where_list=data_list, parent_entity_id=parent_dict)
+        logger.info('find Entity. Params:{},result:{}'.format(data, re))
         return Response(json.dumps(re), mimetype='application/json')
     except Exception as ex:
         msg = "find Entity error.input:{},message:{}".format(data, ex)
+        logger.error(msg)
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+        # raise ex
+        return Response(json.dumps(re), mimetype='application/json')
+    finally:
+        pass
+
+
+# 实体关系查询
+@app.route(domain_root + '/services/findEntityRelation', methods=['POST', 'GET'])
+@auth.login_required
+def find_entity_rel():
+    # GET入参：{"$F_ENTITY_ID":30025,"$T_ENTITY_ID":"12345"}
+    # POST入参：{"$F_ENTITY_CODE":"30025","$T_ENTITY_CODE":"12345"}
+    # POST多个入参：{"$F_ENTITY_ID":[30025,123],"$F_ENTITY_CODE":["xxx","xx"],"$T_ENTITY_CODE":["12345","222"],$T_ENTITY_ID:["12335","12233"]}(code和id，二选一即可)
+    re = None
+    data = None
+    try:
+        data_list = []
+        data = utl.request_parse(request)
+        from_entity_id = data.get("$F_ENTITY_ID")
+        from_entity_code = data.get("$F_ENTITY_CODE")
+        to_entity_id = data.get("$T_ENTITY_ID")
+        to_entity_code = data.get("$T_ENTITY_CODE")
+        if (from_entity_id is None and from_entity_code is None and to_entity_id is None and to_entity_code is None):
+            msg = 'findEntityRelation,input entity params[{}] should not be None or not match.'.format(data)
+            logger.warning(msg)
+            re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                       message=msg)
+            return Response(json.dumps(re), mimetype='application/json')
+        ls_from_codes = []
+        if from_entity_code is not None and len(from_entity_code) > 0:
+            if isinstance(from_entity_code, list):
+                ls_from_codes += from_entity_code
+            else:
+                ls_from_codes.append(from_entity_code)
+        ls_to_codes = []
+        if to_entity_code is not None and len(to_entity_code) > 0:
+            if isinstance(to_entity_code, list):
+                ls_to_codes += to_entity_code
+            else:
+                ls_to_codes.append(to_entity_code)
+        ls_codes = ls_from_codes + ls_to_codes
+        if (len(ls_codes) > 0):
+            res = md.get_md_entities_id_by_code(ls_codes)
+            f_ids = []
+            t_ids = []
+            if res is not None:
+                for item in res:
+                    code = item.get("md_entity_code")
+                    for item1 in ls_from_codes:
+                        if code == item1:
+                            f_ids.append(str(item.get("md_entity_id")))
+                    for item2 in ls_to_codes:
+                        if code == item2:
+                            t_ids.append(str(item.get("md_entity_id")))
+                if f_ids is not None and len(f_ids) > 0:
+                    from_entity_id = f_ids
+                if t_ids is not None and len(t_ids) > 0:
+                    to_entity_id = t_ids
+        ls_frm = []
+        ls_to = []
+        if from_entity_id is not None:
+            if isinstance(from_entity_id, list):
+                ls_frm = from_entity_id
+            else:
+                ls_frm.append(str(from_entity_id))
+        if to_entity_id is not None:
+            if isinstance(to_entity_id, list):
+                ls_to = to_entity_id
+            else:
+                ls_to.append(str(to_entity_id))
+
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
+        # user_id = user.get("user_id")
+        res = md.get_md_entities_rel(tenant_id, ls_frm, ls_to)
+        size = 0
+        if (res is not None):
+            size = len(res)
+        logger.info('find Entity Relation. Params:{},result:{}'.format(data, re))
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=size, data=res,
+                                   message="find Entity Relation Success.")
+        return Response(json.dumps(re), mimetype='application/json')
+    except Exception as ex:
+        msg = "find Entity Relation error.input:{},message:{}".format(data, ex)
         logger.error(msg)
         re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
@@ -326,6 +431,7 @@ def find_entity():
 def find_entity_by_code():
     # GET入参：{"$_ENTITY_CODE":"users","user_id":"123"}
     # POST入参：{"$_ENTITY_CODE":"users","where":{"user_id":1348844049557229568}}
+    # POST入参，通过父实体，找到子实体{"$_ENTITY_CODE":"md_fields","$PARENT_ENTITY_CODE":"md_entities","$parent_data_id":30016,"where": [{"$_row_id_": 2001}]}
     data = None
     re = None
     try:
@@ -336,6 +442,17 @@ def find_entity_by_code():
         else:
             data_list.append(data)
         md_entity_code = data.get(utl.GLOBAL_ENTITY_CODE)
+        parent_entity_code = data.get(utl.GLOBAL_PARENT_ENTITY_CODE)
+        parent_data_id = data.get(utl.GLOBAL_PARENT_DATA_ID)
+        parent_entity_id = None
+        if parent_entity_code is not None and parent_data_id is not None:
+            res = md.get_md_entities_id_by_code([parent_entity_code])
+            if res is not None and len(res) > 0:
+                parent_entity_id = res[0].get("md_entity_id")
+        parent_dict = None
+        if (parent_entity_id is not None and parent_data_id is not None):
+            parent_dict = {}
+            parent_dict[str(parent_entity_id)] = parent_data_id
         if md_entity_code is None or len(md_entity_code) <= 0:
             msg = 'findEntityByCode,input entity code params[{}] should not be None.'.format(utl.GLOBAL_ENTITY_CODE)
             logger.warning(msg)
@@ -356,7 +473,7 @@ def find_entity_by_code():
                                              data=None,
                                              message=s)
             re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntityByCode", data_list=None,
-                                        where_list=data_list)
+                                        where_list=data_list, parent_entity_id=parent_dict)
             logger.info('findEntityByCode. Params:{},result:{}'.format(data_list, re))
         return Response(json.dumps(re), mimetype='application/json')
     except Exception as ex:
@@ -421,6 +538,7 @@ def find_lookupItem_by_code():
 @auth.login_required
 def find_Lookup_By_EntityCode():
     # GET/POST入参：{"lookup_code":"123",entity_code:"xxx"}
+    # POST入参，通过父实体，找到子实体{"entity_code":"md_fields","$PARENT_ENTITY_CODE":"md_entities","$parent_data_id":30016}
     data = None
     re = None
     try:
@@ -431,6 +549,19 @@ def find_Lookup_By_EntityCode():
         entity_code = data.get('entity_code')
         if lookup_code == '':
             data.pop('lookup_code')
+
+        parent_entity_code = data.get(utl.GLOBAL_PARENT_ENTITY_CODE)
+        parent_data_id = data.get(utl.GLOBAL_PARENT_DATA_ID)
+        parent_entity_id = None
+        if parent_entity_code is not None and parent_data_id is not None:
+            res = md.get_md_entities_id_by_code([parent_entity_code])
+            if res is not None and len(res) > 0:
+                parent_entity_id = res[0].get("md_entity_id")
+        parent_dict = None
+        if (parent_entity_id is not None and parent_data_id is not None):
+            parent_dict = {}
+            parent_dict[str(parent_entity_id)] = parent_data_id
+
         if lookup_code is None or len(lookup_code.strip()) <= 0:
             lookup_code = entity_code
         res_lk = md.get_lookup_items(tenant_id, [lookup_code])
@@ -444,7 +575,7 @@ def find_Lookup_By_EntityCode():
             return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=s)
         result = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findLookupByEntityCode", data_list=None,
-                                        where_list=[data])
+                                        where_list=[data], parent_entity_id=parent_dict)
         mp = utl.entity_lookup_mapping(res_lk, result.get("data"))
         size1 = 0
         if (mp is not None):
@@ -558,6 +689,7 @@ def query_entity_list():
 @auth.login_required
 def insert_entity():
     # 入参：{"$_ENTITY_ID":30001,"data":[{"test_fields":"Mark","test_fields1":"Mark0001"}]}
+    # 入参，包括创建实体关系：{"$_ENTITY_ID":30001,"$PARENT_ENTITY_ID":30002,"$parent_data_id":10016,"data":[{"test_fields":"Mark","test_fields1":"Mark0001"}]}
     data = None
     re = None
     try:
@@ -570,6 +702,12 @@ def insert_entity():
                                        message=msg)
             return json.dumps(re)
         md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+        parent_entity_id = data.get(utl.GLOBAL_PARENT_ENTITY_ID)
+        parent_data_id = data.get(utl.GLOBAL_PARENT_DATA_ID)
+        parent_dict = None
+        if (parent_entity_id is not None and parent_data_id is not None):
+            parent_dict = {}
+            parent_dict[str(parent_entity_id)] = parent_data_id
         if not isinstance(md_entity_id, str):
             md_entity_id = str(md_entity_id)
         if md_entity_id is None or len(md_entity_id) <= 0:
@@ -591,7 +729,7 @@ def insert_entity():
             (isPass, output) = rule_validate(request, validateOnly=1)
             if isPass is not None and isPass:
                 re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity",
-                                            data_list=data_list)
+                                            data_list=data_list, parent_entity_id=parent_dict)
             else:
                 re = output
 
@@ -912,6 +1050,64 @@ def rule_validate(http_request, validateOnly=0):
                                    message=msg)
         return (is_pass, re)
         # raise ex
+    finally:
+        pass
+
+
+# UI模板和属性查询
+@app.route(domain_root + '/services/queryUIElements', methods=['POST', "GET"])
+@auth.login_required
+def query_ui_elements():
+    data = None
+    try:
+        data = utl.request_parse(request)
+        ui_template_id = data.get('ui_template_id')
+        user = utl.get_login_user()
+        # user_account = user.get("account_number")
+        tenant_id = user.get("tenant_id")
+        res = ui.query_ui_template_elements(tenant_id, ui_template_id)
+        size = 0
+        if (res is not None):
+            size = len(res)
+        msg = "query UI Elements Success."
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=size, data=res,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
+    except Exception as ex:
+        msg = "queryUIElements failed,input:{},message:{}".format(data, ex)
+        logger.error(msg)
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
+    finally:
+        pass
+
+
+# UI单对象属性信息查询
+@app.route(domain_root + '/services/queryUISingleEntity', methods=['POST', "GET"])
+@auth.login_required
+def query_ui_single_entity():
+    data = None
+    try:
+        data = utl.request_parse(request)
+        md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+        user = utl.get_login_user()
+        # user_account = user.get("account_number")
+        tenant_id = user.get("tenant_id")
+        res = ui.query_single_ui_entity_elements(tenant_id, md_entity_id)
+        size = 0
+        if (res is not None):
+            size = len(res)
+        msg = "query UI Single Entity Success."
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=size, data=res,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
+    except Exception as ex:
+        msg = "queryUISingleEntity failed,input:{},message:{}".format(data, ex)
+        logger.error(msg)
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
     finally:
         pass
 
