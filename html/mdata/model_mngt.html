@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="description" content="">
+		<title>Metadata Model</title>
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<link rel="stylesheet" href="css/neo4jd3.min.css?v=0.0.1">
+<!--		<link rel="stylesheet" href="css/font-awesome.min.css">-->
+		<style>
+			.el-header, .el-footer {
+            background-color: #D3E0F1;
+            padding: 5px;
+            color: #333;
+            margin:1px;
+            text-align: center;
+        }
+        .m-band {
+            background-color: #D3E0F1;
+            padding: 5px;
+            font-size:15px;
+            color: #333;
+            margin:1px;
+            text-align: left;
+        }
+        .m-header {
+            height: 50px !important;
+            text-align: left;
+        }
+        .m-band-right {
+            height: 30px !important;
+            text-align: right;
+        }
+        .customWidth{
+                width:99%;
+            }
+
+
+    </style>
+	</head>
+
+	<body>
+		<div id="app">
+			<el-container>
+				<el-header class='m-header'>
+					<el-row>
+						<el-col span="20">
+							<div class="grid-content bg-purple-light">
+								&nbsp;&nbsp;<el-input placeholder="Input Search String" v-model="search_text"
+										  style="width:280px" name="search" @keyup.enter.native="search"></el-input>
+								<el-button type="primary" @click="search" icon="el-icon-search"
+										   type="submit">
+									Search
+								</el-button>
+							</div>
+						</el-col>
+						<el-col span="4">
+							<el-dialog title="实体模型Chart" :visible.sync="dialogTableVisible" width="90%" top center>
+								<div align="right">*滚动鼠标可以放大缩小，双击圆形图标打开详情</div>
+								<div algin="center" style="width:100%;height:800px;">
+									<div class="row" style="width:100%;height:800px;background:#EEE; color:#FFF" id="neo4jd31">
+									</div>
+								</div>
+								<div align="right">
+									<el-button type="primary" @click="dialogTableVisible = false">Close</el-button>
+								</div>
+							</el-dialog>
+						</el-col>
+					</el-row>
+				</el-header>
+			</el-container>
+
+			<el-row>
+				<el-col span="9">
+					<div class="panel-heading">
+						<h5>实体查询结果：</h5>
+					</div>
+					<el-table size="mini" :data="entity_table.table_datas" height="250" border style="width:100%"
+							  ref="interfaceTable"
+							  highlight-current-row @current-change="handleCurrentChange"
+							  :header-cell-style="{'background-color': '#eeeeee','color': 'rgb(0, 0, 0)','border-bottom': '1px rgb(200, 200, 200) solid'}">
+						<el-table-column type="index" label="No."></el-table-column>
+						<el-table-column label="操作" width="60">
+							<template slot-scope="scope">
+								<el-tooltip placement="top">
+									<div slot="content">实体关系查看</div>
+									<i class="el-icon-search" style="cursor: pointer;"></i>
+								</el-tooltip>
+							</template>
+						</el-table-column>
+						<el-table-column v-for="(v,i) in entity_table.table_columns" :prop="v.field" :label="v.title"
+										 :width="v.width">
+							<template slot-scope="scope">
+								{{scope.row[v.field]}}
+							</template>
+						</el-table-column>
+					</el-table>
+				</el-col>
+				<el-col span="0">
+					&nbsp;
+				</el-col>
+				<el-col span="15">
+					<div class="panel panel-default">
+						<el-row>
+							<el-col span="11">
+								<h5>[{{select_entity}}]实体关系:</h5>
+							</el-col>
+							<el-col span="13">
+
+								<el-radio-group v-model="radio" @change="redioChange">
+									<el-radio :label="0">(All)所有实体关系</el-radio>
+									<el-radio :label="1">(Child)子实体关系</el-radio>
+									<el-radio :label="2">(Father)父实体关系</el-radio>
+								</el-radio-group>
+							</el-col>
+						</el-row>
+
+					</div>
+					<el-table size="mini" :data="rel_table.table_datas" height="250" border style="width: 100%"
+							  :header-cell-style="{'background-color': '#dddde0','color': 'rgb(0, 0, 0)','border-bottom': '1px rgb(200, 200, 200) solid'}">
+						<el-table-column type="index" label="No."></el-table-column>
+						<el-table-column v-for="(v,i) in rel_table.table_columns" :prop="v.field" :label="v.title"
+										 :width="v.width">
+							<template slot-scope="scope">
+								{{scope.row[v.field]}}
+							</template>
+						</el-table-column>
+					</el-table>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col span="24">
+					<div class="panel panel-default">
+						<div class="row">
+							<form role="search1" class="navbar-form" id="search1">
+								<div class="m-band">
+									&nbsp;实体关系最短路径查询，From:
+									<el-select v-model="from_text" filterable placeholder="请选择" style="width:200px">
+										<el-option
+												   v-for="item in options"
+												   :key="item.value"
+												   :label="item.label"
+												   :value="item.label">
+										</el-option>
+									</el-select>
+									To:
+									<el-select v-model="to_text" filterable placeholder="请选择" style="width:200px">
+										<el-option
+												   v-for="item in options1"
+												   :key="item.value"
+												   :label="item.label"
+												   :value="item.label">
+										</el-option>
+									</el-select>
+
+									<el-button type="primary" @click="hadleRelShortest" icon="el-icon-search">查询</el-button>
+									<el-radio-group v-model="radio" @change="redioChange">
+										<el-radio :label="0">(All)所有实体关系</el-radio>
+										<el-radio :label="1">(Child)子实体关系</el-radio>
+										<el-radio :label="2">(Father)父实体关系</el-radio>
+									</el-radio-group>
+								</div>
+							</form>
+						</div>
+						<div class="panel-heading">
+							<el-row>
+								<el-col span="12">
+									<div class="panel panel-default">
+										<h5>[{{select_entity_model}}]实体模型关系Chart:</h5>
+									</div>
+								</el-col>
+								<el-col span="12" class="m-band-right">
+									<el-tooltip class="item" effect="dark" content="点击放大" placement="top">
+										<i class="el-icon-zoom-in" @click="showMax" style="cursor: pointer;"></i>
+									</el-tooltip>
+								</el-col>
+							</el-row>
+						</div>
+						<div class="row" style="width:100%;height:400px;">
+							<div style="height:99%;width:99%;background:#EEE; color:#FFF" id="neo4jd3"></div>
+						</div>
+					</div>
+				</el-col>
+			</el-row>
+		</div>
+		<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+		<script src="js/main.js"></script>
+		<script src="js/d3.min.js?v=1.0.1"></script>
+		<script src="js/neo4jd3.js?v=1.0.2"></script>
+		<script src="js/model_mngt.js"></script>
+	</body>
+</html>
