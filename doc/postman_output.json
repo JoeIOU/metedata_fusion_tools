@@ -113,6 +113,228 @@
 			"response": []
 		},
 		{
+			"name": "findEntity-byParentID",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30017,\"$PARENT_ENTITY_ID\":30015,\"$parent_data_id\":30016}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findEntity?$_ENTITY_ID=30017&$PARENT_ENTITY_ID=30015&$parent_data_id=30016",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findEntity"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1346641783622340609",
+							"disabled": true
+						},
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30017"
+						},
+						{
+							"key": "$PARENT_ENTITY_ID",
+							"value": "30015"
+						},
+						{
+							"key": "$parent_data_id",
+							"value": "30016"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findEntityByCode-byParentCode",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_CODE\":\"md_fields\",\"$PARENT_ENTITY_CODE\":\"md_entities\",\"$parent_data_id\":30016}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findEntityByCode?$parent_data_id=30016&$_ENTITY_CODE=md_fields&$PARENT_ENTITY_CODE=md_entities",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findEntityByCode"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1346641783622340609",
+							"disabled": true
+						},
+						{
+							"key": "$parent_data_id",
+							"value": "30016"
+						},
+						{
+							"key": "$_ENTITY_CODE",
+							"value": "md_fields"
+						},
+						{
+							"key": "$PARENT_ENTITY_CODE",
+							"value": "md_entities"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findEntityRelation",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$T_ENTITY_ID\":[30015,30016],\"$F_ENTITY_CODE\":[\"md_entities\",\"md_fields\"]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findEntityRelation?$F_ENTITY_CODE=md_entities&$T_ENTITY_CODE=md_fields",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findEntityRelation"
+					],
+					"query": [
+						{
+							"key": "$F_ENTITY_CODE",
+							"value": "md_entities"
+						},
+						{
+							"key": "$T_ENTITY_CODE",
+							"value": "md_fields"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "findEntityByCode",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -237,6 +459,205 @@
 		},
 		{
 			"name": "validateRules",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30015,\r\n\"rules\":[{\"rule_code\":\"rule_alphabet_underline\"},{\"rule_code\":\"rule_discount_amount_calc\",\"input_params\":[\"x\",\"y\"],\"output_params\":[\"discount_amount\"]}],\r\n\"n_rules\":[],\r\n\"data\":{\"md_entity_code\":\"branchs\",\"x\":200,\"y\":5}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/validateRules?rule_code=rule_email&$_ENTITY_ID=30015&data=abc@hhcp.com",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"validateRules"
+					],
+					"query": [
+						{
+							"key": "rule_code",
+							"value": "rule_email"
+						},
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30015"
+						},
+						{
+							"key": "data",
+							"value": "abc@hhcp.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "computeRules",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30015,\r\n\"rules\":[{\"rule_code\":\"rule_alphabet_underline\"},{\"rule_code\":\"rule_discount_amount_calc\",\"input_params\":[\"x\",\"y\"],\"output_params\":[\"discount_amount\"]}],\r\n\"n_rules\":[{\"rule_code\":\"rule_discount_amount_calc\"}],\r\n\"data\":{\"md_entity_code\":\"branchs\",\"x\":200,\"y\":5}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/computeRules?$_ENTITY_ID=30015&data=abc@hhcp.com",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"computeRules"
+					],
+					"query": [
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30015"
+						},
+						{
+							"key": "data",
+							"value": "abc@hhcp.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findEntityRules",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30015,\"rule_category\":\"Computing\",\"rules\":[{\"rule_code\":\"rule_discount_amount_calc\"}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findEntityRules?$_ENTITY_ID=30015&data=abc@hhcp.com",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findEntityRules"
+					],
+					"query": [
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30015"
+						},
+						{
+							"key": "data",
+							"value": "abc@hhcp.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findValidateRules",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -267,10 +688,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": ""
+					"raw": "{\"ui_template_id\":122,\"rules\":[{\"rule_code\":\"rule_url\"}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/validateRules?rule_code=rule_email&$_ENTITY_ID=30015&data=aMark@abc.com",
+					"raw": "http://127.0.0.1:8888/md/services/findValidateRules?ui_template_id=122&rule_code=rule_url",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -282,20 +708,144 @@
 					"path": [
 						"md",
 						"services",
-						"validateRules"
+						"findValidateRules"
 					],
 					"query": [
 						{
-							"key": "rule_code",
-							"value": "rule_email"
+							"key": "ui_template_id",
+							"value": "122"
 						},
+						{
+							"key": "rule_code",
+							"value": "rule_url"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "queryUIElements",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"ui_template_id\":122,\"rules\":[{\"rule_code\":\"rule_url\"}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/queryUIElements?ui_template_id=1384807373854294016",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"queryUIElements"
+					],
+					"query": [
+						{
+							"key": "ui_template_id",
+							"value": "1384807373854294016"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "queryUISingleEntity",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"ui_template_id\":122,\"rules\":[{\"rule_code\":\"rule_url\"}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/queryUISingleEntity?$_ENTITY_ID=30016",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"queryUISingleEntity"
+					],
+					"query": [
 						{
 							"key": "$_ENTITY_ID",
-							"value": "30015"
-						},
-						{
-							"key": "data",
-							"value": "aMark@abc.com"
+							"value": "30016"
 						}
 					]
 				}
@@ -644,6 +1194,67 @@
 			"response": []
 		},
 		{
+			"name": "findLookupByEntityCode-byParentID",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "ww",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8888/md/services/findLookupByEntityCode?entity_code=md_fields&lookup_code=md_fields&$PARENT_ENTITY_CODE=md_entities&$parent_data_id=30015",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findLookupByEntityCode"
+					],
+					"query": [
+						{
+							"key": "entity_code",
+							"value": "md_fields"
+						},
+						{
+							"key": "lookup_code",
+							"value": "md_fields"
+						},
+						{
+							"key": "$PARENT_ENTITY_CODE",
+							"value": "md_entities"
+						},
+						{
+							"key": "$parent_data_id",
+							"value": "30015"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "query_user",
 			"request": {
 				"auth": {
@@ -651,12 +1262,12 @@
 					"basic": [
 						{
 							"key": "username",
-							"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTk3MDI3MSwiZXhwIjoxNjE2MDA2MjcxfQ.eyJ1c2VyX2lkIjoiYWRtaW4ifQ.3J2HSazyHflyEnouDTG7Em4P2oYTAhUVSp_OzXrKheT9w-osM-HkEWlSeeVfjBqNm8IfNvXQF7NkykuEjjLkHw",
+							"value": "admin",
 							"type": "string"
 						},
 						{
 							"key": "password",
-							"value": "",
+							"value": "111",
 							"type": "string"
 						}
 					]
@@ -716,6 +1327,54 @@
 				"body": {
 					"mode": "raw",
 					"raw": "{\"$_ENTITY_ID\":30001,\"data\":[{\"test_fields\":\"Mark\",\"test_fields1\":\"Mark0001\"}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/insertEntity",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"insertEntity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "insertEntity_Relation",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "1111",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "test1",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30002,\"$PARENT_ENTITY_ID\":30001,\"$parent_data_id\":1386863088961929216,\"data\":[{\"date_column0\":\"2021-01-01 21:00:00\",\"text_column0\":\"Mark0001\"}]}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -822,7 +1481,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"$_ENTITY_ID\":30001,\"data\":[{\"text_value\":1233444},{\"text_value\":\"test02\"}],\"where\":[{\"id\":800001},{\"id\":1348892817107324928}]}",
+					"raw": "{\"$_ENTITY_ID\":30001,\"data\":[{\"test_fields\":\"ttt\",\"test_fields1\":\"123\"},{\"test_fields\":\"456\",\"test_field1s2\":\"test02\"}],\"where\":[{\"id\":800001},{\"id\":1348892817107324928}]}",
 					"options": {
 						"raw": {
 							"language": "json"
