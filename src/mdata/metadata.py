@@ -1052,6 +1052,50 @@ def insert_entity_relation(user_id, tenant_id, md_entity_id, data_ids, parent_da
     return re
 
 
+# 删除实体关系数据表（一般是删除子实体的时候）
+def delete_entity_relation(user_id, tenant_id, md_entity_id, data_ids):
+    if data_ids is None:
+        logger.info(
+            "delete entity relaiton,md_entity_id={}, data_ids={} is None.".format(
+                md_entity_id, data_ids))
+        return None
+
+    item = None
+    data_list = []
+    rres = get_md_entities_rel_tables_columns(tenant_id, None, md_entity_id)
+    re = None
+    if (rres is not None and len(rres) > 0):
+        item = rres[0]
+        # schema_code = item.get("schema_code")
+        # rel_type = item.get("rel_type")
+        md_entity_rel_id = item.get("md_entity_rel_id")
+        rel_table_name = item.get("md_tables_name")
+        if rel_table_name is None:
+            logger.warning(
+                "delete entity relaiton,md_entity_id={},entity_code={} is None Exists.".format(
+                    md_entity_id, rel_table_name))
+            return None
+        # 要求关系表的元数据实体名称和表名称一致
+        res = get_md_entities_id_by_code([rel_table_name])
+        rel_entity_id = None
+        if (res is not None):
+            rel_entity_id = res[0].get("md_entity_id")
+        else:
+            logger.warning(
+                "delete entity relaiton,md_entity_id={},entity_code={} is None Exists or not Authorized.".format(
+                    md_entity_id, rel_table_name))
+            return None
+
+        for id in data_ids:
+            data_dict = {}
+            data_dict["md_entity_rel_id"] = md_entity_rel_id
+            data_dict["to_data_id"] = id
+            data_dict["tenant_id"] = tenant_id
+            data_list.append(data_dict)
+        re = delete_execute(user_id, tenant_id, rel_entity_id, data_list)
+    return re
+
+
 # 把数据表不为空的字段，插入到实体属性表，作为元数据实体的默认字段
 def insert_default_fields(user_id, tenant_id, md_entity_ids, entity_relative_tables_ids_list):
     field_entity = get_md_entities_id_by_code(["md_fields"])
@@ -1331,8 +1375,8 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
 
                 # 输入的fields不存在,且不是实体key，则不执行
             if where_mapping is None or len(where_mapping) <= 0 or len(where_mapping) < len(where):
-                msg = "删除操作警告：操作人{},由于输入条件不满足，即输入参数[{}]不匹配实体[{}]属性或为空，不能做删除动作!".format(user_id, where,
-                                                                                       md_entity_id)
+                msg = "删除操作警告：操作人{},由于输入条件不满足，即输入参数[{}]不匹配实体[{}]属性[{}]或为空，不能做删除动作!".format(user_id, where,
+                                                                                           where_mapping, md_entity_id)
                 res = exec_output_status(type=DB_EXEC_TYPE_DELETE, status=DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=msg)
                 logger.warning(res)
@@ -1385,6 +1429,8 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
     sql += sql_where
     conn = db_md()
     try:
+        if not b_flag:  # 非系统表，则要删除关系表的数据
+            delete_entity_relation(user_id, tenant_id, md_entity_id, obj_list)
         cursor = sql_exec(conn, sql, values_new)
         irows = cursor.rowcount
         if cursor is not None and cursor.rowcount > 0:
