@@ -252,5 +252,24 @@ Vue.component("currency-input", {
             }
         },
     })
+function language(){
+    var lang=null;
+　　var type = navigator.appName;
+　　if (type == "Netscape"){
+    　　 lang = navigator.language;//获取浏览器配置语言，支持非IE浏览器
+　　}else{
+    　　 lang = navigator.userLanguage;//获取浏览器配置语言，支持IE5+ == navigator.systemLanguage
+　　};
+　　 lang = lang.substr(0, 2);//获取浏览器配置语言前两位
+　　if (lang == "zh"){
+   　　 lang="zh"
+　　    //window.location.replace('url');//中文编码时打开链接
+　　}else if (lang == "en"){
+   　　 lang="en"
+　　}else{//其他语言编码时打开以下链接
+   　　 lang="en"
+   }
+   return lang;
+  }
 
 Vue.prototype.$http = axios;
