@@ -766,6 +766,7 @@ CREATE TABLE  IF NOT EXISTS `data_entity_rel` (
   `rel_type` varchar(100) DEFAULT NULL COMMENT '关系类型，如：1：N，N：1等',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `md_entity_rel_id` bigint(20) NOT NULL COMMENT '元数据实体关系ID',
+  `md_entity_id` bigint(20) NOT NULL COMMENT '元数据实体ID',
   `from_data_id` bigint(20) NOT NULL COMMENT '主对象数据ID',
   `to_data_id` bigint(20) NOT NULL COMMENT '从对象数据ID',
   `text_column1` varchar(2000) COMMENT '预留文本字段1',
@@ -794,6 +795,7 @@ CREATE TABLE  IF NOT EXISTS `data_entity_rel` (
   KEY `data_entity_rel_to_data_id_fk0` (`to_data_id`),
   KEY `data_entity_rel_tenant_id_fk0` (`tenant_id`),
   CONSTRAINT `data_entity_rel_md_entity_rel_id_fk0` FOREIGN KEY (`md_entity_rel_id`) REFERENCES `md_entities_rel` (`md_entity_rel_id`),
+  CONSTRAINT `data_entity_rel_md_entity_id_fk0` FOREIGN KEY (`md_entity_id`) REFERENCES `md_entities` (`md_entity_id`),
   CONSTRAINT `data_entity_rel_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据对象关系';
 
