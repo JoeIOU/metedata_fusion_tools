@@ -252,12 +252,10 @@
 									   @size-change="handleSizeChange"
 									   @current-change="handleCurrentChange"
 									   :current-page="currentPage"
-									   :page-sizes="[10, 20, 50, 100]"
+									   :page-sizes="[10, 30, 50, 100]"
 									   :page-size="pagesize"
 									   layout="total, sizes,prev, pager, next"
-									   :total="master_user.data.length"
-									   prev-text="上一页"
-									   next-text="下一页">
+									   :total="master_user.data.length">
 						</el-pagination>
 					</div>
 				</el-col>
