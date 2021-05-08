@@ -207,6 +207,19 @@ def sql_execute_method(md_entity_id, method, service_name, data_list=None, where
         return output
 
 
+def lookup_mapping_fields_condition(lookup_list, input_params):
+    new_dict = {}
+    if lookup_list is not None and input_params is not None:
+        for item in lookup_list:
+            key = item.get("lookup_item_code")
+            field = item.get("lookup_item_name")
+            for item1 in input_params:
+                if key == item1:
+                    new_dict[field] = input_params[item1]
+                    break
+    return new_dict
+
+
 def ids2_where(ids):
     if ids is None:
         return None
