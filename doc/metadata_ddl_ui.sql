@@ -117,3 +117,37 @@ CREATE TABLE  IF NOT EXISTS `ui_fields` (
   KEY `ui_linked_fields_entity_id_fk0` (`linked_field_id`),
   CONSTRAINT `ui_linked_fields_entity_id_fk0` FOREIGN KEY (`linked_field_id`) REFERENCES `ui_fields` (`ui_fields_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='UI属性';
+
+-- ----------------------------
+-- Table structure for messages
+-- ----------------------------
+CREATE TABLE  IF NOT EXISTS `messages` (
+  `message_id` bigint(20) NOT NULL COMMENT '消息ID',
+  `message_key` varchar(200) NOT NULL COMMENT '消息key',
+  `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
+  `message_type` varchar(200) NOT NULL  DEFAULT 'I18N' COMMENT '信息类型，如：问答FAQ,国际化I18N等',
+  `message_title` varchar(300) NOT NULL COMMENT '消息名称',
+  `message_title_en` varchar(300) NOT NULL COMMENT '消息英文名称',
+  `messages` varchar(4000) COMMENT '消息内容',
+  `messages_en` varchar(4000) COMMENT '消息英文内容',
+  `text_column1` varchar(2000) COMMENT '预留文本字段1',
+  `text_column2` varchar(2000) COMMENT '预留文本字段2',
+  `text_column3` varchar(2000) COMMENT '预留文本字段3',
+  `int_column1` bigint(20) COMMENT '预留整数字段1',
+  `int_column2` bigint(20) COMMENT '预留整数字段2',
+  `num_column1` decimal(30,8) COMMENT '预留数值字段1',
+  `num_column2` decimal(30,8) COMMENT '预留数值字段2',
+  `date_column1` datetime COMMENT '预留日期字段1',
+  `date_column2` datetime COMMENT '预留日期字段2',
+  `public_flag` char(1) NOT NULL DEFAULT 'N' COMMENT '跨租户共享标识，Y是，N否',
+  `active_flag` char(1) NOT NULL DEFAULT 'Y' COMMENT '有效标识，Y有效，N无效',
+  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_by` bigint(20) NOT NULL COMMENT '创建人ID，对用用户ID',
+  `last_update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP  COMMENT '最后更新时间',
+  `last_update_by` bigint(20) NOT NULL COMMENT '最后更新人ID，对用用户ID',
+  PRIMARY KEY (`message_id`),
+  UNIQUE KEY `message_id` (`message_id`),
+  UNIQUE KEY `message_key` (`message_key`),
+  KEY `message_tenant_id_fk0` (`tenant_id`),
+  CONSTRAINT `message_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='国际化/FAQ信息';
