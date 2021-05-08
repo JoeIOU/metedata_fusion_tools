@@ -33,6 +33,12 @@
               font-size:10px !important;
               background-color: #F6F6FF;
             }
+            .el-form-item__content{
+             line-height:20px !important;
+            }
+            .el-form-item__label{
+             line-height:30px !important;
+            }
 
     </style>
 	</head>
@@ -134,12 +140,14 @@
 									   @size-change="handleSizeChange"
 									   @current-change="handleCurrentChange"
 									   :current-page="currentPage"
-									   :page-sizes="[10, 20, 50, 100]"
+									   :page-sizes="[10, 30, 50, 100]"
 									   :page-size="pagesize"
-									   layout="total, sizes,prev, pager, next"
-									   :total="master_user.data.length"
-									   prev-text="上一页"
-									   next-text="下一页">
+									   layout="slot,sizes,prev, pager, next"
+									   :total="master_user.data.length">
+							<span style="font-weight:normal">Total:
+							 <span v-if="master_user.data.length<=1000">{{master_user.data.length}}</span>
+						     <span v-else>1000+</span>
+							&nbsp;</span>
 						</el-pagination>
 					</div>
 				</el-col>
@@ -148,7 +156,7 @@
 			<el-row>
 				<!-- Form dialog -->
 				<span v-if="master_user.sel">
-					<el-dialog :title="dialog_title" :visible.sync="dialogFormVisible" width="1024px">
+					<el-dialog :title="dialog_title" :visible.sync="dialogFormVisible" width="1024px" :modal-append-to-body='false'>
 						<el-form :model="master_user" ref="formSubmit">
 							<el-row>
 								<el-col v-for="(v, i) in master_user.columns" :key="v.field" :span="12" style="height:50px" v-if="!master_user.sel.isNew||v.visible">
@@ -158,7 +166,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-date-picker size="mini" style="width:250px" :id="v.field+master_user.sel['$_clmn_id_']"
 															v-model="master_user.sel[v.field]" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
@@ -174,7 +182,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-date-picker size="mini" style="width:250px" :id="v.field+master_user.sel['$_clmn_id_']"
 															v-model="master_user.sel[v.field]" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
@@ -184,13 +192,13 @@
 											</el-date-picker>
 										</el-form-item>
 									</span>
-									<span v-else-if="v.lookup_entity && v.lookup_flag=='Y'">
+									<span v-else-if="v.lookup_entity && v.lookup_flag=='Y'&&v.lookup_entity=='lookup_classify'&&v.lookup_type&&v.lookup_type.trim().length>0">
 										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
 											<span v-if="v.is_null=='N'">
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-select size="mini" :id="v.field+master_user.sel['$_clmn_id_']" v-model="master_user.sel[v.field]" multiple collapse-tags clearable :key="itemkey1"
 													   @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">
@@ -204,13 +212,13 @@
 											</el-select>
 										</el-form-item>
 									</span>
-									<span v-else-if="v.lookup_entity">
+									<span v-else-if="v.lookup_entity&&v.lookup_entity=='lookup_classify'&&v.lookup_type&&v.lookup_type.trim().length>0">
 										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
 											<span v-if="v.is_null=='N'">
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-select size="mini" :id="v.field+master_user.sel['$_clmn_id_']" v-model="master_user.sel[v.field]" clearable :key="itemkey1"
 													   @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">
@@ -224,6 +232,56 @@
 											</el-select>
 										</el-form-item>
 									</span>
+									<span v-else-if="v.lookup_entity && v.lookup_flag=='Y'">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+<!--											<el-select size="mini" :id="v.field+master_user.sel['$_clmn_id_']" v-model="master_user.sel[v.field]" multiple collapse-tags clearable :key="itemkey1"-->
+<!--													   @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">-->
+<!--												<el-option-->
+<!--														   v-for="item in v.lookup_entity_list"-->
+<!--														   :key="item.key"-->
+<!--														   :label="item.label"-->
+<!--														   :value="item.value"-->
+<!--														   :disabled="item.disabled">-->
+<!--												</el-option>-->
+<!--											</el-select>-->
+
+											<entity-select  size="mini" :id="v.field+master_user.sel['$_clmn_id_']" :value="master_user.sel[v.field]" width="250" placeholder="请选择内容"
+															:disabled="v.readonly" multi_select="true" :entity="v.lookup_entity" :parent_entity_code="v.parent_entity_code" :parent_data_id="master_user.sel.$parent_data_id"
+															@change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'],$event)">
+                      						</entity-select>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.lookup_entity">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+<!--											<el-select size="mini" :id="v.field+master_user.sel['$_clmn_id_']" v-model="master_user.sel[v.field]" clearable :key="itemkey1"-->
+<!--													   @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">-->
+<!--												<el-option-->
+<!--														   v-for="item in v.lookup_entity_list"-->
+<!--														   :key="item.key"-->
+<!--														   :label="item.label"-->
+<!--														   :value="item.value"-->
+<!--														   :disabled="item.disabled">-->
+<!--												</el-option>-->
+<!--											</el-select>-->
+
+											<entity-select  size="mini" :id="v.field+master_user.sel['$_clmn_id_']" :value="master_user.sel[v.field]" width="250" placeholder="请选择内容"
+															:disabled="v.readonly" multi_select="false" :entity="v.lookup_entity"  :parent_entity_code="v.parent_entity_code" :parent_data_id="master_user.sel.$parent_data_id"
+															@change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'],$event)">
+                      						</entity-select>
+										</el-form-item>
+									</span>
 
 									<span v-else-if="v.is_key=='N'&&(v.type=='bigint' ||v.type=='int')">
 										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
@@ -231,7 +289,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 <!--											<el-input v-model="master_user.sel[v.field]" :rows="1" size="mini" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"-->
 <!--													  placeholder="Input Number" :id="v.field+master_user.sel['$_clmn_id_']"-->
@@ -249,7 +307,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 <!--											<el-input type="number" size="mini" v-model="master_user.sel[v.field]" :id="v.field+master_user.sel['$_clmn_id_']"-->
 <!--													  @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"-->
@@ -265,7 +323,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-input v-model="master_user.sel[v.field]" :rows="1" size="mini" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
 													  placeholder="Input Number" :id="v.field+master_user.sel['$_clmn_id_']"
@@ -279,7 +337,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-input type="text" :rows="1" size="mini" placeholder="Input Something" :id="v.field+master_user.sel['$_clmn_id_']" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
 													  v-model="master_user.sel[v.field]" style="width:250px" :maxlength="v.length"
@@ -292,7 +350,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-upload :id="v.field+master_user.sel['$_clmn_id_']"
 													   action=""
@@ -309,7 +367,7 @@
 												<font color="red">*</font>
 											</span>
 											<span v-else>
-												&nbsp;&nbsp;
+												&nbsp;
 											</span>
 											<el-input type="textarea" :rows="1" size="mini" placeholder="Input Something" :id="v.field+master_user.sel['$_clmn_id_']" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
 													  v-model="master_user.sel[v.field]" style="width:250px" :maxlength="v.length" :disabled="v.readonly"></el-input>
@@ -336,6 +394,7 @@
         <script src="js/accounting.js"></script>
 		<script src="js/main.js"></script>
 		<script src="js/entity_edit.js"></script>
+    	<script src="js/entity_select_component.js"></script>
 	</body>
 
 </html>
