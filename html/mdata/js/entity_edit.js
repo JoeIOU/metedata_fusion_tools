@@ -83,7 +83,7 @@ function getLookupEntityByParentId(col,code,parent_code,parent_data_id){
 	axios.get(url)
 		.then(res => {
 			var data = null;
-			var d = res.data.data;
+			var d = res.data.data.data;
 			lookup_type=null;
 			var ddd = data_select_options_mapping(code, lookup_type, d);
             if(col&&ddd){
@@ -121,20 +121,28 @@ function get_entity_info_by_code(code, result, lookup_type) {
 	var url1 = null;
 	if (!lookup_type)
 		lookup_type = ""
-	if (code.toLowerCase() == "lookup_classify" && lookup_type && lookup_type.trim() != "")
+	var is_entity=false
+	if (code.toLowerCase() == "lookup_classify" && lookup_type && lookup_type.trim() != ""){
 		url = lookup_info_url_by_code.format(lookup_type);
-	else
-		url = entity_info_url_by_code.format(code, lookup_type);
+	    is_entity=false;
+	}else{
+		  url = entity_info_url_by_code.format(code, lookup_type);
+		  is_entity=true;
+		  //return;
+		}
 
 	axios.get(url)
 		.then(res => {
 			var data = null;
 			var d = res.data.data;
+			if(is_entity)
+			 d=d.data
 			var ddd = data_select_options_mapping(code, lookup_type, d);
 			gl_lookup_dict[sKey] = ddd;
 			result.lookup_entity_list = ddd;
 			if (gl_app && result) {
 				set_Label_Value(result, gl_app.master_user.data);
+	            gl_app.itemkey = Math.random();
 				if (gl_app){
                     if(gl_sys_flag&&gl_sys_flag=='N'){
                       gl_app.show_summary=true;
@@ -142,7 +150,6 @@ function get_entity_info_by_code(code, result, lookup_type) {
                     }else
                       gl_app.show_summary=false
                  }
-				gl_app.itemkey = Math.random();
 			}
 
             var res_data = res.data;
@@ -741,6 +748,7 @@ function renderTable(result) {
 					app.dialogFormVisible = true;
 				},
 				openDialog(row, index) {
+				    //app.master_user.sel=row;
 					app.cascadeSelector(row);
 					var dict = JSONbig.parse(JSONbig.stringify(row));
 					dict = number2string(dict);
@@ -750,6 +758,7 @@ function renderTable(result) {
 					//app.load_column_info();
 					if (label_gl)
 						app.dialog_title = label_gl;
+			        //app.itemkey1 = Math.random();
 					app.dialogFormVisible = true;
 				},
 				cascadeSelector(sel_row,field_name_selected){
@@ -775,6 +784,7 @@ function renderTable(result) {
 				             if(linked_md_field_name&&linked_md_field_name==ff){
 				               parent_code=co.lookup_entity;
                                parent_data_id=sel_row[linked_md_field_name];
+                               sel_row['$parent_data_id']=parent_data_id;
 				               break;
 				              }
 				           }
@@ -783,6 +793,7 @@ function renderTable(result) {
 				             f=col.field
 				             if(field_name&&field_name==f&&parent_code){
                                code=col.lookup_entity;
+                               col.parent_entity_code=parent_code;
                                getLookupEntityByParentId(col,code,parent_code,parent_data_id);
                                break;
                              }
@@ -824,7 +835,9 @@ function renderTable(result) {
 					}
 					return is_not_ok;
 				},
-				onchange(field_name, row, index) {
+				onchange(field_name, row, index,val=-1.0123456789) {
+				    if (val!=-1.0123456789)
+				     row[field_name]=val;
 					app.cascadeSelector(row,field_name);
 					row.isEdit = true;
 					edit_gl = true;
@@ -1148,6 +1161,7 @@ function renderTable(result) {
 	app.dialog_title = label_gl;
 	app.selected_entity_name = label_gl;
 	app.loading = false;
+	app.itemkey = Math.random();
 	//app.$message('loading data ok');
 }
 
