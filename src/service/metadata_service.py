@@ -537,8 +537,8 @@ def find_lookupItem_by_code():
 @app.route(domain_root + '/services/findLookupByEntityCode', methods=['POST', 'GET'])
 @auth.login_required
 def find_Lookup_By_EntityCode():
-    # GET/POST入参：{"lookup_code":"123",entity_code:"xxx"}
-    # POST入参，通过父实体，找到子实体{"entity_code":"md_fields","$PARENT_ENTITY_CODE":"md_entities","$parent_data_id":30016}
+    # GET/POST入参：{"lookup_code":"123",entity_code:"xxx","where":{"id":800001}}
+    # POST入参，通过父实体，找到子实体{"entity_code":"md_fields","lookup_code":"md_fields","$PARENT_ENTITY_CODE":"md_entities","$parent_data_id":30015,"where":{"key":800001,"value":1000,"label":"%abc","label_en":"abc%","desc":"abc"}}
     data = None
     re = None
     try:
@@ -547,6 +547,9 @@ def find_Lookup_By_EntityCode():
         tenant_id = user.get("tenant_id")
         lookup_code = data.get('lookup_code')
         entity_code = data.get('entity_code')
+        where = data.get('where')
+        if where is None:
+            where = {}
         if lookup_code == '':
             data.pop('lookup_code')
 
@@ -561,26 +564,41 @@ def find_Lookup_By_EntityCode():
         if (parent_entity_id is not None and parent_data_id is not None):
             parent_dict = {}
             parent_dict[str(parent_entity_id)] = parent_data_id
+        if (parent_entity_id is None and parent_data_id is not None):
+            re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0,
+                                       data=None,
+                                       message="findLookupByEntityCode Failed,the parent_entity_code={} is not exists".format(
+                                           parent_entity_code))
+            return Response(json.dumps(re), mimetype='application/json')
 
         if lookup_code is None or len(lookup_code.strip()) <= 0:
             lookup_code = entity_code
         res_lk = md.get_lookup_items(tenant_id, [lookup_code])
-        res = md.get_md_entities_id_by_code([entity_code])
-        md_entity_id = None
+        res = md.get_md_entities_by_code(tenant_id, [entity_code])
+        where_new = utl.lookup_mapping_fields_condition(res_lk, where)
+        md_entity_id, md_entity_name_cn, md_entity_name_en = None, None, None
         if res is not None and len(res) > 0:
             md_entity_id = res[0].get("md_entity_id")
+            md_entity_name_cn = res[0].get("md_entity_name")
+            md_entity_name_en = res[0].get("md_entity_name_en")
         else:
             s = 'findLookupByEntityCode. Params:{},the Entity is not exists'.format(data)
             logger.warning(s)
             return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=s)
         result = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findLookupByEntityCode", data_list=None,
-                                        where_list=[data], parent_entity_id=parent_dict)
+                                        where_list=[where_new], parent_entity_id=parent_dict)
         mp = utl.entity_lookup_mapping(res_lk, result.get("data"))
+        data_set = {}
+        data_set["entity_code"] = entity_code
+        data_set["entity_name"] = md_entity_name_cn
+        data_set["entity_name_en"] = md_entity_name_en
+        data_set["data"] = mp
         size1 = 0
         if (mp is not None):
             size1 = len(mp)
-        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=size1, data=mp,
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_SUCCESS, rows=size1,
+                                   data=data_set,
                                    message="findLookupByEntityCode Success")
         logger.info('findLookupByEntityCode. Params:{},result:{}'.format(data, re))
         return Response(json.dumps(re), mimetype='application/json')
