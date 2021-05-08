@@ -19,6 +19,8 @@ DB_EXEC_STATUS_SUCCESS = 200
 DB_EXEC_STATUS_FAIL = 500
 DB_EXEC_STATUS_PANDING = 100
 DB_EXEC_STATUS_OVERTIME = 501
+# 限制查询最大数量
+SIZE_LIMITED = 1001
 
 KEY_FIELDS_ID = "$_row_id_"
 
@@ -77,7 +79,8 @@ def get_lookup_items(tenant_id, lookup_codes):
 def get_md_entities_list(tenant_id):
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select distinct md_entity_id,tenant_id,md_entity_name,md_entity_code,md_entity_name_en,md_entity_desc,md_tables_id from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') limit 1000"
+    sql = "select distinct md_entity_id,tenant_id,md_entity_name,md_entity_code,md_entity_name_en,md_entity_desc,md_tables_id from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') limit {}".format(
+        SIZE_LIMITED)
     cursor.execute(sql, args=(tenant_id,))
     result = cursor.fetchall()
     result = data_type_convert(result)
@@ -190,10 +193,10 @@ def get_md_tables_by_name(tenant_id, md_table_names):
     cursor = conn.cursor()
     sql = "select distinct * from md_tables where active_flag='Y' and (tenant_id=%s or public_flag='Y')"
     if md_table_names is not None and len(md_table_names) > 0:
-        sql += " and  md_tables_name in %s limit 1000"
+        sql += " and  md_tables_name in %s limit {}".format(SIZE_LIMITED)
         cursor.execute(sql, args=(tenant_id, md_table_names,))
     else:
-        sql += " limit 1000"
+        sql += " limit {}".format(SIZE_LIMITED)
         cursor.execute(sql, args=(tenant_id,))
 
     result = cursor.fetchall()
@@ -795,17 +798,23 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
     where_list_new.append(where_mapping)
     s1 = None
     for wh in where_mapping.keys():
+        symbol = "="
+        v = where_mapping.get(wh)
+        # 有输入字符串%，则表示模糊查询
+        if (wh is not None and v is not None and isinstance(v, str) and v.find('%') >= 0):
+            symbol = 'like'
+        elif wh is not None and v is not None and isinstance(v, list):
+            symbol = 'in'
         if s1 is None:
-            s1 = "t." + wh + '=%s'
+            s1 = "t." + wh + ' {} %s'.format(symbol)
         else:
-            s1 += ' and t.' + wh + '=%s'
+            s1 += ' and t.' + wh + ' {} %s'.format(symbol)
     if public_flag is not None and public_flag and public_col is not None:
         srep = "(t.tenant_id=%s or t." + public_col + "='Y')"
-        s1 = s1.replace("t.tenant_id=%s", srep)
+        s1 = s1.replace("t.tenant_id = %s", srep)
     sql_where = '{param}'.format(param=s1)
-    # 限制查询最大数量1000
-    icount = 1000
     sql_condition = ""
+    icount = SIZE_LIMITED
     if dp_list is None or len(dp_list) <= 0:
         logger.warning(
             "the user[user_id={}] have no privilege of the entity,md_entity_id=[{}]".format(user_id, md_entity_id))
@@ -816,10 +825,10 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
             if sql_format is not None and len(sql_format.strip()) > 0:
                 sql_condition += " and " + sql_format
 
-    limit_include = "select * from({sql_include})aaa LIMIT " + str(icount)
+    limit_include = "select * from({sql_include})aaa LIMIT {size}"
 
     sql += sql_where + sql_condition
-    sql = limit_include.format(sql_include=sql)
+    sql = limit_include.format(sql_include=sql, size=icount)
     (re, irows) = sql_query(sql, where_list_new)
     message = "query success"
     re = exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_SUCCESS, rows=irows, data=re,
@@ -1042,6 +1051,7 @@ def insert_entity_relation(user_id, tenant_id, md_entity_id, data_ids, parent_da
             data_dict = {}
             # data_dict[KEY_FIELDS_ID] = rel_ids[0]
             data_dict["md_entity_rel_id"] = md_entity_rel_id
+            # data_dict["md_entity_id"] = md_entity_id
             data_dict["rel_type"] = rel_type
             data_dict["from_data_id"] = parent_data_id
             data_dict["to_data_id"] = id
