@@ -28,7 +28,7 @@
         <el-col span="24">
             <div class="grid-content bg-purple-light">
                 <span class="demonstration">实体选择: </span>
-                <el-select v-model="select1" placeholder="请选择实体" @change="handleClick">
+                <el-select v-model="select1" filterable placeholder="请选择实体" @change="handleClick">
                     <el-option
                             v-for="item in options"
                             :key="item.value"
