@@ -1,4 +1,5 @@
 var entity_info_url = url_root + "/services/findEntity?$_ENTITY_ID={0}";
+var entity_url_by_code = url_root + "/services/findEntityByCode?$_ENTITY_CODE={0}";
 var entity_info_url_by_parent = url_root + "/services/findEntity?$_ENTITY_ID={0}&$PARENT_ENTITY_ID={1}&$parent_data_id={2}";
 var entity_rel_url = url_root + "/services/findEntityRelation";
 var rule_compute_url = url_root + "/services/computeRules";
@@ -264,10 +265,28 @@ function getUISingleEntity(entity_id){
 			if (d) {
 			   gl_ui_single_entity=d;
 			   getUISingleEntityLinked(d);
+			   setMessage(gl_ui_single_entity,gl_app.master_user.columns);
 			}
 			//if (res.data && res.data.status >=300)
 				//gl_app1.$message.warning(res.data.message);
 		});
+}
+function setMessage(ui_fields_list,columns){
+  if(ui_fields_list&&columns)
+    for (var i=0;i<ui_fields_list.length;i++){
+      item=ui_fields_list[i];
+      f=item.md_fields_name;
+      if(item&&item.message_key&&item.message_key.trim().length>0&&f)
+      for(var j=0;j<columns.length;j++){
+        item1=columns[j];
+        ff=item1.field;
+        if(ff==f){
+         item1.message_key=item.message_key;
+        }
+
+      }
+
+    }
 }
 function getEntityRelation(frm_entity_ids,to_entity_ids){
    if (!entity_id)
@@ -592,6 +611,48 @@ function renderTable(result) {
 					this.pagesize = size;
 					/*console.log(this.pagesize) */
 				},
+				tip_show(val) {
+				    if (!val) return;
+				    var lang=language();
+				    var title1=null;
+				    var message1=null;
+                    const h = this.$createElement;
+                    var url_fomat_entity = entity_url_by_code.format("messages");
+                    url_fomat_entity+="&message_key={0}".format(val);
+                    axios.get(url_fomat_entity)
+                        .then(res => {
+                            var data = null;
+                            var d = res.data.data;
+                            if (d&&d.length>0) {
+                                data = d[0];
+                                var entity_id = data['md_entity_id'];
+                                for_new_entity_id = entity_id;
+                                //val="<a href='xxx'>"+val+"</a>"
+                                if (lang&&lang=='zh'){
+                                  title1='{0}[{1}]'.format(data.message_title,val)
+                                  message1=h('div', { style: 'color: gray'}, this.message_format(val,data.messages,title1));
+                                }else{
+                                  title1='{0}[{1}]'.format(data.message_title_en,val)
+                                  message1=h('div', { style: 'color: gray'}, this.message_format(val,data.messages_en,title1));
+                                }
+                                this.$notify({ title: title1,customClass:'notifyCustomClass',message:message1 });
+                            }
+                            if (res.data && res.data.status != "200")
+                                gl_app1.$message.warning(res.data.message);
+                        });
+                 },
+                 message_format(key,msg,title){
+                    if(!msg)
+                     msg="";
+                    let newDatas = [];
+                    too_long=false
+                    let data=msg.split("\\n");
+                    const h = this.$createElement;
+                    for (let i in data) {
+                        newDatas.push(h('p', null, data[i]));
+                    }
+                  return newDatas;
+                 },
 				//点击第几页
 				handleCurrentChange: function(currentPage) {
 					this.currentPage = currentPage;
@@ -630,6 +691,22 @@ function renderTable(result) {
 					app.multipleSelection = val;
 					//console.log("---selected=", val);
 				},
+                cellStyle(row,column,rowIndex,columnIndex){//根据报警级别显示颜色
+                    if(row.row&&row.row.active_flag=='N'){
+                      return "color:#AAAAAA;font-size:12px;font-style:italic;"
+                    }else {
+                      //return "font-size:12px"
+                    }
+                },
+				checkSelect (row,index) {
+                  let isChecked = true;
+                  if (row&&row.active_flag=='N') { // 判断里面是否存在某个参数
+                    isChecked = false
+                  } else {
+                     isChecked = true
+                  }
+                  return isChecked
+                },
 				getSummaries(param, isManual = false) {
 					const indexs = [0, 2, 3];
 					if(gl_app&&!gl_app.show_summary ||!param)
@@ -784,7 +861,7 @@ function renderTable(result) {
 				             if(linked_md_field_name&&linked_md_field_name==ff){
 				               parent_code=co.lookup_entity;
                                parent_data_id=sel_row[linked_md_field_name];
-                               sel_row['$parent_data_id']=parent_data_id;
+                               sel_row['$parent_data_id-'+field_name]=parent_data_id;
 				               break;
 				              }
 				           }
@@ -1153,6 +1230,7 @@ function renderTable(result) {
           gl_app.show_summary=false
 	}
 	app.master_user.columns = cols; // 数据属性数据
+    setMessage(gl_ui_single_entity,gl_app.master_user.columns);
 	app.master_user.types = gl_field_type; // 数据类型数据
 	app.master_user.data = data1; // 查询业务数据
 	gl_app = app;
