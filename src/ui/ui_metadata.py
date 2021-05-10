@@ -55,7 +55,8 @@ sql_ui_entity = """
             f.ui_fields_type,
             ff.md_fields_id,
             ff.md_fields_name,
-            f.linked_field_id
+            f.linked_field_id,
+            f.text_column1 message_key
         FROM
             ui_entity_rel r
         INNER JOIN md_entities e ON r.entity_id = e.md_entity_id
