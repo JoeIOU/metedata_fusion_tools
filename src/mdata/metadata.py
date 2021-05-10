@@ -79,8 +79,8 @@ def get_lookup_items(tenant_id, lookup_codes):
 def get_md_entities_list(tenant_id):
     conn = db_md()
     cursor = conn.cursor()
-    sql = "select distinct md_entity_id,tenant_id,md_entity_name,md_entity_code,md_entity_name_en,md_entity_desc,md_tables_id from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') limit {}".format(
-        SIZE_LIMITED)
+    sql = "select distinct md_entity_id,tenant_id,md_entity_name,md_entity_code,md_entity_name_en,md_entity_desc,md_tables_id " \
+          "from md_entities where active_flag='Y' and (tenant_id=%s or public_flag='Y') limit {}".format(SIZE_LIMITED)
     cursor.execute(sql, args=(tenant_id,))
     result = cursor.fetchall()
     result = data_type_convert(result)
