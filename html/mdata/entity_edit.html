@@ -6,7 +6,7 @@
 		<meta http-equiv="X-UA-Compatible" content="ie=edge">
 		<title>Entity Setup</title>
 		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-		<style>
+		<style lang="css" scoped>
 			.bg-purple-light {
                 background: #e5e9f2;
             }
@@ -38,6 +38,15 @@
             }
             .el-form-item__label{
              line-height:30px !important;
+            }
+            .notifyCustomClass{
+              font-size:10px;
+            }
+            .el-notification__title{
+              font-size:10px;
+            }
+            .el-notification__content{
+              font-size:10px;
             }
 
     </style>
@@ -91,9 +100,10 @@
 							  element-loading-spinner="el-icon-loading"
 							  element-loading-background="rgba(220, 220, 220, 0.8)" height="450" border style="width:100%"
 							  :header-cell-style="{'background-color': '#dddddd','color': 'rgb(0, 0, 0)','border-bottom': '1px rgb(200, 200, 200) solid'}"
+							  :cell-style="cellStyle"
 							  @selection-change="handleSelectionChange">
 						<el-table-column width="45" type="index" label="No."></el-table-column>
-						<el-table-column width="45" type="selection" align="center" >
+						<el-table-column width="45" type="selection" :selectable="checkSelect" align="center" >
 						</el-table-column>
 						<el-table-column label="操作" width="55" align="center">
 							<template slot-scope="scope">
@@ -174,6 +184,9 @@
 															value-format="yyyy-MM-dd HH:mm:ss"
 															placeholder="选择日期和时间" :disabled="v.readonly">
 											</el-date-picker>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.type=='date'">
@@ -190,6 +203,9 @@
 															value-format="yyyy-MM-dd"
 															placeholder="选择日期">
 											</el-date-picker>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.lookup_entity && v.lookup_flag=='Y'&&v.lookup_entity=='lookup_classify'&&v.lookup_type&&v.lookup_type.trim().length>0">
@@ -210,6 +226,9 @@
 														   :disabled="item.disabled">
 												</el-option>
 											</el-select>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.lookup_entity&&v.lookup_entity=='lookup_classify'&&v.lookup_type&&v.lookup_type.trim().length>0">
@@ -230,31 +249,9 @@
 														   :disabled="item.disabled">
 												</el-option>
 											</el-select>
-										</el-form-item>
-									</span>
-									<span v-else-if="v.lookup_entity && v.lookup_flag=='Y'">
-										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
-											<span v-if="v.is_null=='N'">
-												<font color="red">*</font>
-											</span>
-											<span v-else>
-												&nbsp;
-											</span>
-<!--											<el-select size="mini" :id="v.field+master_user.sel['$_clmn_id_']" v-model="master_user.sel[v.field]" multiple collapse-tags clearable :key="itemkey1"-->
-<!--													   @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">-->
-<!--												<el-option-->
-<!--														   v-for="item in v.lookup_entity_list"-->
-<!--														   :key="item.key"-->
-<!--														   :label="item.label"-->
-<!--														   :value="item.value"-->
-<!--														   :disabled="item.disabled">-->
-<!--												</el-option>-->
-<!--											</el-select>-->
-
-											<entity-select  size="mini" :id="v.field+master_user.sel['$_clmn_id_']" :value="master_user.sel[v.field]" width="250" placeholder="请选择内容"
-															:disabled="v.readonly" multi_select="true" :entity="v.lookup_entity" :parent_entity_code="v.parent_entity_code" :parent_data_id="master_user.sel.$parent_data_id"
-															@change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'],$event)">
-                      						</entity-select>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.lookup_entity">
@@ -265,24 +262,15 @@
 											<span v-else>
 												&nbsp;
 											</span>
-<!--											<el-select size="mini" :id="v.field+master_user.sel['$_clmn_id_']" v-model="master_user.sel[v.field]" clearable :key="itemkey1"-->
-<!--													   @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">-->
-<!--												<el-option-->
-<!--														   v-for="item in v.lookup_entity_list"-->
-<!--														   :key="item.key"-->
-<!--														   :label="item.label"-->
-<!--														   :value="item.value"-->
-<!--														   :disabled="item.disabled">-->
-<!--												</el-option>-->
-<!--											</el-select>-->
-
 											<entity-select  size="mini" :id="v.field+master_user.sel['$_clmn_id_']" :value="master_user.sel[v.field]" width="250" placeholder="请选择内容"
-															:disabled="v.readonly" multi_select="false" :entity="v.lookup_entity"  :parent_entity_code="v.parent_entity_code" :parent_data_id="master_user.sel.$parent_data_id"
+															:disabled="v.readonly" :multi_select="v.lookup_flag&&v.lookup_flag=='Y'" :entity="v.lookup_entity" :parent_entity_code="v.parent_entity_code" :parent_data_id="master_user.sel['$parent_data_id-'+v.field]"
 															@change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'],$event)">
                       						</entity-select>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
-
 									<span v-else-if="v.is_key=='N'&&(v.type=='bigint' ||v.type=='int')">
 										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
 											<span v-if="v.is_null=='N'">
@@ -291,14 +279,12 @@
 											<span v-else>
 												&nbsp;
 											</span>
-<!--											<el-input v-model="master_user.sel[v.field]" :rows="1" size="mini" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"-->
-<!--													  placeholder="Input Number" :id="v.field+master_user.sel['$_clmn_id_']"-->
-<!--													  style="width:250px" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="20" :disabled="v.readonly">-->
-<!--											</el-input>-->
-
                                             <currency-input class="input_mini" v-model="master_user.sel[v.field]" :id="v.field+master_user.sel['$_clmn_id_']"
                                                             @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
                                                             :decimal="0" :maxlength="v.length" style="width:250px;" symbol="" :disabled="v.readonly"></currency-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.is_key=='N'&&(v.type=='float' ||v.type=='numeric'||v.type=='decimal'||v.type=='number'||v.type=='money')">
@@ -309,12 +295,12 @@
 											<span v-else>
 												&nbsp;
 											</span>
-<!--											<el-input type="number" size="mini" v-model="master_user.sel[v.field]" :id="v.field+master_user.sel['$_clmn_id_']"-->
-<!--													  @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"-->
-<!--													  controls="false" style="width:250px" :disabled="v.readonly"></el-input>-->
                                             <currency-input class="input_mini" v-model="master_user.sel[v.field]" :id="v.field+master_user.sel['$_clmn_id_']"
                                                             @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
                                                             :decimal="v.decimal" :maxlength="v.length" style="width:250px;" symbol="" :disabled="v.readonly"></currency-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.is_key=='Y'&&(v.type=='bigint' ||v.type=='int')">
@@ -329,6 +315,9 @@
 													  placeholder="Input Number" :id="v.field+master_user.sel['$_clmn_id_']"
 													  style="width:250px" oninput="value=value.replace(/[^0-9]/g,'')" :maxlength="v.length" :disabled="v.readonly">
 											</el-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.type=='char' ||v.type=='boolean'">
@@ -342,6 +331,9 @@
 											<el-input type="text" :rows="1" size="mini" placeholder="Input Something" :id="v.field+master_user.sel['$_clmn_id_']" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
 													  v-model="master_user.sel[v.field]" style="width:250px" :maxlength="v.length"
 													  :disabled="v.readonly"></el-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else-if="v.type=='blob' ||v.type=='clob'">
@@ -359,6 +351,9 @@
 													   :http-request="getFile" :disabled="v.readonly">
 												<el-button size="small" type="primary">上传</el-button>
 											</el-upload>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
 									<span v-else>
@@ -371,9 +366,11 @@
 											</span>
 											<el-input type="textarea" :rows="1" size="mini" placeholder="Input Something" :id="v.field+master_user.sel['$_clmn_id_']" @change="onchange(v.field,master_user.sel,master_user.sel['$_clmn_id_'])"
 													  v-model="master_user.sel[v.field]" style="width:250px" :maxlength="v.length" :disabled="v.readonly"></el-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
 										</el-form-item>
 									</span>
-
 								</el-col>
 							</el-row>
 						</el-form>
