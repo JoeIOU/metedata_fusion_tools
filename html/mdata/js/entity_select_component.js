@@ -26,15 +26,20 @@ Vue.component("entity-select", {
                                           element-loading-spinner="el-icon-loading"\
                                           element-loading-background="rgba(220, 220, 220, 0.8)" height="300" border style="width:100%"\
                                           :header-cell-style="{\'background-color\': \'#dddddd\',\'font-size\':\'12px\'}"\
-                                          :cell-style="{\'font-size\':\'12px\'}" \
+                                          :cell-style="cellStyle" \
                                           @selection-change="handleSelectionChange" :key="itemkey1">\
                                     <el-table-column width="45" type="index" label="No."></el-table-column>\
-                                    <el-table-column width="43" type="selection" align="center" >\
+                                    <el-table-column width="43" type="selection" :selectable="checkSelect" align="center" >\
                                     </el-table-column>\
                                     <el-table-column v-for="(v,i) in table_data.columns" :prop="v.field" :label="v.title" :type="v.type"\
                                                  :width="v.width" :formatter="stateFormat">\
                                         <template slot-scope="scope">\
+                                          <span v-if="scope.row[\'disabled\']&&scope.row[\'disabled\']==true">\
+                                           {{scope.row[v.field]}}\
+                                          </span>\
+                                          <span v-else>\
                                             {{scope.row[v.field]}}\
+                                            </span>\
                                         </template>\
                                     </el-table-column>\
                                 </el-table>\
@@ -232,7 +237,12 @@ Vue.component("entity-select", {
             inputData: {
                 get() {
                       val=this.value;
-                      if(this.label)
+                      if(!val||val==''){//val为空，表示清空了，label的值,已选项也要清空。
+                       this.label='';
+                       this.multipleSelection1=[];
+                       this.table_data.data_sel=[];
+                       }
+                      if(this.label&&this.label!='')
                         val=this.label;
                       if(this.old_value!=this.value)  {
                          this.load_selected();
@@ -240,7 +250,8 @@ Vue.component("entity-select", {
                       }
                       return val;
                 },
-                set(){
+                set(val){
+                  this.value=val;
                 }
             },
             output_value: {
@@ -256,6 +267,22 @@ Vue.component("entity-select", {
         handleSizeChange: function(size) {
             this.pagesize = size;
             /*console.log(this.pagesize) */
+        },
+        cellStyle(row,column,rowIndex,columnIndex){//根据报警级别显示颜色
+            if(row.row&&row.row.disabled){
+              return "color:#AAAAAA;font-size:12px;font-style:italic;"
+            }else {
+              return "font-size:12px"
+            }
+        },
+        checkSelect (row,index) {
+          let isChecked = true;
+          if (row&&!row.disabled) { // 判断里面是否存在某个参数
+            isChecked = true
+          } else {
+             isChecked = false
+          }
+          return isChecked
         },
         //点击第几页
         handleCurrentChange: function(currentPage) {
@@ -395,7 +422,7 @@ Vue.component("entity-select", {
              return;
            }
            if(!this.multi_select||this.multi_select=='false'){
-             msg="单选，只能选择一个选项。"
+             msg="单选，只能选择一个选项哦，请重新选择。"
              if (this.lang!='zh')
               msg="please select only one from left."
              if(select_list&&select_list.length>1){
@@ -406,14 +433,24 @@ Vue.component("entity-select", {
                  return;
              }
 
-             msg="单选，只能选择一个选项,已覆盖之前已选的选项，请知。"
+             msg="单选，新选择项，已覆盖之前已选项。"
              if (this.lang!='zh')
                msg="only one selected,and will cover the exist."
-             if(select_list&&select_list.length>=1&&select_list1&&select_list1.length>0){
-                this.$message({
-                    type: 'warning',
-                    message: msg
-                });
+             if(select_list&&select_list.length==1&&select_list1&&select_list1.length>0){
+                if(select_list[0].value!=select_list1[0].value)//值不相同，则如下提示
+                    this.$message({
+                        type: 'warning',
+                        message: msg
+                    });
+                else{
+                     msg="跟已选择的相同,请勿重复选择，请知。"
+                     if (this.lang!='zh')
+                       msg="the same as the selected."
+                    this.$message({
+                        type: 'warning',
+                        message: msg
+                    });
+                }
              }
 
            }
@@ -458,16 +495,18 @@ Vue.component("entity-select", {
               where["$parent_data_id"]=this.parent_data_id;
             }
             this.url= url_entity;
-            console.log("v-model:"+this.value+";Entity:"+this.entity+",url:"+this.url_entity);
+            //console.log("v-model:"+this.value+";Entity:"+this.entity+",url:"+this.url_entity);
             if(!selected||(selected&&whereCondition))
                 axios.post(url_entity,where)
                     .then(res => {
                         var data = res.data.data;
-                        this.title=data['entity_code']
-                        if(this.lang=='zh'&&data['entity_name'])
-                          this.title=data['entity_name']
-                         else if(data['entity_name_en'])
-                          this.title=data['entity_name_en']
+                        if(data){
+                            this.title=data['entity_code']
+                            if(this.lang=='zh'&&data['entity_name'])
+                              this.title=data['entity_name']
+                             else if(data['entity_name_en'])
+                              this.title=data['entity_name_en']
+                        }
                         var d = data.data;
                         var ddd = this.data_select_options_mapping(code, null, d,selected);
                         var res_data = res.data;
@@ -483,8 +522,12 @@ Vue.component("entity-select", {
          },
          load_selected(){
            v=this.value;
-           if (!v||v==""||v.length<=0)
+           if (!v||v==""||v.length<=0){
+             v='';
+             this.label='';
+             this.title='';
              return;
+           }
            d=v;
            if (v && v.indexOf("[") != -1 && v.indexOf("]") != -1)
 				d = eval("(" + v+ ")");
