@@ -231,7 +231,7 @@ def ids2_where(ids):
     return id_list
 
 
-def query_privilege_check(method_name, md_entity_id, entity_code):
+def query_privilege_check(tenant_id, method_name, md_entity_id, entity_code):
     if md_entity_id is not None and not isinstance(md_entity_id, str):
         md_entity_id = str(md_entity_id)
     if md_entity_id is None or len(md_entity_id) <= 0:
@@ -247,6 +247,7 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
         if user_privilege_list is None or len(user_privilege_list) == 0:
             msg = '{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。'.format(
                 user.get("account_number"), method_name, md_entity_id, entity_code)
+            # msg=md.getI18nFeedbackMessages(tenant_id,'save_success_hint')
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
@@ -256,6 +257,7 @@ def query_privilege_check(method_name, md_entity_id, entity_code):
         if not b_privilege:
             msg = '{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。'.format(
                 user.get("account_number"), method_name, md_entity_id, entity_code)
+            # msg = md.getI18nFeedbackMessages(tenant_id, msg)
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
