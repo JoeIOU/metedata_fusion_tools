@@ -132,5 +132,6 @@ UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='135434117
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='1371353594807455744');
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='1371358072197615616');
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='1371365489610330112');
-
+delete from `demo`.`data_privileges`  WHERE (`data_privilege_id`='11000036');
+UPDATE `demo`.`data_privileges` SET `tenant_id`='100', `md_entity_id`='30042', `md_entity_type`='Entity', `data_privilege_code`='30042-index_apmming', `data_privilege_type`='All', `data_privilege_desc`='索引跟元数据mapping表',  `create_by`='1003', `last_update_by`='1003', `public_flag`='Y' WHERE (`data_privilege_id`='11000006');
 commit;
