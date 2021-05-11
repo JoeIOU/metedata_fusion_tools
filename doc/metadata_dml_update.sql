@@ -133,6 +133,7 @@ UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='137135359
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='1371358072197615616');
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='1371365489610330112');
 delete from `demo`.`data_privileges`  WHERE (`data_privilege_id`='11000036');
+UPDATE `demo`.`md_entities` SET `sys_flag`='Y' WHERE (`md_entity_id`='30042');
 UPDATE `demo`.`data_privileges` SET `tenant_id`='100', `md_entity_id`='30042', `md_entity_type`='Entity', `data_privilege_code`='30042-index_apmming', `data_privilege_type`='All', `data_privilege_desc`='索引跟元数据mapping表',  `create_by`='1003', `last_update_by`='1003', `public_flag`='Y' WHERE (`data_privilege_id`='11000006');
 
 INSERT INTO `demo`.`entity_privileges` (`entity_privilege_id`, `tenant_id`, `md_entity_id`, `entity_type`, `privilege_type`, `privilege_code`, `ent_privilege_desc`,  `active_flag`, `create_by`, `create_date`, `last_update_by`, `last_update_date`, `public_flag`) VALUES ('21200126021656', '100', '30042', 'Entity', 'CREATE', 'CREATE:30042:元数据数据表', 'CREATE:30042:元数据数据表',  'Y', '1003', '2021-01-15 18:05:10', '1003', '2021-01-15 18:05:10', 'Y');
