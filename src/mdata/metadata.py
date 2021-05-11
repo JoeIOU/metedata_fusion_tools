@@ -815,9 +815,13 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
     sql_where = '{param}'.format(param=s1)
     sql_condition = ""
     icount = SIZE_LIMITED
+    message = "Query Success"
+    state = DB_EXEC_STATUS_SUCCESS
     if dp_list is None or len(dp_list) <= 0:
-        logger.warning(
-            "the user[user_id={}] have no privilege of the entity,md_entity_id=[{}]".format(user_id, md_entity_id))
+        message = "The user[user_id={}] have no privilege to access the entity(md_entity_id=[{}])".format(user_id,
+                                                                                                          md_entity_id)
+        state = DB_EXEC_STATUS_FAIL
+        logger.warning(message)
         icount = 0
     else:
         for itm in dp_list:
@@ -830,8 +834,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
     sql += sql_where + sql_condition
     sql = limit_include.format(sql_include=sql, size=icount)
     (re, irows) = sql_query(sql, where_list_new)
-    message = "query success"
-    re = exec_output_status(type=DB_EXEC_TYPE_QUERY, status=DB_EXEC_STATUS_SUCCESS, rows=irows, data=re,
+    re = exec_output_status(type=DB_EXEC_TYPE_QUERY, status=state, rows=irows, data=re,
                             message=message)
     return re
 
@@ -1468,9 +1471,39 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
         conn.close()
 
 
+def getI18nMessages(tenant_id, message_keys):
+    if message_keys is None:
+        logger.warning("getI18nMessages,message_keys is None")
+        return None
+    result = None
+    conn = db_md()
+    cursor = conn.cursor()
+    sql = "select distinct * from messages where active_flag='Y' and (tenant_id=%s or public_flag='Y') and message_key in %s"
+    cursor.execute(sql, args=(tenant_id, message_keys,))
+    result = cursor.fetchall()
+    result = data_type_convert(result)
+    logger.info("getI18nMessages,result:{}".format(result))
+    conn.close()  # 不是真正关闭，而是重新放回了连接池
+    return result
+
+
+def getI18nFeedbackMessages(tenant_id, message_key_string):
+    message = ''
+    if (message_key_string is not None):
+        message = str(message_key_string)
+    re = getI18nMessages(tenant_id, [message_key_string])
+    if (re is not None and len(re) > 0):
+        record = re[0]
+        message = {}
+        message['message_key'] = message_key_string
+        message['messages'] = record.get('messages')
+        message['messages_en'] = record.get('messages_en')
+    return message
+
+
 if __name__ == '__main__':
     # entity_ids = [30001, 30002, 30003]
-    user = ur.get_user_tenant(1001)
+    user = ur.get_user_tenant(1003)
     user_id = user.get("user_id")
     tenant_id = user.get("tenant_id")
 
@@ -1497,5 +1530,8 @@ if __name__ == '__main__':
     # re=insert_execute(user_id, tenant_id, entity_id, datas)
     # re=update_execute(user_id, tenant_id, entity_id, datas, where1)
     # delete_execute(user_id, tenant_id, entity_id, where1)
-    re = query_execute(user_id, tenant_id, entity_id, wh1)
+    # re = query_execute(user_id, tenant_id, entity_id, wh1)
+    re1 = getI18nMessages(tenant_id, ['save_success_hint'])
+    logger.info(re1)
+    re = getI18nFeedbackMessages(tenant_id, 'save_success_hint')
     logger.info(re)
