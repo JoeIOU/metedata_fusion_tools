@@ -155,16 +155,16 @@ def find_entity_setup():
     try:
         data = utl.request_parse(request)
         md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
         bool = False
         result = md.get_md_entities_id_by_code(['md_fields'])
         re = None
         if (result is not None and len(result) > 0):
             ent_id = result[0].get('md_entity_id')
-            (bool, re) = utl.query_privilege_check('findEntitySetup', ent_id, 'md_fields')
+            (bool, re) = utl.query_privilege_check(tenant_id, 'findEntitySetup', ent_id, 'md_fields')
         if not bool:
             return Response(json.dumps(re), mimetype='application/json')
-        user = utl.get_login_user()
-        tenant_id = user.get("tenant_id")
         res = mdi.query_entity_fields_columns(tenant_id, md_entity_id)
         irows = 0
         if res is not None:
@@ -211,7 +211,7 @@ def query_Metadata_Entity():
                                        message=msg)
             return Response(json.dumps(re), mimetype='application/json')
         # 权限校验
-        (bool, re) = utl.query_privilege_check('queryEntityByCodeOrID', md_entity_id, md_entity_code)
+        (bool, re) = utl.query_privilege_check(tenant_id, 'queryEntityByCodeOrID', md_entity_id, md_entity_code)
         if not bool:
             return Response(json.dumps(re), mimetype='application/json')
         res = md.get_md_entities(tenant_id, [md_entity_id])
@@ -259,7 +259,7 @@ def query_Metadata_Fields():
                                        message=msg)
             return Response(json.dumps(re), mimetype='application/json')
         # 权限校验
-        (bool, re) = utl.query_privilege_check('queryFieldsByCodeOrID', md_entity_id, md_entity_code)
+        (bool, re) = utl.query_privilege_check(tenant_id, 'queryFieldsByCodeOrID', md_entity_id, md_entity_code)
         if not bool:
             return Response(json.dumps(re), mimetype='application/json')
         res = md.get_md_fields(tenant_id, md_entity_id, b_onlyActive)
@@ -680,7 +680,7 @@ def query_entity_list():
                                        message=msg)
             return Response(json.dumps(re), mimetype='application/json')
         # 权限校验
-        (bool, re) = utl.query_privilege_check('queryEntityList', md_entity_id, md_entity_code)
+        (bool, re) = utl.query_privilege_check(tenant_id, 'queryEntityList', md_entity_id, md_entity_code)
         if not bool:
             return Response(json.dumps(re), mimetype='application/json')
         res = md.get_md_entities_list(tenant_id)
