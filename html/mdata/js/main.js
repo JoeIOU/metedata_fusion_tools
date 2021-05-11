@@ -1,5 +1,6 @@
 //主要内容
 var url_root = "http://localhost:8888/md";
+var gl_lang='zh';
 
 /**
  * 替换所有匹配exp的字符串为指定字符串
@@ -269,7 +270,73 @@ function language(){
 　　}else{//其他语言编码时打开以下链接
    　　 lang="en"
    }
+   gl_lang=lang;
    return lang;
   }
+
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+async function getI18nMessage(message_key,values=null) {
+    if (!message_key) return '';
+    var lang=language();
+    var title1=null;
+    var message1=message_key;
+    var message_entity_url_by_code = url_root + "/services/findEntityByCode?$_ENTITY_CODE={0}".format("messages");
+    url_fomat_entity=message_entity_url_by_code+"&message_key={0}".format(message_key);
+    await axios.get(url_fomat_entity)
+        .then(res => {
+            var data = null;
+            var d = res.data.data;
+            if (d&&d.length>0) {
+                data = d[0];
+                var message_key = data['message_key'];
+                var message_title = data['message_title'];
+                var message_title_en = data['message_title_en'];
+                var messages = data['messages'];
+                var messages_en = data['messages_en'];
+                lang=language();
+                if (lang&&lang=='zh'){
+                  title1=message_title
+                  message1=messages;
+                }else{
+                  title1=message_title_en
+                  message1=messages_en;
+                }
+            }
+        });
+    if(values&&message1){
+         if (typeof values=='object'){
+             if(values instanceof Array)
+                for (index in values){
+                  item=values[index];
+                  message1 = message1.replace("{" + index + "}", item);
+                  message1 = message1.replace("{}", item);
+                }
+             else{
+                for (key in values){
+                   v=values[key]
+                   message1 = message1.replace("{" + key + "}", v);
+                }
+             }
+         }else{
+                  message1 = message1.replace("{" + 0 + "}", values);
+                  message1 = message1.replace("{}", values);
+         }
+    }
+    return message1;
+ }
+function messageI18n(message){
+  msg=''
+  if(typeof message!='object')
+    msg=message
+  else
+    if(lang&&lang.toLowerCase()=='en')
+      msg=message.messages_en
+    else
+      msg=message.messages
+  return msg;
+}
 
 Vue.prototype.$http = axios;
