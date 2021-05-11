@@ -354,6 +354,29 @@ function renderTable(result, id) {
 					else
 						row.isDel = !row.isDel;
 				},
+				renderHeader(cerateElement, { column }) {
+				v=column
+				style1=null;
+				sign=''
+				 if (v.property=='md_fields_id'||v.property=='md_fields_name'||v.property=='md_fields_type'
+				 ||v.property=='lookup_flag'||v.property=='is_null'||v.property=='is_indexed'||v.property=='md_fields_name_cn'||v.property=='md_fields_length'){
+				   style1={
+                        color: "red",
+                        fontSize: "12px",
+                        marginLeft: "5px"
+                      };
+                      sign='*';
+                 }
+                  return cerateElement("div", [
+                    cerateElement("span", column.label),
+                    cerateElement("span", {
+                      domProps: {
+                        innerHTML: sign
+                      },
+                      style: style1
+                    })
+                  ]);
+                },
 				//修改
 				pwdChange(row, index, cg) {
 					//是否是取消操作
@@ -479,6 +502,10 @@ function renderTable(result, id) {
 						var public_flag=null;
 						for (var i = 0; i < len; i++) {
 							var item = data[i];
+                            if(item.md_fields_length=='')
+                              item.md_fields_length=null
+                            if(item.md_decimals_length=='')
+                              item.md_decimals_length=null
                             if(item.public_flag==null ||item.public_flag=='')
                                 public_flag='N';
                               else
@@ -577,14 +604,20 @@ function renderTable(result, id) {
 								if (res_data && res_data.status >= 300) {
 									app.$message.warning({
 										type: 'warning',
-										message: res_data.message
+										message: messageI18n(res_data.message)
 									});
 									return;
 								} else
-									app.$message({
-										type: 'success',
-										message: "保存成功！"
-									});
+//									app.$message({
+//										type: 'success',
+//										message: "保存成功！"
+//									});
+									getI18nMessage("save_success_hint","").then((msg)=>{
+                                        app.$message({
+                                            type: 'success',
+                                            message: msg
+                                        });
+                                    });
 								//row.isSet = false;
 								window.location.reload();
 							}));
