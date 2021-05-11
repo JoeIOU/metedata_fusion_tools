@@ -50,7 +50,24 @@ UPDATE `demo`.`md_entities` SET `md_entity_id`='30048', `tenant_id`='100', `md_e
 UPDATE `demo`.`md_entities` SET `md_entity_id`='30049', `tenant_id`='100', `md_entity_name`='通用数值型唯一索引表', `md_entity_code`='unique_decimal_t', `md_entity_name_en`='unique_decimal_t', `md_entity_desc`='unique_decimal_t', `md_tables_id`='10035', `sys_flag`='N', `public_flag`='Y', `text_column1`=NULL, `text_column2`=NULL, `text_column3`=NULL, `text_column4`=NULL, `text_column5`=NULL, `int_column1`=NULL, `int_column2`=NULL, `int_column3`=NULL, `num_column1`=NULL, `num_column2`=NULL, `num_column3`=NULL, `date_column1`=NULL, `date_column2`=NULL, `date_column3`=NULL, `active_flag`='N', `create_by`='1003', `create_date`='0000-00-00 00:00:00', `last_update_by`='1003', `last_update_date`='2021-01-27 16:19:53' WHERE (`md_entity_id`='30049');
 UPDATE `demo`.`md_entities` SET `md_entity_id`='30050', `tenant_id`='100', `md_entity_name`='通用整型唯一索引表', `md_entity_code`='unique_int_t', `md_entity_name_en`='unique_int_t', `md_entity_desc`='unique_int_t', `md_tables_id`='10036', `sys_flag`='N', `public_flag`='Y', `text_column1`=NULL, `text_column2`=NULL, `text_column3`=NULL, `text_column4`=NULL, `text_column5`=NULL, `int_column1`=NULL, `int_column2`=NULL, `int_column3`=NULL, `num_column1`=NULL, `num_column2`=NULL, `num_column3`=NULL, `date_column1`=NULL, `date_column2`=NULL, `date_column3`=NULL, `active_flag`='N', `create_by`='1003', `create_date`='0000-00-00 00:00:00', `last_update_by`='1003', `last_update_date`='2021-01-27 16:20:42' WHERE (`md_entity_id`='30050');
 UPDATE `demo`.`md_entities` SET `md_entity_id`='30051', `tenant_id`='100', `md_entity_name`='通用文本型唯一索引表', `md_entity_code`='unique_text_t', `md_entity_name_en`='unique_text_t', `md_entity_desc`='通用文本型唯一索引表描述', `md_tables_id`='10037', `sys_flag`='N', `public_flag`='Y', `text_column1`=NULL, `text_column2`=NULL, `text_column3`=NULL, `text_column4`=NULL, `text_column5`=NULL, `int_column1`=NULL, `int_column2`=NULL, `int_column3`=NULL, `num_column1`=NULL, `num_column2`=NULL, `num_column3`=NULL, `date_column1`=NULL, `date_column2`=NULL, `date_column3`=NULL, `active_flag`='N', `create_by`='1003', `create_date`='0000-00-00 00:00:00', `last_update_by`='1001', `last_update_date`='2021-03-24 11:37:01' WHERE (`md_entity_id`='30051');
-
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354338032077115398');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354338032077115399');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354338032077115400');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354338032077115401');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354338032077115402');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354340087533539334');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354340087533539335');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354340087533539336');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354340087533539337');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354340087533539338');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354341172948111366');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354341172948111367');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354341172948111368');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354341172948111369');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1354341172948111370');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1371353594807455744');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1371358072197615616');
+delete from `demo`.`md_fields`	WHERE (`md_fields_id`='1371365489610330112');
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='400405');
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='400406');
 UPDATE `demo`.`md_fields` SET `tenant_id`='100' WHERE (`md_fields_id`='400407');
