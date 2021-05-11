@@ -40,24 +40,24 @@
 				<el-row>
 					<span v-if="master_user.sel">
 						<el-col span="24">
-							实体ID:
+							<font color="red">*</font>实体ID:
 							<el-input size="mini" :rows="1" placeholder="Input Something"
 									  v-model="master_user.sel['md_entity_id']" style="width:130px" maxlength="30"
 									  disabled>
 							</el-input>
-							实体编码:
+							<font color="red">*</font>实体编码:
 							<el-input size="mini" :rows="1" placeholder="Input Something"
 									  v-model="master_user.sel['md_entity_code']" style="width:150px"
 									  maxlength="256" id="md_entity_code100001"
 									  @change="onchange('md_entity_code',master_user.sel,100001)" disabled>
 							</el-input>
-							实体名称:
+							<font color="red">*</font>实体名称:
 							<el-input size="mini" :rows="1" placeholder="Input Something"
 									  v-model="master_user.sel['md_entity_name']" style="width:170px"
 									  maxlength="256" id="md_entity_name100001"
 									  @change="onchange('md_entity_name',master_user.sel,100001)" :disabled="isReadonly">
 							</el-input>
-							实体英文名称:
+							<font color="red">*</font>实体英文名称:
 							<el-input type="textarea" size="mini" :rows="1" placeholder="Input Something"
 									  v-model="master_user.sel['md_entity_name_en']" style="width:190px"
 									  maxlength="256" id="md_entity_name_en100001"
@@ -69,7 +69,7 @@
 									  maxlength="256" id="md_entity_desc100001"
 									  @change="onchange('md_entity_desc',master_user.sel,100001)" :disabled="isReadonly">
 							</el-input>
-                            租户共享标识:
+                            <font color="red">*</font>租户共享标识:
                             <el-select size="mini" id="public_flag100001" v-model="master_user.sel['entity_public_flag']" style="width:120px" disabled>
                                 <el-option
                                            key="Y"
@@ -105,13 +105,13 @@
 									  @click="pwdChange(scope.row,scope.row['$$_id_'],false)">
 									<span v-if="scope.row.isDel">
 										<el-tooltip placement="top">
-											<div slot="content">还原</div>
+											<div slot="content">还原Restore</div>
 											<i class="el-icon-edit-outline"></i>
 										</el-tooltip>
 									</span>
 									<span v-else>
 										<el-tooltip placement="top">
-											<div slot="content">删除</div>
+											<div slot="content">删除Del</div>
 											<i class="el-icon-delete"></i>
 										</el-tooltip>
 									</span>
@@ -121,7 +121,7 @@
 									  style="cursor: pointer;"
 									  @click="pwdChange(scope.row,scope.row['$$_id_'],false)">
 									<el-tooltip placement="top">
-										<div slot="content">重置</div>
+										<div slot="content">重置Reset</div>
 										<i class="el-icon-refresh"></i>
 									</el-tooltip>
 								</span>
@@ -158,7 +158,7 @@
 							</template>
 						</el-table-column>
 						<el-table-column v-for="(v,i) in master_user.columns" :prop="v.field" :label="v.title" :type="v.type"
-										 :width="v.width" v-if="v.visible">
+										 :width="v.width" v-if="v.visible" :render-header="renderHeader">
 							<template slot-scope="scope">
 								<span v-if="isReadonly">
 									{{scope.row[v.field]}}
