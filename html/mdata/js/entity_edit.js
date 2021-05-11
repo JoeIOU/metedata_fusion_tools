@@ -55,8 +55,8 @@ function getEntityByCode(code) {
 				var entity_id = data['md_entity_id'];
 				for_new_entity_id = entity_id;
 			}
-			if (res.data && res.data.status != "200")
-				gl_app1.$message.warning(res.data.message);
+			if (gl_app1&&res.data && res.data.status >=300)
+				gl_app1.$message.warning(messageI18n(res.data.message));
 		});
 }
 getEntityByCode("md_entities");
@@ -95,7 +95,7 @@ function getLookupEntityByParentId(col,code,parent_code,parent_data_id){
             if (res_data && res_data.status >= 300) {
                 gl_app.$message.warning({
                     type: 'warning',
-                    message: res_data.message
+                    message: messageI18n(res_data.message)
                 });
                 return;
             }
@@ -157,7 +157,7 @@ function get_entity_info_by_code(code, result, lookup_type) {
             if (res_data && res_data.status >= 300) {
                 gl_app.$message.warning({
                     type: 'warning',
-                    message: res_data.message
+                    message: messageI18n(res_data.message)
                 });
                 return;
             }
@@ -250,7 +250,7 @@ function getCurrentEntityByCode(code) {
 			gl_app1.handleClick(data);
 			getUISingleEntity(GL_ENTITY_ID)
 			if (res.data && res.data.status >=300)
-				gl_app1.$message.warning(res.data.message);
+				gl_app1.$message.warning(messageI18n(res.data.message));
 		});
 }
 
@@ -300,6 +300,14 @@ function getEntityRelation(frm_entity_ids,to_entity_ids){
 			if (d) {
 			   gl_entity_relations=d;
 			}
+            var res_data = res.data;
+            if (gl_app&&res_data && res_data.status >= 300) {
+                gl_app.$message.warning({
+                    type: 'warning',
+                    message: messageI18n(res_data.message)
+                });
+                return;
+            }
 		});
 }
 
@@ -357,8 +365,8 @@ function get_curr_entity_metadata(entity_id) {
 					}
 				label_gl = gl_dialog_title;
 
-				if (res.data && res.data.status >=300)
-					gl_app.$message.warning(res.data.message);
+				if (gl_app&&res.data && res.data.status >=300)
+					gl_app.$message.warning(messageI18n(res.data.message));
 			}
 		});
 }
@@ -392,10 +400,10 @@ function queryEntity(app) {
 			app.options = options;
 
             var res_data = res.data;
-            if (res_data && res_data.status >= 300) {
+            if (app&&res_data && res_data.status >= 300) {
                 app.$message.warning({
                     type: 'warning',
-                    message: res_data.message
+                    message: messageI18n(res_data.message)
                 });
                 return;
             }
@@ -446,10 +454,10 @@ function queryMetadata(url) {
 			}
 			renderTable(dict);
             var res_data = res.data;
-            if (res_data && res_data.status >= 300) {
+            if (gl_app&&res_data && res_data.status >= 300) {
                 gl_app.$message.warning({
                     type: 'warning',
-                    message: res_data.message
+                    message: messageI18n(res_data.message)
                 });
                 return;
             }
@@ -515,7 +523,7 @@ function load_column_info(app) {
 					d["is_key"] = f["is_key"];
 					if (f['is_key'] == 'Y' || f['md_fields_name'].toLowerCase() == 'last_update_date' || f['md_fields_name'].toLowerCase() == 'last_update_by' ||
 						f['md_fields_name'].toLowerCase() == 'create_date' || f['md_fields_name'].toLowerCase() == 'create_by' ||
-						f['md_fields_name'].toLowerCase() == 'tenant_id' || f['md_fields_name'].toLowerCase() == 'md_entity_id')
+						f['md_fields_name'].toLowerCase() == 'tenant_id' )
 						d['readonly'] = true
 					else
 						d['readonly'] = false
@@ -625,8 +633,8 @@ function renderTable(result) {
                             var d = res.data.data;
                             if (d&&d.length>0) {
                                 data = d[0];
-                                var entity_id = data['md_entity_id'];
-                                for_new_entity_id = entity_id;
+                                //var entity_id = data['md_entity_id'];
+                                //for_new_entity_id = entity_id;
                                 //val="<a href='xxx'>"+val+"</a>"
                                 if (lang&&lang=='zh'){
                                   title1='{0}[{1}]'.format(data.message_title,val)
@@ -637,8 +645,8 @@ function renderTable(result) {
                                 }
                                 this.$notify({ title: title1,customClass:'notifyCustomClass',message:message1 });
                             }
-                            if (res.data && res.data.status != "200")
-                                gl_app1.$message.warning(res.data.message);
+                            if (gl_app1&&res.data && res.data.status >= 300)
+                                gl_app1.$message.warning(messageI18n(res.data.message));
                         });
                  },
                  message_format(key,msg,title){
@@ -809,7 +817,7 @@ function renderTable(result) {
 							field.visible = true;
 							if (field_name.toLowerCase() == 'last_update_date' || field_name.toLowerCase() == 'last_update_by' ||
 								field_name.toLowerCase() == 'create_date' || field_name.toLowerCase() == 'create_by' ||
-								field_name.toLowerCase() == 'tenant_id' || field_name.toLowerCase() == 'md_entity_id') {
+								field_name.toLowerCase() == 'tenant_id' ) {
 								field.visible = false;
 							}
 							set[field_name] = null;
@@ -958,6 +966,15 @@ function renderTable(result) {
                               for (key in update_fields){
                                 input_data[key]=update_fields[key];
                               }
+
+                            var res_data = res.data;
+                            if (app&&res_data && res_data.status >= 300) {
+                                app.$message.warning({
+                                    type: 'warning',
+                                    message: messageI18n(res_data.message)
+                                });
+                                return;
+                            }
                          }).catch(error => {
                           // this.$message.error(error.status)
                           this.$message.error('规则计算异常');
@@ -969,6 +986,14 @@ function renderTable(result) {
                     data={"$_ENTITY_ID":entity_id,"rule_category":"Computing"}
                     axios.post(url, data).then(res => {
                             gl_rules_list=res.data.data;
+                            var res_data = res.data;
+                            if (app&&res_data && res_data.status >= 300) {
+                                app.$message.warning({
+                                    type: 'warning',
+                                    message: messageI18n(res_data.message)
+                                });
+                                return;
+                            }
                          }).catch(error => {
                           // this.$message.error(error.status)
                           this.$message.error('规则查询异常');
@@ -991,8 +1016,7 @@ function renderTable(result) {
 									delete new_dict[field];
 									break;
 								} else if (f.toLowerCase() == 'last_update_date' || f.toLowerCase() == 'last_update_by' ||
-									f.toLowerCase() == 'create_date' || f.toLowerCase() == 'create_by' ||
-									f.toLowerCase() == 'tenant_id' || f.toLowerCase() == 'md_entity_id' ||
+									f.toLowerCase() == 'tenant_id' || f.toLowerCase() == 'create_date' || f.toLowerCase() == 'create_by' ||
 									f.toLowerCase() == 'isedit' || f.toLowerCase() == 'isset' || f.toLowerCase() == '$_clmn_id_') {
 									delete new_dict[field];
 								}
@@ -1078,15 +1102,17 @@ function renderTable(result) {
 							if (res_data && res_data.status >= 300) {
 								app.$message.warning({
 									type: 'warning',
-									message: res_data.message
+									message: messageI18n(res_data.message)
 								});
 							    console.log("校验未通过详情：", res_data.data);
 								return;
 							} else{
-								app.$message({
-									type: 'success',
-									message: "保存成功！"
-								});
+							     getI18nMessage("save_success_hint","").then((msg)=>{
+                                    app.$message({
+                                        type: 'success',
+                                        message: msg
+                                    });
+                                });
                                 //然后这边重新读取表格数据
                                 app.readMasterUser();
                                 app.dialogFormVisible = false;
@@ -1172,7 +1198,7 @@ function renderTable(result) {
                                     if (res_data && res_data.status >= 300) {
                                         app.$message.warning({
                                             type: 'warning',
-                                            message: res_data.message
+                                            message: messageI18n(res_data.message)
                                         });
                                         return;
                                     } else
@@ -1317,6 +1343,14 @@ function renderToolbar() {
 							});
 						}
 						app.table_options = options;
+                        var res_data = res.data;
+                        if (app&&res_data && res_data.status >= 300) {
+                            app.$message.warning({
+                                type: 'warning',
+                                message: messageI18n(res_data.message)
+                            });
+                            return;
+                        }
 					})
 
 			},
@@ -1330,6 +1364,15 @@ function renderToolbar() {
 						var dict5 = {};
 						var dict6 = {};
 						var dict7 = {};
+
+                        var res_data = res.data;
+                        if (app&&res_data && res_data.status >= 300) {
+                            app.$message.warning({
+                                type: 'warning',
+                                message: messageI18n(res_data.message)
+                            });
+                            return;
+                        }
 						var data = res.data.data;
 						if (data) {
 							var len = 0;
