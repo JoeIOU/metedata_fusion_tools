@@ -126,12 +126,15 @@ def get_index_data_ids(data):
     return ids
 
 
-def sql_execute_method(md_entity_id, method, service_name, data_list=None, where_list=None, parent_entity_id=None):
+def sql_execute_method(tenant_id, md_entity_id, method, service_name, data_list=None, where_list=None,
+                       parent_entity_id=None):
     user_id = g.user_id
     user_privilege_list = cache.get(user_id + '_privilege')
     user = cache.get(user_id)
     if user is None:
-        msg = '{}，您访问服务{}受阻,用户未登录或登录过期，请重新登录。'.format(user_id, service_name)
+        # 国际化提示信息获取
+        # msg="{}，您访问服务{}受阻,用户未登录或登录过期，请重新登录。"
+        msg = md.getI18nFeedbackMessages(tenant_id, '{}，您访问服务{}受阻,用户未登录或登录过期，请重新登录。', (user_id, service_name,))
         logger.warning(msg)
         output = md.exec_output_status(type=method, status=HTTP_STATUS_CODE_FORBIDDEN, rows=0, data=None, message=msg)
         return output
@@ -245,9 +248,10 @@ def query_privilege_check(tenant_id, method_name, md_entity_id, entity_code):
         user = get_login_user()
         user_privilege_list = get_login_user_privilege()
         if user_privilege_list is None or len(user_privilege_list) == 0:
-            msg = '{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。'.format(
-                user.get("account_number"), method_name, md_entity_id, entity_code)
-            # msg=md.getI18nFeedbackMessages(tenant_id,'save_success_hint')
+            # 国际化提示信息获取
+            # msg="{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。"
+            msg = md.getI18nFeedbackMessages(tenant_id, 'no_privllege_validate',
+                                             (user.get("account_number"), method_name, md_entity_id, entity_code,))
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
@@ -255,9 +259,10 @@ def query_privilege_check(tenant_id, method_name, md_entity_id, entity_code):
             return (False, output)
         b_privilege = have_privilege(md_entity_id, SERVICE_METHOD_GET)
         if not b_privilege:
-            msg = '{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。'.format(
-                user.get("account_number"), method_name, md_entity_id, entity_code)
-            # msg = md.getI18nFeedbackMessages(tenant_id, msg)
+            # 国际化提示信息获取
+            # msg="{}，您无权访问服务{}(实体ID={},实体编码={})，请申请权限或找业务管理员帮忙。"
+            msg = md.getI18nFeedbackMessages(tenant_id, 'no_privllege_validate',
+                                             (user.get("account_number"), method_name, md_entity_id, entity_code))
             logger.warning(msg)
             output = md.exec_output_status(type=SERVICE_METHOD_GET, status=HTTP_STATUS_CODE_NOT_RIGHT, rows=0,
                                            data=None,
