@@ -130,7 +130,10 @@ def query_view():
                 if key == GLOBAL_VIEW_ID:
                     data.pop(GLOBAL_VIEW_ID)
                     break
-        re = utl.sql_execute_method(view_id, utl.SERVICE_METHOD_VIEW, "queryView", data_list=None, where_list=[data])
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
+        re = utl.sql_execute_method(tenant_id, view_id, utl.SERVICE_METHOD_VIEW, "queryView", data_list=None,
+                                    where_list=[data])
 
         logger.info('view result:{}'.format(re))
         return Response(json.dumps(re), mimetype='application/json')
@@ -323,7 +326,9 @@ def find_entity():
         else:
             data_list.append(data)
 
-        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntity", data_list=None,
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
+        re = utl.sql_execute_method(tenant_id, md_entity_id, utl.SERVICE_METHOD_GET, "findEntity", data_list=None,
                                     where_list=data_list, parent_entity_id=parent_dict)
         logger.info('find Entity. Params:{},result:{}'.format(data, re))
         return Response(json.dumps(re), mimetype='application/json')
@@ -472,7 +477,8 @@ def find_entity_by_code():
                 return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0,
                                              data=None,
                                              message=s)
-            re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findEntityByCode", data_list=None,
+            re = utl.sql_execute_method(tenant_id, md_entity_id, utl.SERVICE_METHOD_GET, "findEntityByCode",
+                                        data_list=None,
                                         where_list=data_list, parent_entity_id=parent_dict)
             logger.info('findEntityByCode. Params:{},result:{}'.format(data_list, re))
         return Response(json.dumps(re), mimetype='application/json')
@@ -586,7 +592,8 @@ def find_Lookup_By_EntityCode():
             logger.warning(s)
             return md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=s)
-        result = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_GET, "findLookupByEntityCode", data_list=None,
+        result = utl.sql_execute_method(tenant_id, md_entity_id, utl.SERVICE_METHOD_GET, "findLookupByEntityCode",
+                                        data_list=None,
                                         where_list=[where_new], parent_entity_id=parent_dict)
         mp = utl.entity_lookup_mapping(res_lk, result.get("data"))
         data_set = {}
@@ -723,6 +730,8 @@ def insert_entity():
         parent_entity_id = data.get(utl.GLOBAL_PARENT_ENTITY_ID)
         parent_data_id = data.get(utl.GLOBAL_PARENT_DATA_ID)
         parent_dict = None
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
         if (parent_entity_id is not None and parent_data_id is not None):
             parent_dict = {}
             parent_dict[str(parent_entity_id)] = parent_data_id
@@ -746,7 +755,7 @@ def insert_entity():
             # 规则校验
             (isPass, output) = rule_validate(request, validateOnly=1)
             if isPass is not None and isPass:
-                re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity",
+                re = utl.sql_execute_method(tenant_id, md_entity_id, utl.SERVICE_METHOD_INSERT, "insertEntity",
                                             data_list=data_list, parent_entity_id=parent_dict)
             else:
                 re = output
@@ -784,12 +793,14 @@ def update_entity():
         where_list = data.get("where")
         data_list = data.get("data")
         data_list = utl.value2str(data_list)
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
         isPass = True
         output = None
         # 规则校验
         (isPass, output) = rule_validate(request, validateOnly=1)
         if isPass is not None and isPass:
-            re = update_entity_common(md_entity_id, data_list, where_list)
+            re = update_entity_common(tenant_id, md_entity_id, data_list, where_list)
         else:
             re = output
         return Response(json.dumps(re), mimetype='application/json')
@@ -806,14 +817,15 @@ def update_entity():
 
 
 # 更新数据的方法，支持单个或多个对象更新，要求同一个实体的。
-def update_entity_common(md_entity_id, data_list, where_list):
+def update_entity_common(tenant_id, md_entity_id, data_list, where_list):
     if md_entity_id is None:
         msg = 'update Entity, input param[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
         logger.warning(msg)
         re = md.exec_output_status(type=utl.SERVICE_METHOD_UPDATE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
     else:
-        re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_UPDATE, "updateEntity", data_list=data_list,
+        re = utl.sql_execute_method(tenant_id, md_entity_id, utl.SERVICE_METHOD_UPDATE, "updateEntity",
+                                    data_list=data_list,
                                     where_list=where_list)
         logger.info('update Entity Params:{}'.format(data_list))
     return re
@@ -838,8 +850,24 @@ def delete_entity():
             re = md.exec_output_status(type=utl.SERVICE_METHOD_DELETE, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                        message=msg)
         else:
-            re = utl.sql_execute_method(md_entity_id, utl.SERVICE_METHOD_DELETE, "deleteEntity", data_list=None,
-                                        where_list=where_list)
+            # 规则校验
+            isPass = True
+            code = data.get("rule_code")
+            rules = data.get("rules")
+            n_rules = data.get("n_rules")
+            user = utl.get_login_user()
+            tenant_id = user.get("tenant_id")
+            output = None
+            # 有指定规则的，才对删除进行校验；，没有指定，则不校验。
+            if (code is not None and len(code) > 0) or (rules is not None and len(rules) > 0) or (
+                    n_rules is not None and len(n_rules) > 0):
+                (isPass, output) = rule_validate(request, validateOnly=1)
+            if isPass is not None and isPass:
+                re = utl.sql_execute_method(tenant_id, md_entity_id, utl.SERVICE_METHOD_DELETE, "deleteEntity",
+                                            data_list=None,
+                                            where_list=where_list)
+            else:
+                re = output
             logger.info('delete Entity Params:{}'.format(where_list))
         return Response(json.dumps(re), mimetype='application/json')
     except Exception as ex:
@@ -960,9 +988,9 @@ def validate_rule():
 
 def rule_validate(http_request, validateOnly=0):
     # validateOnly参数说明，0：规则校验+计算；1：规则校验，2：规则计算。
-    # 输入GET参数： {$_ENTITY_ID:123,rule_code:"xxxname",input_params:"xxxname","output_params":"123",data:xxx}
+    # 输入GET参数： {$_ENTITY_ID:123,rule_code:"xxxname",field_name:"xxxname",data:xxx},其中，rule_code：指定规则编码，#field_name指定字段属性的，可以作为输入条件查询相关规则，data校验的数据。
     # 输入POST参数：{"$_ENTITY_ID":30015, "rules":[{"rule_code":"rule_alphabet_underline"},{"rule_code":"rule_discount_amount_calc","input_params":["x","y"],"output_params":["discount_amount"]}],"n_rules":[],"data":{"md_entity_code":"branchs","x":200,"y":5}},
-    # POST方式，rules=None，则校验所有规则，排除法就是n_rules=[],data={}输入计算和校验参数。
+    # POST方式，rules=[]指定需要校验的规则，rule_code='all'，则校验所有规则，排除法就是n_rules=[],data={}输入计算和校验参数。
     # output返回验证结果：
     # {
     #     "action": "VALIDATION",
@@ -993,16 +1021,23 @@ def rule_validate(http_request, validateOnly=0):
     #     }
     # }
     data = None
-    re = None
-    is_pass = True
     try:
         if http_request is None:
             return
         data = utl.request_parse(http_request)
         md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
         rule_data = None
-        rules = None
-        n_rules = None
+        code = data.get("rule_code")
+        rules = data.get("rules")
+        n_rules = data.get("n_rules")
+        output = None
+        # 有指定规则的，才进行校验；，没有指定，则不校验,返回，默认指定实体的所有规则校验，则rule_code='all'。
+        if (code is not None and len(code) > 0) or (rules is not None and len(rules) > 0) or (
+                n_rules is not None and len(n_rules) > 0):
+            re = md.exec_output_status(type=md.DB_EXEC_TYPE_VALIDATE, status=200, rows=0, data=None,
+                                       message="无规则需要校验(no rules validate)")
+            return (True, re)
+
         user = utl.get_login_user()
         user_account = user.get("account_number")
         tenant_id = user.get("tenant_id")
@@ -1010,10 +1045,12 @@ def rule_validate(http_request, validateOnly=0):
         if http_request.method == 'GET':
             rules = []
             r_set = {}
-            code = data.get("rule_code")
+            # code = data.get("rule_code")
+            if (code is not None and code == 'all'):  # ==all表示这个实体的所有规则的校验
+                code = None
             if code is not None:
                 r_set['rule_code'] = code
-            f = data.get("field_name")
+            f = data.get("field_name")  # 指定字段属性的，可以作为输入条件查询相关规则。
             if f is not None and len(f.strip()) > 0:
                 r_set['field_name'] = f
             if r_set is not None and len(r_set) > 0:
@@ -1024,10 +1061,10 @@ def rule_validate(http_request, validateOnly=0):
             else:
                 d_set = data.get("data")
             rule_data = d_set
-        else:
-            rules = data.get("rules")
-            n_rules = data.get("n_rules")
-            rule_data = data.get("data")
+        # else:
+        #     rules = data.get("rules")
+        #     n_rules = data.get("n_rules")
+        #     rule_data = data.get("data")
         rules_list = vr.get_rules(tenant_id, md_entity_id, rules, n_rules, validateOnly)
         size = 0
         if rules_list is not None:
