@@ -1388,8 +1388,9 @@ def delete_execute(user_id, tenant_id, md_entity_id, where_list):
 
                 # 输入的fields不存在,且不是实体key，则不执行
             if where_mapping is None or len(where_mapping) <= 0 or len(where_mapping) < len(where):
-                msg = "删除操作警告：操作人{},由于输入条件不满足，即输入参数[{}]不匹配实体[{}]属性[{}]或为空，不能做删除动作!".format(user_id, where,
-                                                                                           where_mapping, md_entity_id)
+                msg = getI18nFeedbackMessages(tenant_id, 'delete_data_hint')
+                # mag="删除操作警告：操作人{},由于输入条件不满足，即输入参数[{}]不匹配实体[{}]属性[{}]或为空，不能做删除动作!"
+                msg = msg.format(user_id, where, where_mapping, md_entity_id)
                 res = exec_output_status(type=DB_EXEC_TYPE_DELETE, status=DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                          message=msg)
                 logger.warning(res)
@@ -1482,12 +1483,12 @@ def getI18nMessages(tenant_id, message_keys):
     cursor.execute(sql, args=(tenant_id, message_keys,))
     result = cursor.fetchall()
     result = data_type_convert(result)
-    logger.info("getI18nMessages,result:{}".format(result))
+    logger.info("getI18nMessages,key:{},result:{}".format(message_keys,result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
 
 
-def getI18nFeedbackMessages(tenant_id, message_key_string):
+def getI18nFeedbackMessages(tenant_id, message_key_string, params=None):
     message = ''
     if (message_key_string is not None):
         message = str(message_key_string)
@@ -1496,8 +1497,16 @@ def getI18nFeedbackMessages(tenant_id, message_key_string):
         record = re[0]
         message = {}
         message['message_key'] = message_key_string
-        message['messages'] = record.get('messages')
-        message['messages_en'] = record.get('messages_en')
+        s = record.get('messages')
+        if (s is not None and params is not None):
+            s = s.format(*params)
+        message['messages'] = s
+        s = record.get('messages_en')
+        if (s is not None and params is not None):
+            s = s.format(*params)
+        message['messages_en'] = s
+    elif (message is not None and len(message) > 0):
+        message = message.format(*params)
     return message
 
 
@@ -1531,7 +1540,9 @@ if __name__ == '__main__':
     # re=update_execute(user_id, tenant_id, entity_id, datas, where1)
     # delete_execute(user_id, tenant_id, entity_id, where1)
     # re = query_execute(user_id, tenant_id, entity_id, wh1)
-    re1 = getI18nMessages(tenant_id, ['save_success_hint'])
-    logger.info(re1)
+    # re1 = getI18nMessages(tenant_id, ['save_success_hint'])
+    # logger.info(re1)
     re = getI18nFeedbackMessages(tenant_id, 'save_success_hint')
+    logger.info(re)
+    re = getI18nFeedbackMessages(tenant_id, '{},wwww,{}',('123',None,))
     logger.info(re)
