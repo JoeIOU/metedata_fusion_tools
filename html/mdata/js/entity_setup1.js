@@ -368,13 +368,13 @@ function renderTable(result, id) {
                       sign='*';
                  }
                   return cerateElement("div", [
-                    cerateElement("span", column.label),
                     cerateElement("span", {
                       domProps: {
                         innerHTML: sign
                       },
                       style: style1
-                    })
+                    }),
+                    cerateElement("span", column.label)
                   ]);
                 },
 				//修改
