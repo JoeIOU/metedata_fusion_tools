@@ -596,11 +596,11 @@ Vue.component("entity-select", {
                     if (item && item['active_flag'] == 'N')
                         disabled1 = true;
                     new_label=item[label1];
+                    if(label_en1&&item[label_en1]&&lang=='en')
+                      new_label=item[label_en1]
                     if (!new_label || new_label ==null || new_label=="")
                       new_label=item[key1]
 
-                    if(label_en1&&item[label_en1]&&lang=='en')
-                      new_label=item[label_en1]
                     var dict = {
                         key: item[key1],
                         value: item[value1],
@@ -669,7 +669,7 @@ Vue.component("entity-select", {
                     this.itemkey1 = Math.random();
                 }
                 this.loading=false;
-                this.itemkey2=Math.random();
+                //this.itemkey2=Math.random();
             }
             return re;
         }
