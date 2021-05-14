@@ -20,7 +20,7 @@ DB_EXEC_STATUS_FAIL = 500
 DB_EXEC_STATUS_PANDING = 100
 DB_EXEC_STATUS_OVERTIME = 501
 # 限制查询最大数量
-SIZE_LIMITED = 1001
+SIZE_LIMITED = 5001
 
 KEY_FIELDS_ID = "$_row_id_"
 
@@ -801,7 +801,9 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
         symbol = "="
         v = where_mapping.get(wh)
         # 有输入字符串%，则表示模糊查询
-        if (wh is not None and v is not None and isinstance(v, str) and v.find('%') >= 0):
+        if (v is None):
+            symbol = 'is'
+        elif (wh is not None and v is not None and isinstance(v, str) and v.find('%') >= 0):
             symbol = 'like'
         elif wh is not None and v is not None and isinstance(v, list):
             symbol = 'in'
@@ -1483,7 +1485,7 @@ def getI18nMessages(tenant_id, message_keys):
     cursor.execute(sql, args=(tenant_id, message_keys,))
     result = cursor.fetchall()
     result = data_type_convert(result)
-    logger.info("getI18nMessages,key:{},result:{}".format(message_keys,result))
+    logger.info("getI18nMessages,key:{},result:{}".format(message_keys, result))
     conn.close()  # 不是真正关闭，而是重新放回了连接池
     return result
 
@@ -1544,5 +1546,5 @@ if __name__ == '__main__':
     # logger.info(re1)
     re = getI18nFeedbackMessages(tenant_id, 'save_success_hint')
     logger.info(re)
-    re = getI18nFeedbackMessages(tenant_id, '{},wwww,{}',('123',None,))
+    re = getI18nFeedbackMessages(tenant_id, '{},wwww,{}', ('123', None,))
     logger.info(re)
