@@ -18,7 +18,7 @@ Vue.component("entity-select", {
                            </el-col>\
 			           </el-row><br>\
 			            <el-row>\
-				            <el-col :span="11"><span v-if="lang==\'zh\'">待选列表：</span><span v-else>(To be select)</span>\
+				            <el-col :span="11"><span v-if="lang==\'zh\'">待选列表<span v-if="multi_select==false">(单选)</span><span v-else>(多选)</span>：</span><span v-else>Tobe Selecting<span v-if="multi_select==false">(Single)</span><span v-else>(multiple)</span>:</span>\
                                 <el-table size="mini" :data="table_data.data.slice((currentPage-1)*pagesize,currentPage*pagesize)"\
                                           highlight-current-row\
                                           v-loading="loading"\
@@ -358,6 +358,7 @@ Vue.component("entity-select", {
            this.searchText="";
            this.dialogFormVisible=true;
            this.loading=true;
+           this.load_selected();
            this.$emit('click',this.value);
          },
          click_clear(val){
