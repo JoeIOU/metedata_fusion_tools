@@ -1,0 +1,242 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="css/select-tree.css">
+    <title></title>
+    <style>
+    .el-tree-node__content:hover {    background-color: #e0eeff;  }
+    .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {  color:#5599ff;}
+
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+			<el-row>
+				<el-col :span="24">
+                    多选、不黏连：
+                      <entity-cascade :value="selectValue3" :width="200" placeholder="请选择内容" title="元数据实体"
+                      :options="optionData"
+                                     :disabled="disabled" size="mini" :multi_select="multi_select" :entity="entity_name1" @change="change" selectable_level=",1,2,3,4">
+                      </entity-cascade>
+                     单选、黏连：
+                      <entity-cascade :value="selectValue3" :width="200" placeholder="请选择内容" title="元数据实体"
+                      :options="optionData"
+                                     :disabled="disabled" size="mini" :entity="entity_name1"  @change="change">
+                      </entity-cascade>
+
+                      <entity-select :id="row_id" :value="selectValue" :width="200" placeholder="请选择内容" title="元数据实体"
+                                     :disabled="disabled" size="mini" :multi_select="multi_select" :entity="entity_name" @click="click1" @change="change">
+                      </entity-select>
+
+
+                      <entity-select  :value="selectValue1" :width="100" placeholder="请选择元数据字段" :disabled="disabled" size="mini"  entity="md_fields" @click="click1"
+                      :parent_data_id="parent_data_id" :parent_entity_code="parent_entity_code">
+                      </entity-select>
+                      <entity-select  :value="selectValue2" :width="200" placeholder="请选择元数据字段" :disabled="disabled" size="mini"  entity="tenants" @click="click2">
+                      </entity-select>
+
+                     <el-select v-model="value" placeholder="请选择" size="mini" @change="onChange" style="width:100px">
+                    <el-option
+                      v-for="item in options"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+
+                     <el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="1==1"
+                       icon="el-icon-question" circle  @click="tip_show(1)">
+                      </el-button>
+                    <!-- 调用树形下拉框组件 -->
+                    <el-tree-select  size="mini"
+                      :props="props"
+                      :options="optionData"
+                      v-model="valueId"
+                      :clearable="isClearable"
+                      :accordion="isAccordion"
+                      @loadnode="loadNode"
+                      @selectchange="selectchange($event)"
+                    />
+                </el-col>
+            </el-row>
+			<el-row>
+				<el-col :span="24">
+                </el-col>
+            </el-row>
+
+</div>
+    <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+<!--    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>-->
+    <script src="js/accounting.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/select-tree.js"></script>
+    <script src="js/entity_select_component.js"></script>
+    <script src="js/entity_cascade_component.js"></script>
+<script>
+app=new Vue({
+        el: "#app",
+        data: {
+          entity_name:"md_entities",
+          entity_name1:"branchs",
+          url:url_root+"/services/findLookupByEntityCode?entity_code={0}&lookup_code={1}",
+          width:200,
+          selectValue: "[30017,30018]",
+          selectValue1: "400072",
+          selectValue2: "100",
+          selectValue3: "[1000,'1377876096642097152']",
+          label: "实体名称1",
+          disabled:false,
+          multi_select:true,
+          row_id:"1",
+          parent_entity_code:"md_entities",
+          parent_data_id:30016,
+
+          isClearable: true, // 可清空（可选）
+          isAccordion: true, // 可收起（可选）
+          valueId: '', // 初始ID（可选）
+          props: {
+            // 配置项（必选）
+            value: "id",
+            label: "name",
+            children: "children",
+            isLeaf: 'leaf'
+            // disabled:true
+          },
+          // 选项列表（必选）
+          list: [
+          ],
+          options: [{
+              value: '',
+              label: '请选择'
+            }, {
+              value: '30015',
+              label: '黄金糕'
+            },{
+              value: '30016',
+              label: '双皮奶'
+            }, {
+              value: '30017',
+              label: '蚵仔煎'
+            }, {
+              value: '30018',
+              label: '龙须面'
+            }, {
+              value: '30019',
+              label: '北京烤鸭'
+            }],
+        value: ''
+        },
+          computed: {
+            /* 转树形数据 */
+            optionData() {
+              let cloneData = JSON.parse(JSON.stringify(this.list)); // 对源数据深度克隆
+              return cloneData.filter(father => {
+                // 循环所有项，并添加children属性
+                let branchArr = cloneData.filter(child => father.id == child.parentId); // 返回每一项的子级数组
+                branchArr.length > 0 ? (father.children = branchArr) : ""; //给父级添加一个children属性，并赋值
+                return father.parentId == 0; //返回第一层
+              });
+            }
+          },
+        methods: {
+				handleSelectionChange(val) {
+					len=0
+					if(val)
+					  len=val.length;
+					if(len>0)
+					for (var i=len-1;i>=0;i--){
+					  item=val[i];
+					  active_flag=item.active_flag
+					  if (active_flag && active_flag=='N')
+					   val.splice(i,1)
+					}
+					app.multipleSelection = val;
+					//console.log("---selected=", val);
+				},
+				change(val){
+				 // alert(val+":"+this.selectValue)
+				},
+				tip_show(val) {
+                    const h = this.$createElement;
+                    this.$notify({
+                      title: '标题名称'+val,
+                      message: h('i', { style: 'color: teal'}, '这是提示文案这是提示文案这是提示文案这是提示文案这是提示文案这是提示文案这是提示文案这是提示文案')
+                    });
+                  },
+
+
+
+        // 取值
+        selectchange(value) {
+          this.valueId = value;
+          this.selectValue=value;
+          this.label=value;
+          console.log(this.valueId);
+        },
+        onChange(val){
+          //alert(val)
+          this.selectValue=val;
+          this.label=val;
+<!--          v=getI18nMessage("wwww:{0},ewewwew:{1},{}",["123","456","rrr"]);-->
+<!--          alert(v);-->
+<!--          v=getI18nMessage("wwww:{a},ewewwew:{b},{}",{a:"123",b:"456",c:"rrr"});-->
+<!--          alert(v);-->
+          //v=getI18nMessage("test_faq_message","112233");
+          getI18nMessage("test_faq_message","112233").then((data)=>{
+            alert(data);
+          })
+        },
+        click1(val){
+         //this.dialogFormVisible=true;
+        },
+        click2(val){
+         //this.dialogFormVisible=true;
+        },
+        loadNode(node, resolve) {
+            if (node.level === 0) {
+              return resolve([
+            { id: 1, parentId: 0, name: "一级菜单A", rank: 1 },
+            { id: 2, parentId: 0, name: "一级菜单B", rank: 1 },
+            { id: 3, parentId: 0, name: "一级菜单C", rank: 1 },
+            { id: 9, parentId: 0, name: "一级菜单D", rank: 1 },
+            { id: 10, parentId: 0, name: "一级菜单end", rank: 1 }
+          ]);
+            }
+            if (node.level > 5) return resolve([]);
+
+            setTimeout(() => {
+              var new_list=[]
+              if(node.data.id==1)
+               new_list= [
+                { id: 4, parentId: 1, name: "二级菜单A-A", rank: 2 },
+                { id: 5, parentId: 1, name: "二级菜单A-B", rank: 2 }]
+               else if (node.data.id==2)
+                new_list= [{ id: 6, parentId: 2, name: "二级菜单B-A", rank: 2 }]
+               else if (node.data.id==4)
+                new_list= [{ id: 7, parentId: 4, name: "三级菜单A-A-A", rank: 3 },
+                { id: 12, parentId: 4, name: "四级菜单A-A-B", rank: 3 },
+                { id: 13, parentId: 4, name: "四级菜单A-A-C", rank: 3 }]
+               else if (node.data.id==7)
+                new_list= [{ id: 8, parentId: 7, name: "四级菜单A-A-A-A", rank: 4 },
+                { id: 10, parentId: 7, name: "四级菜单A-A-A-B", rank: 4 },
+                { id: 11, parentId: 7, name: "四级菜单A-A-A-C", rank: 4 }];
+
+              var data=new_list;
+              return resolve(data);
+            }, 500);
+          }
+        }
+    })
+
+</script>
+</body>
+</html>
