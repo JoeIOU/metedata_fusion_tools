@@ -1165,7 +1165,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/findLookupByEntityCode?entity_code=lookup_classify&lookup_code=",
+					"raw": "http://127.0.0.1:8888/md/services/findLookupByEntityCode?entity_code=md_fields&lookup_code=md_fields&$PARENT_ENTITY_CODE=md_entities&$parent_data_id=30016",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -1182,11 +1182,19 @@
 					"query": [
 						{
 							"key": "entity_code",
-							"value": "lookup_classify"
+							"value": "md_fields"
 						},
 						{
 							"key": "lookup_code",
-							"value": ""
+							"value": "md_fields"
+						},
+						{
+							"key": "$PARENT_ENTITY_CODE",
+							"value": "md_entities"
+						},
+						{
+							"key": "$parent_data_id",
+							"value": "30016"
 						}
 					]
 				}
@@ -1195,9 +1203,6 @@
 		},
 		{
 			"name": "findLookupByEntityCode-byParentID",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
 				"auth": {
 					"type": "basic",
@@ -1214,11 +1219,16 @@
 						}
 					]
 				},
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": ""
+					"raw": "{\"entity_code\":\"md_fields\",\"lookup_code\":\"md_fields\",\"$PARENT_ENTITY_CODE\":\"md_entities\",\"$parent_data_id\":30015,\"where\":{\"label\":\"%编码\"}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
 					"raw": "http://localhost:8888/md/services/findLookupByEntityCode?entity_code=md_fields&lookup_code=md_fields&$PARENT_ENTITY_CODE=md_entities&$parent_data_id=30015",
