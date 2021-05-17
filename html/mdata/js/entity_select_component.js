@@ -475,6 +475,7 @@ Vue.component("entity-select", {
                list_sel.push(item);
              }
            }
+           this.table_data.data_sel=list_sel;
            this.itemkey2=Math.random();
          },
          load_data(code,whereCondition=null,selected=false){
@@ -667,7 +668,7 @@ Vue.component("entity-select", {
                 }else{
                     this.table_data.columns=cols;
                     this.table_data.data=re;
-                    this.itemkey1 = Math.random();
+                    this.itemkey2 = Math.random();
                 }
                 this.loading=false;
                 //this.itemkey2=Math.random();
