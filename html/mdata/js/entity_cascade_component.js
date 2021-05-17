@@ -375,7 +375,7 @@ Vue.component("entity-cascade", {
             this.$refs.entity_cascade_tree0001.store.nodesMap[data.id].indeterminate = false;
             this.multipleSelection=[];
             if (!value) return true;
-            vis=data.label.indexOf(value) !== -1;
+            vis=data.label.toLowerCase().indexOf(value.toLowerCase()) !== -1;
             data.visible=vis;
             return vis;
           },
