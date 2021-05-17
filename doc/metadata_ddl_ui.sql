@@ -4,6 +4,7 @@
 CREATE TABLE  IF NOT EXISTS `ui_template` (
   `ui_template_id` bigint(20) NOT NULL COMMENT 'UI模板ID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
+  `ui_template_code` varchar(255) NOT NULL COMMENT 'UI模板编码',
   `ui_template_name` varchar(200) NOT NULL COMMENT 'UI页面模板名称',
   `ui_template_type` varchar(200) NOT NULL COMMENT '模板类型，html/html5/android',
   `ui_template_model` varchar(200) NOT NULL default 'Waterfall' COMMENT '模板模式，套模板，瀑布式：Waterfall,多页签：MultiTab等',
@@ -30,6 +31,7 @@ CREATE TABLE  IF NOT EXISTS `ui_template` (
   `last_update_by` bigint(20) NOT NULL COMMENT '最后更新人ID，对用用户ID',
   PRIMARY KEY (`ui_template_id`),
   UNIQUE KEY `ui_template_id` (`ui_template_id`),
+  UNIQUE KEY `ui_template_code_uk001` (`ui_template_code`),
   KEY `ui_template_tenant_id_fk0` (`tenant_id`),
   CONSTRAINT `ui_template_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='UI页面模板';
