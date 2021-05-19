@@ -45,6 +45,7 @@ CREATE TABLE  IF NOT EXISTS `ui_entity_rel` (
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
   `entity_type` varchar(200) NOT NULL COMMENT '实体类型，Entity、View',
   `entity_id` bigint(20) NOT NULL COMMENT '元数据实体ID',
+  `parent_entity_id` bigint(20) COMMENT '父元数据实体ID',
   `entity_sequence` int(10) NOT NULL COMMENT '实体顺序号',
   `ui_entity_rel_desc` varchar(2000) DEFAULT NULL COMMENT 'UI模板与实体关系描述',
   `public_flag` char(1) NOT NULL DEFAULT 'N' COMMENT '跨租户共享标识，Y是，N否',
@@ -70,6 +71,7 @@ CREATE TABLE  IF NOT EXISTS `ui_entity_rel` (
   PRIMARY KEY (`ui_entity_rel_id`),
   UNIQUE KEY `ui_entity_rel_id` (`ui_entity_rel_id`),
   KEY `ui_entity_rel_tenant_id_fk0` (`tenant_id`),
+  KEY `ui_entity_rel_entity_id` (`entity_id`,`parent_entity_id`),
   CONSTRAINT `ui_entity_rel_tenant_id_fk0` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`),
   KEY `ui_entity_rel_template_id_fk0` (`ui_template_id`),
   CONSTRAINT `ui_entity_rel_template_id_fk0` FOREIGN KEY (`ui_template_id`) REFERENCES `ui_template` (`ui_template_id`)
