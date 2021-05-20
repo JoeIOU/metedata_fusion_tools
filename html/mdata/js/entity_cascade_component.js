@@ -663,6 +663,8 @@ Vue.component("entity-cascade", {
             },
              load_selected(){
                v=this.value;
+               this.table_data.data_sel=[];
+               this.selected_list=[];
                if (!v||v==""||v.length<=0){
                  v='';
                  this.label='';
