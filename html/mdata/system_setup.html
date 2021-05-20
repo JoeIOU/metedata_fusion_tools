@@ -7,6 +7,10 @@
 		<title>System Setup</title>
 		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 		<style>
+			.my_header {
+			  position: relative;
+			  z-index:1 !important;
+			}
 			.m-header {
 			  height: 63px !important;
 			  position: relative;
@@ -20,7 +24,7 @@
 	</head>
 	<body  style="margin:0px">
     <el-container>
-        <el-header>
+        <el-header class="my_header">
 			<iframe src="toolbar.html"  class="m-header"></iframe>
 		</el-header>
 		<le-main>
@@ -118,14 +122,43 @@
 								<iframe src="entity_edit.html?entity_code=services&header=0" style="width:100%;height:550px;border:0"></iframe>
 							</el-tab-pane>
 							<el-tab-pane label="规则管理" name="rule" lazy="true" style="width:100%;height:600px">规则管理，业务校验和逻辑处理规则
-								<iframe src="entity_edit.html?entity_code=rules&header=0" style="width:100%;height:550px;border:0"></iframe>
+								<el-tabs v-model="rules" type="card">
+									<el-tab-pane label="规则信息" name="rules_info" lazy="true" style="width:100%;height:650px" checked>
+										<iframe src="entity_edit.html?entity_code=rules&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+									<el-tab-pane label="规则和实体关系" name="rules_entity_rel" lazy="true" style="width:100%;height:650px">
+										<iframe src="entity_edit.html?entity_code=rules_entity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+									<el-tab-pane label="UI和规则关系" name="ui_fields" lazy="true" style="width:100%;height:650px">
+										<iframe src="entity_edit.html?entity_code=rules_ui_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="流程管理" name="process" lazy="true" style="width:100%;height:600px">流程管理，业务流程和活动编排
-								<iframe src="entity_edit.html?entity_code=process&header=0" style="width:100%;height:550px;border:0"></iframe>
-								<iframe src="entity_edit.html?entity_code=activities&header=0" style="width:100%;height:550px;border:0"></iframe>
+								<el-tabs v-model="processes" type="card">
+									<el-tab-pane label="流程模板" name="process_template" lazy="true" style="width:100%;height:650px" checked>
+										<iframe src="entity_edit.html?entity_code=process&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+									<el-tab-pane label="流程活动" name="activities" lazy="true" style="width:100%;height:650px">
+										<iframe src="entity_edit.html?entity_code=activities&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+									<el-tab-pane label="流程活动关系" name="process_activity_rel" lazy="true" style="width:100%;height:650px">
+										<iframe src="entity_edit.html?entity_code=process_activity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="UI管理" name="ui" lazy="true" style="width:100%;height:600px">UI界面管理，页面可配置，页面模板设计
-								<iframe src="entity_edit.html?entity_code=ui_templates&header=0" style="width:100%;height:550px;border:0"></iframe>
+								<el-tabs v-model="ui_templates" type="card">
+									<el-tab-pane label="UI模板配置" name="ui_template" lazy="true" style="width:100%;height:650px" checked>
+										<iframe src="entity_edit.html?entity_code=ui_template&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+									<el-tab-pane label="UI模板实体关系" name="ui_entity_rel" lazy="true" style="width:100%;height:650px">
+										<iframe src="entity_edit.html?entity_code=ui_entity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+									<el-tab-pane label="UI属性字段" name="ui_fields" lazy="true" style="width:100%;height:650px">
+										<iframe src="entity_edit.html?entity_code=ui_fields&header=0" style="width:100%;height:550px;border:0"></iframe>
+									</el-tab-pane>
+								</el-tabs>
 							</el-tab-pane>
 						</el-tabs>
 					</template>
@@ -151,7 +184,10 @@
 			            activity_privilege: '',
 			            activity_group: '',
 			            activity_metadata: '',
-			            activity_view: ''
+			            activity_view: '',
+			            ui_templates: '',
+			            processes: '',
+			            rules: ''
 			        };
 			    },
 			   mounted:function(){
@@ -175,6 +211,15 @@
 			              break
 			            case 'privilege':
 			              this.activity_privilege='entity_privileges';
+			              break
+			            case 'process':
+			              this.processes='process_template';
+			              break
+			            case 'rule':
+			              this.rules='rules_info';
+			              break
+			            case 'ui':
+			              this.ui_templates='ui_template';
 			              break
 			       }
 			        //console.log(tab, event);
@@ -217,14 +262,17 @@
 			            case 'service':
 			              this.main_tab='service';
 			              break
-			            case 'process':
-			              this.main_tab='process';
-			              break
 			            case 'rule':
 			              this.main_tab='rule';
+			              this.rules='rules_info';
+			              break
+			            case 'process':
+			              this.main_tab='process';
+			              this.processes='process_template';
 			              break
 			            case 'ui':
 			              this.main_tab='ui';
+			              this.ui_templates='ui_template';
 			              break
 			            case '':
 			              break
