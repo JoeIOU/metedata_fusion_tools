@@ -341,11 +341,6 @@ function getUISingleEntityLinked(d){
 
 }
 
-function getUrlKey(name) {
-	return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)')
-		.exec(location.href) || [, ""])[1].replace(/\+/g, '%20')) || null
-}
-
 function get_curr_entity_metadata(entity_id) {
 	axios.get(url_entity_current.format(entity_id))
 		.then(res => {
@@ -415,6 +410,12 @@ function queryMetadata(url) {
 	if (gl_app)
 		gl_app.loading = true;
 
+	var parent_data_id = getUrlKey('parent_data_id');
+	var parent_entity_id = getUrlKey('parent_entity_id');
+	if(parent_data_id&&parent_entity_id){
+        url+="&$PARENT_ENTITY_ID={0}".format(parent_entity_id)
+        url+="&$parent_data_id={0}".format(parent_data_id)
+    }
 	axios.get(url)
 		.then(res => {
 			var data = res.data.data;
@@ -490,6 +491,10 @@ function str2dict(columns, dict) {
 		var len = columns.length;
 		for (var i = 0; i < len; i++) {
 			var item = columns[i];
+			if(item&&item.field=="$parent_data_id")
+			  item.visible=false
+			else
+			  item.visible=true
 			if (item.lookup_flag == 'Y' && dict[item.field].indexOf("[") != -1 && dict[item.field].indexOf("]") != -1)
 				dict[item.field] = eval("(" + dict[item.field] + ")");
 		}
@@ -521,6 +526,11 @@ function load_column_info(app) {
 					d["type"] = f["md_fields_type"];
 					d["is_null"] = f["is_null"];
 					d["is_key"] = f["is_key"];
+					if(d.field=="$parent_data_id")
+					 d['tab_visible']=false
+					 else
+					  d['tab_visible']=true
+
 					if (f['is_key'] == 'Y' || f['md_fields_name'].toLowerCase() == 'last_update_date' || f['md_fields_name'].toLowerCase() == 'last_update_by' ||
 						f['md_fields_name'].toLowerCase() == 'create_date' || f['md_fields_name'].toLowerCase() == 'create_by' ||
 						f['md_fields_name'].toLowerCase() == 'tenant_id' )
@@ -534,7 +544,10 @@ function load_column_info(app) {
 					d["length"] = f["md_fields_length"];
 					d["decimal"] = f["md_decimals_length"];
 					var cn = f["md_fields_name_cn"];
-					if (cn && cn.trim() != "")
+					var en = f["md_fields_name_en"];
+					if (en && en.trim() != "")
+						d["title"] = en;
+					if (cn && cn.trim() != ""&&language()=='zh')
 						d["title"] = cn;
 					d["lookup_entity"] = ent_look;
 					if (ent_look && ent_look != "")
@@ -817,6 +830,7 @@ function renderTable(result) {
 							field.visible = true;
 							if (field_name.toLowerCase() == 'last_update_date' || field_name.toLowerCase() == 'last_update_by' ||
 								field_name.toLowerCase() == 'create_date' || field_name.toLowerCase() == 'create_by' ||
+								field_name.toLowerCase() == '$parent_data_id' ||
 								field_name.toLowerCase() == 'tenant_id' ) {
 								field.visible = false;
 							}
