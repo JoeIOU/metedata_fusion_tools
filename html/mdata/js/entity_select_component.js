@@ -498,6 +498,13 @@ Vue.component("entity-select", {
             }
             this.url= url_entity;
             //console.log("v-model:"+this.value+";Entity:"+this.entity+",url:"+this.url_entity);
+
+            if(selected){
+              this.table_data.data_sel=[];
+              this.selected_list=[];
+            }else{
+              this.table_data.data=[];
+            }
             if(!selected||(selected&&whereCondition))
                 axios.post(url_entity,where)
                     .then(res => {
@@ -524,6 +531,8 @@ Vue.component("entity-select", {
          },
          load_selected(){
            v=this.value;
+           this.table_data.data_sel=[];
+           this.selected_list=[];
            if (!v||v==""||v.length<=0){
              v='';
              this.label='';
@@ -537,6 +546,7 @@ Vue.component("entity-select", {
            if (v||v.length>0){
               condition={"value":d}
            }
+
            this.load_data(this.entity,condition,true)
          },
          handleSelectionChange(val) {
@@ -569,110 +579,118 @@ Vue.component("entity-select", {
          },
         data_select_options_mapping(code, lookup_type, d,selected) {
             var re = [];
-            if (d) {
-                var len = d.length;
-                lang=language();
-                key1 = null;
-                label1 = null;
-                value1 = null;
-                label_en1=null;
-                desc=null;
-                disabled1 = false;
-                for (var i = 0; i < len; i++) {
-                    var item = d[i];
-                    if (code && code.toLowerCase() == 'lookup_classify' && lookup_type && lookup_type.trim() != "") {
-                        key1 = "lookup_item_code";
-                        label1 = "lookup_item_name";
-                        label_en1 = 'lookup_item_name_en';
-                        value1 = "lookup_item_code";
-                        desc = '';
-                        disabled1 = false;
-                    } else {
-                        key1 = 'key';
-                        label1 = 'label';
-                        label_en1 = 'label_en';
-                        value1 = 'value';
-                        desc = 'desc';
-                        disabled1 = item['disabled'];
-                    }
-                    if (item && item['active_flag'] == 'N')
-                        disabled1 = true;
-                    new_label=item[label1];
-                    if(label_en1&&item[label_en1]&&lang=='en')
-                      new_label=item[label_en1]
-                    if (!new_label || new_label ==null || new_label=="")
-                      new_label=item[key1]
-
-                    var dict = {
-                        key: item[key1],
-                        value: item[value1],
-                        label: new_label,
-                        label_en: item[label_en1],
-                        disabled: disabled1
-                    };
-                    dict = number2string(dict);
-                    re.push(dict);
-                }
-                var cols=[]
-                labl=null;
-                key_title=null;
-                value_title=null;
-                name_title=null;
-                desc_title=null;
-                if (lang=='zh'){
-                    labl=label1;
-                    key_title="ID/Code";
-                    value_title="值/编码";
-                    name_title="名称"
-                    desc_title="描述";
-                 }else{
-                    labl=label_en1
-                    key_title="ID/Code";
-                    value_title="Value/Code";
-                    name_title="Name"
-                    desc_title="Remark";
-                 }
-                col={"field":key1,"title":key_title,"type":"varchar","width":""}
-                cols.push(col)
-                col={"field":labl,"title":name_title,"type":"varchar","width":""}
-                cols.push(col)
-                col={"field":value1,"title":value_title,"type":"varchar","width":""}
-                cols.push(col)
-                col={"field":desc,"title":desc_title,"type":"varchar","width":""}
-                cols.push(col)
-                if(selected){
-                      //this.table_data.columns=cols;
-                      this.table_data.data_sel=re;
-                      if (re)
-                        this.selected_list=JSONbig.parse(JSONbig.stringify(re));
-                      this.itemkey2 = Math.random();
-                      lb=this.value;
-                      if (re&&re.length>0){
-                          lb=null;
-                          for (i in re){
-                            item=re[i]
-                            //values.push(item.value) ;
-                            if (this.lang=='zh')
-                              labl=item.label
-                            else
-                              labl=item.label_en
-                            if(!labl&&labl.trim().length<=0)
-                              labl=item.value
-                             if(!lb)
-                               lb=labl
-                             else
-                               lb+="," +labl
-                          }
-                      }
-                      this.label=lb;
-                }else{
-                    this.table_data.columns=cols;
-                    this.table_data.data=re;
-                    this.itemkey2 = Math.random();
-                }
-                this.loading=false;
-                //this.itemkey2=Math.random();
+            if (!d){
+                  if(selected){
+                      this.table_data.data_sel=null;
+                      this.selected_list=null;
+                   }else{
+                    this.table_data.data=null;
+                   }
+                 return null;
             }
+            var len = d.length;
+            lang=language();
+            key1 = null;
+            label1 = null;
+            value1 = null;
+            label_en1=null;
+            desc=null;
+            disabled1 = false;
+            for (var i = 0; i < len; i++) {
+                var item = d[i];
+                if (code && code.toLowerCase() == 'lookup_classify' && lookup_type && lookup_type.trim() != "") {
+                    key1 = "lookup_item_code";
+                    label1 = "lookup_item_name";
+                    label_en1 = 'lookup_item_name_en';
+                    value1 = "lookup_item_code";
+                    desc = '';
+                    disabled1 = false;
+                } else {
+                    key1 = 'key';
+                    label1 = 'label';
+                    label_en1 = 'label_en';
+                    value1 = 'value';
+                    desc = 'desc';
+                    disabled1 = item['disabled'];
+                }
+                if (item && item['active_flag'] == 'N')
+                    disabled1 = true;
+                new_label=item[label1];
+                if(label_en1&&item[label_en1]&&lang=='en')
+                  new_label=item[label_en1]
+                if (!new_label || new_label ==null || new_label=="")
+                  new_label=item[key1]
+
+                var dict = {
+                    key: item[key1],
+                    value: item[value1],
+                    label: new_label,
+                    label_en: item[label_en1],
+                    disabled: disabled1
+                };
+                dict = number2string(dict);
+                re.push(dict);
+            }
+            var cols=[]
+            labl=null;
+            key_title=null;
+            value_title=null;
+            name_title=null;
+            desc_title=null;
+            if (lang=='zh'){
+                labl=label1;
+                key_title="ID/Code";
+                value_title="值/编码";
+                name_title="名称"
+                desc_title="描述";
+             }else{
+                labl=label_en1
+                key_title="ID/Code";
+                value_title="Value/Code";
+                name_title="Name"
+                desc_title="Remark";
+             }
+            col={"field":key1,"title":key_title,"type":"varchar","width":""}
+            cols.push(col)
+            col={"field":labl,"title":name_title,"type":"varchar","width":""}
+            cols.push(col)
+            col={"field":value1,"title":value_title,"type":"varchar","width":""}
+            cols.push(col)
+            col={"field":desc,"title":desc_title,"type":"varchar","width":""}
+            cols.push(col)
+            if(selected){
+                  //this.table_data.columns=cols;
+                  this.table_data.data_sel=re;
+                  if (re)
+                     this.selected_list=JSONbig.parse(JSONbig.stringify(re));
+                   else
+                     this.selected_list=null;
+                  lb=this.value;
+                  if (re&&re.length>0){
+                      lb=null;
+                      for (i in re){
+                        item=re[i]
+                        //values.push(item.value) ;
+                        if (this.lang=='zh')
+                          labl=item.label
+                        else
+                          labl=item.label_en
+                        if(!labl&&labl.trim().length<=0)
+                          labl=item.value
+                         if(!lb)
+                           lb=labl
+                         else
+                           lb+="," +labl
+                      }
+                  }
+                  this.label=lb;
+                  this.itemkey2 = Math.random();
+            }else{
+                this.table_data.columns=cols;
+                this.table_data.data=re;
+                //this.itemkey1 = Math.random();
+            }
+            this.loading=false;
             return re;
         }
        }
