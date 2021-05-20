@@ -108,14 +108,6 @@
 						<el-table-column label="操作" width="55" align="center">
 							<template slot-scope="scope">
 								<span v-if="scope.row['active_flag']!='N'">
-									<!--                    <span class="el-tag el-tag&#45;&#45;danger el-tag&#45;&#45;mini"-->
-									<!--                          style="cursor: pointer;"-->
-									<!--                          @click="submit_delete_data(scope.row,scope.$index)">-->
-									<!--                    <el-tooltip placement="top">-->
-									<!--                      <div slot="content">删除</div>-->
-									<!--                      <i class="el-icon-delete"></i>-->
-									<!--                      </el-tooltip>-->
-									<!--                    </span>-->
 									<span class="el-tag el-tag--info el-tag--mini" style="cursor: pointer;"
 										  @click="openDialog(scope.row,scope.$index)">
 										<el-tooltip placement="top">
@@ -127,7 +119,7 @@
 							</template>
 						</el-table-column>
 						<el-table-column v-for="(v,i) in master_user.columns" :prop="v.field" :label="v.title" :type="v.type"
-										 :width="v.width" :formatter="stateFormat" sortable>
+										 :width="v.width" :formatter="stateFormat" sortable v-if="v.tab_visible">
 							<template slot-scope="scope">
 								<span v-if="v.lookup_entity&&scope.row[v.field+'_title']">
 									<span v-if="scope.row[v.field]&&scope.row[v.field].length>=1&&scope.row[v.field+'_title']&&scope.row[v.field]!=scope.row[v.field+'_title']">
@@ -171,7 +163,7 @@
 					<el-dialog :title="dialog_title" :visible.sync="dialogFormVisible" width="1024px" :modal-append-to-body='false'>
 						<el-form :model="master_user" ref="formSubmit">
 							<el-row>
-								<el-col v-for="(v, i) in master_user.columns" :key="v.field" :span="12" style="height:50px" v-if="!master_user.sel.isNew||v.visible">
+								<el-col v-for="(v, i) in master_user.columns" :key="v.field" :span="12" style="height:50px" v-if="v.visible">
 									<span v-if="v.type=='datetime' || v.type=='timestamp'">
 										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
 											<span v-if="v.is_null=='N'">
