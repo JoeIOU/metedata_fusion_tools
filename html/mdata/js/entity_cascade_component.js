@@ -673,8 +673,11 @@ Vue.component("entity-cascade", {
                  return;
                }
                d=v;
-               if (v && v.indexOf("[") != -1 && v.indexOf("]") != -1)
+               if(v){
+                v=JSONbig.stringify(v)
+                if (v && v.indexOf("[") != -1 && v.indexOf("]") != -1)
                     d = eval("(" + v+ ")");
+                }
                condition=null
                if (v||v.length>0){
                   condition={"value":d}
