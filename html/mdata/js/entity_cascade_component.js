@@ -426,7 +426,7 @@ Vue.component("entity-cascade", {
                 }
             },
              change(val){
-               this.$emit('change',this.value)
+               this.$emit('change',{value:val,label:this.label})
              },
              cancel(){
                this.table_data.data_sel= JSONbig.parse(JSONbig.stringify(this.selected_list));
@@ -473,7 +473,8 @@ Vue.component("entity-cascade", {
                   else
                        this.value=values
 
-               this.$emit('change',this.value);
+              //this.$emit('change',this.value,this.label);
+              this.$emit('change',{value:this.value,label:this.label})
               this.dialogFormVisible=false;
              },
              click(val){
