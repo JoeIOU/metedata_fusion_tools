@@ -30,7 +30,7 @@
                                      :disabled="disabled" size="mini" :entity="entity_name1"  @change="change">
                       </entity-cascade>
 
-                      <entity-select :id="row_id" :value="selectValue" :width="200" placeholder="请选择内容" title="元数据实体"
+                      <entity-select :id="row_id" :value="selectValue" v-model="my_label"  :width="200" placeholder="请选择内容" title="元数据实体"
                                      :disabled="disabled" size="mini" :multi_select="multi_select" :entity="entity_name" @click="click1" @change="change">
                       </entity-select>
 
@@ -96,6 +96,7 @@ app=new Vue({
           label: "实体名称1",
           disabled:false,
           multi_select:true,
+          my_label:[30017,30018],
           row_id:"1",
           parent_entity_code:"md_entities",
           parent_data_id:30016,
@@ -163,7 +164,7 @@ app=new Vue({
 					//console.log("---selected=", val);
 				},
 				change(val){
-				 // alert(val+":"+this.selectValue)
+				  alert(JSON.stringify(val)+";"+this.selectValue)
 				},
 				tip_show(val) {
                     const h = this.$createElement;
