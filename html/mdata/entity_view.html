@@ -1,0 +1,142 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="css/select-tree.css">
+    <title>业务视图Entity View</title>
+    <style>
+    .el-tree-node__content:hover {    background-color: #e0eeff;  }
+    .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {  color:#5599ff;}
+
+      html{height:100%;}
+      body{min-height:100%;margin:0;padding:0;position:relative;}
+      main{padding-top:50px;padding-bottom:50px;background-color: #FFFFFF;height:100%;}/* main的padding-bottom值要等于或大于footer的height值 */
+      footer{position:fixed;bottom:0;width:100%;height:50px;background-color: #DDDDDD;padding-top:10px}
+
+      .top_menu{position:fixed;top:0;width:100%;height:50px;background-color: #545c64;padding-bottom:0px;color:#FFFFFF;z-index:999}
+
+      .el-container {
+        margin-top: 10px;
+        margin-bottom: 0px;
+        //height:730px;
+        width:1280px;
+        align: center;
+      }
+      .el-header {
+        background-color: #C3D0E1;
+        color: #333;
+        text-align: left;
+        height: 30px;
+        line-height: 30px;
+      }
+      .el-footer {
+        background-color: #B3C0D1;
+        color: #333;
+        text-align: center;
+        line-height: 30px;
+        position: fixed;
+      }
+
+      .el-main {
+        background-color: #E9EEF3;
+        color: #333;
+        text-align: center;
+        overflow-y:hidden;
+        //line-height: 1400px;
+        //height:100%;
+        padding:0px;
+      }
+    .layout-container {
+      height: 50%;
+    }
+    .iframe {
+      position: fixed;
+    }
+    </style>
+</head>
+<body>
+    <div id="app" align="center">
+    <header  class="top_menu">header</header>
+    <main>
+       <el-row v-for="(v, i) in view_data.data">
+                    <el-container>
+                      <el-header style="height:30px">Header1</el-header>
+                      <el-main>
+                          <iframe class="mmtx_iframe_class" :src="v.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>
+
+<!--                          <el-row v-for="(v1, j) in v.children">-->
+<!--                            <el-container>-->
+<!--                              <el-header style="height:30px">Header2</el-header>-->
+<!--                              <el-main>-->
+<!--                                         <iframe class="mmtx_iframe_class" :src="v1.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
+<!--                                          <el-row v-for="(v2, j) in v1.children">-->
+<!--                                            <el-container>-->
+<!--                                              <el-header style="height:30px">Header2</el-header>-->
+<!--                                              <el-main>-->
+<!--                                                         <iframe class="mmtx_iframe_class" :src="v2.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
+<!--                                              </el-main>-->
+<!--                                            </el-container>-->
+<!--                                        </el-row>-->
+<!--                              </el-main>-->
+<!--                            </el-container>-->
+<!--                         </el-row>-->
+                      </el-main>
+                    </el-container>
+        </el-row>
+
+<!--        <p>-->
+<!--       <el-row>-->
+<!--				&lt;!&ndash; Form dialog &ndash;&gt;-->
+<!--				<span v-if="view_data.sel">-->
+<!--                    <el-container>-->
+<!--                      <el-header style="height:30px">Header1</el-header>-->
+<!--                      <el-main>-->
+<!--								 <iframe class="mmtx_iframe_class" src="ui_entity_edit.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30017&template_code=ui_template_001&header=0&readOnly=0&&title_show=0"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
+<!--							 </el-main>-->
+<!--                    </el-container>-->
+<!--				</span>-->
+<!--        </el-row>-->
+<!--		<el-row>-->
+<!--                    <el-container>-->
+<!--                      <el-header style="height:30px">Header2</el-header>-->
+<!--                      <el-main>-->
+<!--							<el-span col="24">-->
+<!--								 <iframe  class="mmtx_iframe_class" src="ui_entity_table.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30017&template_code=ui_template_001&header=0&readOnly=0" frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>-->
+<!--							</el-span>-->
+<!--                      </el-main>-->
+<!--                    </el-container>-->
+<!--		</el-row>-->
+<!--		<el-row>-->
+<!--                    <el-container>-->
+<!--                      <el-header style="height:30px">Header3</el-header>-->
+<!--                      <el-main>-->
+<!--							<el-span col="24">-->
+<!--								 <iframe  class="mmtx_iframe_class" src="ui_entity_table.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30017&template_code=ui_template_001&header=0&readOnly=1" frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>-->
+<!--							</el-span>-->
+<!--                      </el-main>-->
+<!--                    </el-container>-->
+<!--		</el-row>-->
+		<el-row>
+							<div style="height:150px"></div>
+		</el-row>
+        </main>
+      <footer>
+<!--                <el-button @click="cancel_action(view_data.sel,-1)">取 消</el-button>-->
+                <el-button type="primary" @click="submit_data(view_data.sel,view_data.sel.$_clmn_id_)"><span v-if="lang&&lang=='zh'">保存</span><span v-else>Save</span></el-button>
+                <el-button type="primary" @click="next"><span v-if="lang&&lang=='zh'">下一步</span><span v-else>Next</span></el-button>
+      </footer>
+    </div>
+    <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+    <script src="js/accounting.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/entity_select_component.js"></script>
+    <script src="js/entity_cascade_component.js"></script>
+    <script src="js/entity_view.js"></script>
+</body>
+</html>
