@@ -200,7 +200,10 @@ def query_Metadata_Entity():
         user = utl.get_login_user()
         tenant_id = user.get("tenant_id")
         if md_entity_id is None and md_entity_code is not None:
-            (md_entity_id, public_flag, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
+            (res, msg) = utl.getEntityIDByCode(tenant_id, [md_entity_code], data)
+            if (res is not None and len(res) > 0):
+                md_entity_id = res[0].get("md_entity_id")
+                public_flag = res[0].get("public_flag")
 
         if md_entity_id is None:
             msg = None
@@ -236,7 +239,7 @@ def query_Metadata_Entity():
         pass
 
 
-# 实体元数据对象属性信息查询,入参：{"$_ENTITY_ID":"123",$_ENTITY_CODE:"","only_active":Y/N}
+# 实体元数据对象属性信息查询,入参：{"$_ENTITY_ID":123,$_ENTITY_CODE:"","only_active":Y/N} or {"$_ENTITY_ID":[123,445],$_ENTITY_CODE:["EFG","ABC"],"only_active":Y/N}
 @app.route(domain_root + '/services/queryFieldsByCodeOrID', methods=['POST', 'GET'])
 @auth.login_required
 def query_Metadata_Fields():
@@ -245,16 +248,30 @@ def query_Metadata_Fields():
     try:
         data = utl.request_parse(request)
         md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+        md_entity_ids = []
+        if (md_entity_id is not None and isinstance(md_entity_id, list)):
+            md_entity_ids = md_entity_id
+        elif (md_entity_id is not None):
+            md_entity_ids.append(md_entity_id)
         md_entity_code = data.get(utl.GLOBAL_ENTITY_CODE)
+        md_entity_codes = []
+        if (md_entity_code is not None and isinstance(md_entity_code, list)):
+            md_entity_codes = md_entity_code
+        elif (md_entity_code is not None):
+            md_entity_codes.append(md_entity_code)
         only_active = data.get("only_active")
         b_onlyActive = True
         if only_active is not None and only_active == 'N':
             b_onlyActive = False
         user = utl.get_login_user()
         tenant_id = user.get("tenant_id")
-        if md_entity_id is None and md_entity_code is not None:
-            (md_entity_id, public_flag, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
-        if md_entity_id is None:
+        if (md_entity_ids is None or len(md_entity_ids) == 0) and md_entity_codes is not None:
+            (res, msg) = utl.getEntityIDByCode(tenant_id, md_entity_codes, data)
+            if (res is not None):
+                md_entity_ids = []
+                for item in res:
+                    md_entity_ids.append(item.get("md_entity_id"))
+        if md_entity_ids is None or len(md_entity_ids) <= 0:
             msg = "queryFieldsByCodeOrID Input params [{}] or[{}] at least one should be none or not match,please checked.".format(
                 utl.GLOBAL_ENTITY_ID,
                 utl.GLOBAL_ENTITY_CODE)
@@ -262,10 +279,10 @@ def query_Metadata_Fields():
                                        message=msg)
             return Response(json.dumps(re), mimetype='application/json')
         # 权限校验
-        (bool, re) = utl.query_privilege_check(tenant_id, 'queryFieldsByCodeOrID', md_entity_id, md_entity_code)
+        (bool, re) = utl.query_privilege_check(tenant_id, 'queryFieldsByCodeOrID', md_entity_ids[0], None)
         if not bool:
             return Response(json.dumps(re), mimetype='application/json')
-        res = md.get_md_fields(tenant_id, md_entity_id, b_onlyActive)
+        res = md.get_md_fields(tenant_id, md_entity_ids, None, b_onlyActive)
         irows = 0
         if res is not None:
             irows = len(res)
@@ -334,6 +351,67 @@ def find_entity():
         return Response(json.dumps(re), mimetype='application/json')
     except Exception as ex:
         msg = "find Entity error.input:{},message:{}".format(data, ex)
+        logger.error(msg)
+        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+        # raise ex
+        return Response(json.dumps(re), mimetype='application/json')
+    finally:
+        pass
+
+
+# 实体UI对象详情查询
+@app.route(domain_root + '/services/findUIEntity', methods=['POST', 'GET'])
+@auth.login_required
+def find_ui_entity():
+    # GET入参：{"$_ENTITY_ID":30025,"ui_template_id":"123","ui_template_code":"abc"} #ui_template_id和ui_template_code两个参数二选一
+    # POST入参：{"$_ENTITY_ID":30025,"where":{"user_id":1348844049557229568}}
+    # POST入参，通过父实体，找到子实体{"$_ENTITY_ID":30014,"$PARENT_ENTITY_ID":30018,"$parent_data_id":10016,"ui_template_id":123,"ui_template_code":'abc', "where": [{"$_row_id_": 3161}]}
+    re = None
+    data = None
+    try:
+        data_list = []
+        data = utl.request_parse(request)
+        md_entity_id = data.get(utl.GLOBAL_ENTITY_ID)
+        parent_entity_id = data.get(utl.GLOBAL_PARENT_ENTITY_ID)
+        parent_data_id = data.get(utl.GLOBAL_PARENT_DATA_ID)
+        ui_template_id = data.get("ui_template_id")
+        ui_template_code = data.get("ui_template_code")
+        parent_dict = None
+        if (parent_entity_id is not None and parent_data_id is None):
+            msg = 'findUIEntity,input entity params[{}] is not null and {}should not be None too.'.format(
+                utl.GLOBAL_PARENT_ENTITY_ID, utl.GLOBAL_PARENT_DATA_ID)
+            logger.warning(msg)
+            re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                       message=msg)
+            return Response(json.dumps(re), mimetype='application/json')
+
+        if (parent_entity_id is not None and parent_data_id is not None):
+            parent_dict = {}
+            parent_dict[str(parent_entity_id)] = parent_data_id
+        if md_entity_id is not None:
+            md_entity_id = str(md_entity_id)
+        if md_entity_id is None or len(md_entity_id) <= 0:
+            msg = 'findUIEntity,input entity params[{}] should not be None.'.format(utl.GLOBAL_ENTITY_ID)
+            logger.warning(msg)
+            re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                       message=msg)
+            return Response(json.dumps(re), mimetype='application/json')
+
+        if request.method == 'POST':
+            data_list = data.get('where')
+        else:
+            data_list.append(data)
+
+        user = utl.get_login_user()
+        tenant_id = user.get("tenant_id")
+        re = utl.sql_execute_method(tenant_id, md_entity_id, utl.SERVICE_METHOD_GET, "findUIEntity", data_list=None,
+                                    where_list=data_list, parent_entity_id=parent_dict)
+        re = utl.mapping_ui_data(tenant_id, md_entity_id, ui_template_id, ui_template_code, re)
+        logger.info('find UI Entity. Params:{},result:{}'.format(data, re))
+        return Response(json.dumps(re), mimetype='application/json')
+    except Exception as ex:
+        msg = "find UI Entity error.input:{},message:{}".format(data, ex)
         logger.error(msg)
         re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                    message=msg)
@@ -680,7 +758,10 @@ def query_entity_list():
         user = utl.get_login_user()
         tenant_id = user.get("tenant_id")
         if md_entity_id is None and md_entity_code is not None:
-            (md_entity_id, public_flag, msg) = utl.getEntityIDByCode(tenant_id, md_entity_code, data)
+            (res, msg) = utl.getEntityIDByCode(tenant_id, [md_entity_code], data)
+            if (res is not None and len(res) > 0):
+                md_entity_id = res[0].get("md_entity_id")
+                public_flag = res[0].get("public_flag")
         if md_entity_id is None:
             msg = "queryEntityList ,md_entity_code not exists,please checked."
             re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
@@ -1109,6 +1190,37 @@ def rule_validate(http_request, validateOnly=0):
         pass
 
 
+# UI模板和对应实体查询
+@app.route(domain_root + '/services/queryUIEntities', methods=['POST', "GET"])
+@auth.login_required
+def query_ui_entities():
+    data = None
+    try:
+        data = utl.request_parse(request)
+        ui_template_id = data.get('ui_template_id')
+        ui_template_code = data.get('ui_template_code')
+        entity_id = data.get('entity_id')
+        user = utl.get_login_user()
+        # user_account = user.get("account_number")
+        tenant_id = user.get("tenant_id")
+        # res = ui.query_ui_template_elements(tenant_id, ui_template_id)
+        res = ui.query_ui_entity_by_template(tenant_id, entity_id, ui_template_id, ui_template_code)
+        size = 0
+        if (res is not None):
+            size = len(res)
+        msg = "query UI Elements Success."
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_SUCCESS, rows=size, data=res,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
+    except Exception as ex:
+        msg = "queryUIEntities failed,input:{},message:{}".format(data, ex)
+        logger.error(msg)
+        re = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
+                                   message=msg)
+        return Response(json.dumps(re), mimetype='application/json')
+    finally:
+        pass
+
 # UI模板和属性查询
 @app.route(domain_root + '/services/queryUIElements', methods=['POST', "GET"])
 @auth.login_required
@@ -1117,10 +1229,13 @@ def query_ui_elements():
     try:
         data = utl.request_parse(request)
         ui_template_id = data.get('ui_template_id')
+        ui_template_code = data.get('ui_template_code')
+        entity_id = data.get('entity_id')
         user = utl.get_login_user()
         # user_account = user.get("account_number")
         tenant_id = user.get("tenant_id")
-        res = ui.query_ui_template_elements(tenant_id, ui_template_id)
+        # res = ui.query_ui_template_elements(tenant_id, ui_template_id)
+        res = ui.query_ui_entity_fields_by_template(tenant_id, entity_id, ui_template_id, ui_template_code)
         size = 0
         if (res is not None):
             size = len(res)
