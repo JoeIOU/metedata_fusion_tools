@@ -7,6 +7,7 @@ from common import constants as const, cache
 from privilege import role_privilege as rp
 from mdata import index_unique as idx
 from data import data_view as vw
+from ui import ui_metadata as ui
 
 HTTP_STATUS_CODE_NOT_RIGHT = 401
 HTTP_STATUS_CODE_FORBIDDEN = 403
@@ -271,10 +272,8 @@ def query_privilege_check(tenant_id, method_name, md_entity_id, entity_code):
     return (True, None)
 
 
-def getEntityIDByCode(tenant_id, md_entity_code, data):
-    res = md.get_md_entities_id_by_code([md_entity_code])
-    md_entity_id = None
-    public_flag = None
+def getEntityIDByCode(tenant_id, md_entity_codes, data):
+    res = md.get_md_entities_id_by_code(md_entity_codes)
     msg = None
     if res is not None and len(res) > 0:
         md_entity_id = res[0].get("md_entity_id")
@@ -284,7 +283,7 @@ def getEntityIDByCode(tenant_id, md_entity_code, data):
         logger.warning(s)
         msg = md.exec_output_status(type=SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
                                     message=s)
-    return (md_entity_id, public_flag, msg)
+    return (res, msg)
 
 
 def value2str(data):
@@ -322,3 +321,23 @@ def entity_lookup_mapping(lk, data):
                 dict_mp[key] = v
             lp_list.append(dict_mp)
     return lp_list
+
+
+def mapping_ui_data(tenant_id, md_entity_id, ui_template_id, ui_template_code, data):
+    if (data is None or len(data) <= 0):
+        return None
+    res = ui.query_ui_entity_fields_by_template(tenant_id, md_entity_id, ui_template_id, ui_template_code)
+    records = data.get('data')
+    new_data = data
+    new_list = []
+    if res is not None and len(res) > 0:
+        for item in records:
+            new_dict = {}
+            for item1 in res:
+                f = item1.get('md_fields_name')
+                if f is None:
+                    continue
+                new_dict[f] = item.get(f)
+            new_list.append(new_dict)
+        data['data'] = new_list
+    return new_data
