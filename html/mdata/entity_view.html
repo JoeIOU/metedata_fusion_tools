@@ -16,7 +16,7 @@
       main{padding-top:50px;padding-bottom:50px;background-color: #FFFFFF;height:100%;}/* main的padding-bottom值要等于或大于footer的height值 */
       footer{position:fixed;bottom:0;width:100%;height:50px;background-color: #DDDDDD;padding-top:10px}
 
-      .top_menu{position:fixed;top:0;width:100%;height:50px;background-color: #545c64;padding-bottom:0px;color:#FFFFFF;z-index:999}
+      .top_menu{position:fixed;top:0;width:100%;height:50px;background-color: #545c64;padding-bottom:0px;color:#FFFFFF;text-align: left;z-index:999}
 
       .el-container {
         margin-top: 10px;
@@ -59,66 +59,25 @@
 </head>
 <body>
     <div id="app" align="center">
-    <header  class="top_menu">header</header>
+        <header  class="top_menu"><h3>&nbsp;{{title}}</h3>
+    </header>
     <main>
+
+        <iframe class="mmtx_iframe_class" src="ui_entity_edit.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30005&template_code=ui_template_001&header=1&readOnly=0"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>
+        <p>
        <el-row v-for="(v, i) in view_data.data">
                     <el-container>
-                      <el-header style="height:30px">Header1</el-header>
+                        <el-header style="height:30px">
+                            <span v-if="lang&&lang=='zh'&&v.md_entity_name&&v.md_entity_name.length>0">{{v.md_entity_name}}</span>
+                            <span v-else-if="lang&&v.md_entity_name_en&&v.md_entity_name_en.length>0">{{v.md_entity_name_en}}</span>
+                            <span v-else>{{v.md_entity_code}}</span>
+                      </el-header>
                       <el-main>
                           <iframe class="mmtx_iframe_class" :src="v.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>
-
-<!--                          <el-row v-for="(v1, j) in v.children">-->
-<!--                            <el-container>-->
-<!--                              <el-header style="height:30px">Header2</el-header>-->
-<!--                              <el-main>-->
-<!--                                         <iframe class="mmtx_iframe_class" :src="v1.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
-<!--                                          <el-row v-for="(v2, j) in v1.children">-->
-<!--                                            <el-container>-->
-<!--                                              <el-header style="height:30px">Header2</el-header>-->
-<!--                                              <el-main>-->
-<!--                                                         <iframe class="mmtx_iframe_class" :src="v2.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
-<!--                                              </el-main>-->
-<!--                                            </el-container>-->
-<!--                                        </el-row>-->
-<!--                              </el-main>-->
-<!--                            </el-container>-->
-<!--                         </el-row>-->
                       </el-main>
                     </el-container>
         </el-row>
 
-<!--        <p>-->
-<!--       <el-row>-->
-<!--				&lt;!&ndash; Form dialog &ndash;&gt;-->
-<!--				<span v-if="view_data.sel">-->
-<!--                    <el-container>-->
-<!--                      <el-header style="height:30px">Header1</el-header>-->
-<!--                      <el-main>-->
-<!--								 <iframe class="mmtx_iframe_class" src="ui_entity_edit.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30017&template_code=ui_template_001&header=0&readOnly=0&&title_show=0"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
-<!--							 </el-main>-->
-<!--                    </el-container>-->
-<!--				</span>-->
-<!--        </el-row>-->
-<!--		<el-row>-->
-<!--                    <el-container>-->
-<!--                      <el-header style="height:30px">Header2</el-header>-->
-<!--                      <el-main>-->
-<!--							<el-span col="24">-->
-<!--								 <iframe  class="mmtx_iframe_class" src="ui_entity_table.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30017&template_code=ui_template_001&header=0&readOnly=0" frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>-->
-<!--							</el-span>-->
-<!--                      </el-main>-->
-<!--                    </el-container>-->
-<!--		</el-row>-->
-<!--		<el-row>-->
-<!--                    <el-container>-->
-<!--                      <el-header style="height:30px">Header3</el-header>-->
-<!--                      <el-main>-->
-<!--							<el-span col="24">-->
-<!--								 <iframe  class="mmtx_iframe_class" src="ui_entity_table.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30017&template_code=ui_template_001&header=0&readOnly=1" frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>-->
-<!--							</el-span>-->
-<!--                      </el-main>-->
-<!--                    </el-container>-->
-<!--		</el-row>-->
 		<el-row>
 							<div style="height:150px"></div>
 		</el-row>
