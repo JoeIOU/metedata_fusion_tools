@@ -51,7 +51,6 @@
 		 line-height:30px !important;
 		 margin-top: 10px;
 		}
-
     </style>
 </head>
 <body>
@@ -157,7 +156,7 @@
 											<span v-else>
 												&nbsp;
 											</span>
-											<entity-cascade  size="mini" :id="v.field+view_data.sel['$_clmn_id_']" :value="view_data.sel[v.field]" width="250" placeholder="请选择内容"
+											<entity-cascade  size="mini" :id="v.field+view_data.sel['$_clmn_id_']" :value="view_data.sel[v.field]" width="250" placeholder=""
 															:disabled="v.readonly" :multi_select="v.lookup_flag&&v.lookup_flag=='Y'" :entity="v.lookup_entity" :parent_entity_code="v.parent_entity_code" :parent_data_id="view_data.sel['$parent_data_id-'+v.field]"
 															@change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'],$event)">
                       						</entity-cascade>
@@ -174,7 +173,7 @@
 											<span v-else>
 												&nbsp;
 											</span>
-											<entity-select  size="mini" :id="v.field+view_data.sel['$_clmn_id_']" :value="view_data.sel[v.field]" width="250" placeholder="请选择内容"
+											<entity-select  size="mini" :id="v.field+view_data.sel['$_clmn_id_']" :value="view_data.sel[v.field]" width="250" placeholder=""
 															:disabled="v.readonly" :multi_select="v.lookup_flag&&v.lookup_flag=='Y'" :entity="v.lookup_entity" :parent_entity_code="v.parent_entity_code" :parent_data_id="view_data.sel['$parent_data_id-'+v.field]"
 															@change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'],$event)">
                       						</entity-select>
