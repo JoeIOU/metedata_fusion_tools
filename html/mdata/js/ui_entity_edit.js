@@ -118,6 +118,8 @@ function load_column_info(app,data,ui_data) {
           item=ui_data[i]
           e_id=item['entity_id']
           f_id=item['md_fields_id']
+          ui_fields_name_cn=item['ui_fields_name_cn']
+          ui_fields_name_en=item['ui_fields_name_en']
           for (var j = 0; j < len1; j++) {
                 var f = data[j];
                 e_id1=f['md_entity_id']
@@ -148,8 +150,14 @@ function load_column_info(app,data,ui_data) {
                 var en = f["md_fields_name_en"];
                 if (en && en.trim() != "")
                     d["title"] = en;
+                if(ui_fields_name_en)
+                    d["title"] = ui_fields_name_en;
                 if (cn && cn.trim() != ""&&language()=='zh')
+                  if(ui_fields_name_cn)
+                    d["title"] = ui_fields_name_cn;
+                  else
                     d["title"] = cn;
+
                 d["lookup_entity"] = ent_look;
                 list_fileds.push(d);
                 break;
