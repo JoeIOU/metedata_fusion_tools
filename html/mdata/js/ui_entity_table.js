@@ -1,4 +1,5 @@
 var entity_info_url = url_root + "/services/findUIEntity?$_ENTITY_ID={0}&ui_template_code={1}";
+var ui_template_info_url = url_root + "/services/queryUIElements?ui_template_code={0}&entity_id={1}";
 var entity_url_by_code = url_root + "/services/findEntityByCode?$_ENTITY_CODE={0}";
 var entity_info_url_by_parent = url_root + "/services/findEntity?$_ENTITY_ID={0}&$PARENT_ENTITY_ID={1}&$parent_data_id={2}";
 var entity_rel_url = url_root + "/services/findEntityRelation";
@@ -37,12 +38,76 @@ var gl_linked_entity_list=null;
 var gl_lookup_dict = {};
 var gl_entity_relations=null;
 var gl_delect_row=null;
+var gl_data_view=null;
 var lang=null;
 
 //long类型转换设置
 axios_long_parse();
 //cookie认证传递
 axios.defaults.withCredentials = true;
+
+function getUIElements(){
+	var entity_id = getUrlKey('entity_id');
+	var template_code = getUrlKey('template_code');
+	var header_title_show = getUrlKey('header');
+    if(!template_code||!entity_id)
+      return null;
+	var parent_entity_id = getUrlKey('parent_entity_id');
+	var parent_id = getUrlKey('parent_id');
+	var _row_id_ = getUrlKey('_row_id_');
+	if(is_child&&is_child=='1'&&parent_id)
+	  _row_id_=parent_id
+	var is_child = getUrlKey('is_child');
+    var url=ui_template_info_url.format(template_code,entity_id)
+	axios.get(url)
+		.then(res => {
+			var data = res.data.data;
+			if(gl_app&&data)
+			  gl_app.master_user.ui_fields=data;
+			else
+			  gl_app.master_user.ui_fields=[];
+            entity_ids=[]
+            if(entity_id)
+             entity_ids.push(entity_id)
+            primary_entity_id=null
+            gl_data_view=data;
+            if(gl_app)
+              mapping_data_view_title(gl_app.master_user.columns,data)
+	        //if(entity_ids)
+	        // getEntityFields(entity_ids,data);
+            var res_data = res.data;
+            if (gl_app&&res_data && res_data.status >= 300) {
+                gl_app.$message.warning({
+                    type: 'warning',
+                    message: messageI18n(res_data.message)
+                });
+                return;
+            }
+		})
+}
+
+function mapping_data_view_title(columns,view_data){
+  if(columns&&view_data)
+  for (i in columns){
+    itm=columns[i]
+    f=itm['field']
+    for(j in view_data){
+      item=view_data[j];
+      //e_id=item['entity_id']
+      //f_id=item['md_fields_id']
+      f_name=item['md_fields_name']
+      if(f&&f==f_name){
+            ui_fields_name_cn=item['ui_fields_name_cn']
+            ui_fields_name_en=item['ui_fields_name_en']
+            if(ui_fields_name_en&&language()!='zh')
+                itm["title"] = ui_fields_name_en;
+            else if (ui_fields_name_cn && ui_fields_name_cn.trim() != ""&&language()=='zh')
+                itm["title"] = ui_fields_name_cn;
+      }
+    }
+  }
+
+}
 
 function getEntityByCode(code) {
 	var url_fomat_entity = url_entity.format(code);
@@ -338,7 +403,6 @@ function getUISingleEntityLinked(d){
      //getEntityRelation();
    }
 
-
 }
 
 function get_curr_entity_metadata(entity_id) {
@@ -445,12 +509,22 @@ function queryMetadata(url) {
 					len = data.length;
 				var i = 0;
 				var row = data[0];
+				width1=null;
+				rowCount=Object.keys(row).length
+				if(row&&rowCount>0){
+				  width1=Math.round(1200/rowCount)
+				  if(width1<150)
+				   width1=150
+				  else if(width1>500)
+				   width1=500
+				}
 				for (var key in row) {
 					var type1 = null;
 					var dict0 = {
 						field: key,
 						title: key,
-						type: type1
+						type: type1,
+						width:width1
 					}
 					cols[i] = dict0;
 					i++;
@@ -570,6 +644,9 @@ function load_column_info(app) {
 			}
 		}
 
+        if(app)
+          mapping_data_view_title(app.master_user.columns,gl_data_view);
+
 	}
 };
 
@@ -621,7 +698,8 @@ function renderTable(result) {
 				master_user: {
 					sel: null, //选中行
 					columns: [],
-					data: []
+					data: [],
+					ui_fields:[]
 				},
 				currentPage: 1, //默认显示页面为1
 				pagesize: 10, //    每页的数据条数
@@ -1311,6 +1389,7 @@ function renderTable(result) {
 
 
 function renderToolbar() {
+    getUIElements();
 	//主要内容
 	var app = new Vue({
 		el: "#app1",
