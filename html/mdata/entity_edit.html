@@ -160,7 +160,7 @@
 			<el-row>
 				<!-- Form dialog -->
 				<span v-if="master_user.sel">
-					<el-dialog :title="dialog_title" :visible.sync="dialogFormVisible" width="1024px" :modal-append-to-body='false'>
+					<el-dialog :title="dialog_title" :visible.sync="dialogFormVisible" width="1024px" :modal-append-to-body='false' :close-on-click-modal='false'>
 						<el-form :model="master_user" ref="formSubmit">
 							<el-row>
 								<el-col v-for="(v, i) in master_user.columns" :key="v.field" :span="12" style="height:50px" v-if="v.visible">
