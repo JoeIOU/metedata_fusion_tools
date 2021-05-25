@@ -81,6 +81,7 @@ function listToTree(list) {
                  GL_APP.view_data.data=tree
                 return tree;
 }
+
 function generate_url(parent_entity_id,entity_id,template_code,_row_id_,isChild=false,isReadOnly='0'){
 	if(!entity_id || !_row_id_ || !template_code)
 	  return '';
@@ -198,6 +199,7 @@ function load(entity_tree){
               itemkey1 :0,
               itemkey2:0,
               lang:'en',
+              title:'',
               view_data:{
                sel:[],
                columns:[],
@@ -263,6 +265,8 @@ function load(entity_tree){
 	      entity_id='null'
         document.title = doc_title.format(entity_id);
         app.view_data.data=entity_tree;
+        if(entity_tree&&entity_tree.length>0)
+           app.title=entity_tree[0].ui_template_name
         GL_APP=app;
 }
 function next(){
