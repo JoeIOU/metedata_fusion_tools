@@ -39,13 +39,13 @@
 										<iframe src="entity_setup.html" style="width:100%;height:710px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="元数据实体关系管理" name="entity_relation" lazy="true" style="width:100%;height:600px">
-										<iframe src="entity_edit.html?entity_code=md_entities_rel&header=0" style="width:100%;height:100%;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=md_entities_rel&header=0" style="width:100%;height:100%;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="数据表映射维护" name="table_mapping" lazy="true" style="width:100%;height:700px" checked>
-										<iframe src="entity_edit.html?entity_code=md_tables&header=0" style="width:100%;height:710px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=md_tables&header=0" style="width:100%;height:710px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="数据表字段映射维护" name="column_mapping" lazy="true" style="width:100%;height:600px">
-										<iframe src="entity_edit.html?entity_code=md_columns&header=0" style="width:100%;height:100%;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=md_columns&header=0" style="width:100%;height:100%;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
@@ -53,110 +53,110 @@
 								<iframe src="model_mngt.html" style="width:100%;height:100%;border:0"></iframe>
 							</el-tab-pane>
 							<el-tab-pane label="租户管理" name="tenant" lazy="true" style="width:100%;height:600px">
-								<iframe src="entity_edit.html?entity_code=tenants&header=0" style="width:100%;height:100%;border:0"></iframe>
+								<iframe src="ui_entity_table.html?entity_code=tenants&header=0" style="width:100%;height:100%;border:0"></iframe>
 							</el-tab-pane>
 							<el-tab-pane label="部门管理" name="branch" lazy="true" style="width:100%;height:600px">
-								<iframe src="entity_edit.html?entity_code=branchs&header=0" style="width:100%;height:550px;border:0"></iframe>
+								<iframe src="ui_entity_table.html?entity_code=branchs&header=0" style="width:100%;height:550px;border:0"></iframe>
 							</el-tab-pane>
 							<el-tab-pane label="用户管理" name="users" lazy="true" style="width:100%;height:600px">
 								<el-tabs v-model="activity_user" type="card">
 									<el-tab-pane label="用户管理" name="users" lazy="true" style="width:100%;height:650px" checked>
-										<iframe src="entity_edit.html?entity_code=users&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=users&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="用户与角色关系管理" name="user_roles" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=user_roles&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=user_roles&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="群组管理" name="group" lazy="true" style="width:100%;height:600px">
 								<el-tabs v-model="activity_group" type="card">
 									<el-tab-pane label="群组管理" name="user_groups" lazy="true" style="width:100%;height:650px" checked>
-										<iframe src="entity_edit.html?entity_code=user_groups&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=user_groups&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="用户和群组关系管理" name="user_groups_rel" lazy="true" style="width:100%;height:650px">
 
-										<iframe src="entity_edit.html?entity_code=user_groups_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=user_groups_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="角色管理" name="roles" lazy="true" style="width:100%;height:600px">角色管理:
-								<iframe src="entity_edit.html?entity_code=roles&header=0" style="width:100%;height:100%;border:0"></iframe>
+								<iframe src="ui_entity_table.html?entity_code=roles&header=0" style="width:100%;height:100%;border:0"></iframe>
 							</el-tab-pane>
 							<el-tab-pane label="权限管理" name="privilege" lazy="true" style="width:100%;height:600px">
 								<el-tabs v-model="activity_privilege" type="card">
 									<el-tab-pane label="实体权限码管理" name="entity_privileges" lazy="true" style="width:100%;height:650px" checked>
-										<iframe src="entity_edit.html?entity_code=entity_privileges&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=entity_privileges&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="角色和实体权限关系管理" name="role_privileges" lazy="true" style="width:100%;height:650px">
 
-										<iframe src="entity_edit.html?entity_code=role_privileges&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=role_privileges&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="实体数据范围权限管理" name="data_privileges" lazy="true" style="width:100%;height:650px">
 
-										<iframe src="entity_edit.html?entity_code=data_privileges&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=data_privileges&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="实体数据范围权限条件管理" name="data_privilege_field" lazy="true" style="width:100%;height:650px">
 
-										<iframe src="entity_edit.html?entity_code=data_privilege_field&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=data_privilege_field&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="群组和数据范围权限关系管理" name="data_privileges_rel" lazy="true" style="width:100%;height:650px">
 
-										<iframe src="entity_edit.html?entity_code=data_privileges_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=data_privileges_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="视图管理" name="view" lazy="true" style="width:100%;height:600px">视图管理，数据view创建和维护，多表join等
 								<el-tabs v-model="activity_view" type="card">
 									<el-tab-pane label="数据视图管理" name="data_views" lazy="true" style="width:100%;height:650px" checked>
-										<iframe src="entity_edit.html?entity_code=data_views&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=data_views&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="数据视图输入参数" name="view_inputs" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=view_inputs&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=view_inputs&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="数据视图输出参数" name="view_outputs" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=view_outputs&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=view_outputs&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="服务管理" name="service" lazy="true" style="width:100%;height:600px">服务管理，服务定义、注册，服务编排
-								<iframe src="entity_edit.html?entity_code=services&header=0" style="width:100%;height:550px;border:0"></iframe>
+								<iframe src="ui_entity_table.html?entity_code=services&header=0" style="width:100%;height:550px;border:0"></iframe>
 							</el-tab-pane>
 							<el-tab-pane label="规则管理" name="rule" lazy="true" style="width:100%;height:600px">规则管理，业务校验和逻辑处理规则
 								<el-tabs v-model="rules" type="card">
 									<el-tab-pane label="规则信息" name="rules_info" lazy="true" style="width:100%;height:650px" checked>
-										<iframe src="entity_edit.html?entity_code=rules&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=rules&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="规则和实体关系" name="rules_entity_rel" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=rules_entity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=rules_entity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="UI和规则关系" name="ui_fields" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=rules_ui_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=rules_ui_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="流程管理" name="process" lazy="true" style="width:100%;height:600px">流程管理，业务流程和活动编排
 								<el-tabs v-model="processes" type="card">
 									<el-tab-pane label="流程模板" name="process_template" lazy="true" style="width:100%;height:650px" checked>
-										<iframe src="entity_edit.html?entity_code=process&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=process&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="流程活动" name="activities" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=activities&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=activities&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="流程活动关系" name="process_activity_rel" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=process_activity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=process_activity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
 							<el-tab-pane label="UI管理" name="ui" lazy="true" style="width:100%;height:600px">UI界面管理，页面可配置，页面模板设计
 								<el-tabs v-model="ui_templates" type="card">
 									<el-tab-pane label="UI模板配置" name="ui_template" lazy="true" style="width:100%;height:650px" checked>
-										<iframe src="entity_edit.html?entity_code=ui_template&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=ui_template&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="UI模板实体关系" name="ui_entity_rel" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=ui_entity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=ui_entity_rel&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="UI属性字段" name="ui_fields" lazy="true" style="width:100%;height:650px">
-										<iframe src="entity_edit.html?entity_code=ui_fields&header=0" style="width:100%;height:550px;border:0"></iframe>
+										<iframe src="ui_entity_table.html?entity_code=ui_fields&header=0" style="width:100%;height:550px;border:0"></iframe>
 									</el-tab-pane>
 								</el-tabs>
 							</el-tab-pane>
