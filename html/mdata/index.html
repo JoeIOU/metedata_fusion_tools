@@ -1,214 +1,145 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-    <title>元数据魔方-首页</title>
-    <style>
-    .el-dropdown {
-      vertical-align: top;
-    }
-    .el-dropdown + .el-dropdown {
-      margin-left: 15px;
-    }
-    .el-icon-arrow-down {
-      font-size: 12px;
-    }
-    .el-header, .el-footer {
-      background-color: #CCCCCC;
-      padding: 0px;
-      color: #333;
-      margin:0px;
-      text-align: center;
-    }
-    .m-header {
-      height: 63px !important;
-      position: relative;
-      padding:0px;
-      border:0px;
-      margin:0px;
-    }
-    .el-aside {
-      background-color: #C3D0F1;
-      color: #333;
-      margin:1px;
-      text-align: center;
-      line-height: 100%;
-    }
+//主要内容
+var systemSetup_url="system_setup.html?tab={0}";
+function load_data(){
+    var app = new Vue({
+      el: "#app1",
+      data() {
+        return {
+          options: [],
+          search_text:'',
+          select1: '',
+          user_name: "",
+          account_number: "",
+          activeIndex: '1',
+          card_images:["https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=2652206393,3109958128&fm=26&gp=0.jpg",
+          "https://www.edrawsoft.cn/images/flowchart/images/bianpinghuapptmuban.png",
+          "https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3028339432,10020054&fm=26&gp=0.jpg",
+          "https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2230719646,832164230&fm=26&gp=0.jpg"],
+          card_title:['元数据管理','业务配置管理','租户管理','权限管理'],
+          currentDate: new Date(),
+          defaultProps: {
+            children: 'children',
+            label: 'label'
+          }
+        }
+      },
+      methods: {
+        login(){
+          var url=url_root+"/services/user";
+          axios.get(url)
+          .then(res => {
+            var re=JSONbig.parse(JSONbig.stringify(res));
+            var data=re.data.data;
+            app.user_name=data['user_name'];
+            app.account_number=data['account_number'];
+            console.log(res);
+          });
+        },
+        handleSelect(key, keyPath) {
+            var tab="";
+            switch (key) {
+                case 'metadata':
+                    tab="metadata";
+                    break;
+                case 'chart':
+                    tab="chart";
+                    break;
+                case 'users':
+                    tab="users";
+                    break;
+                case 'tenant':
+                    tab="tenant";
+                    break;
+                case 'group':
+                    tab="group";
+                    break;
+                case '':
+                    tab="";
+                    break;
+                case '':
+                    tab="";
+                    break;
+                case 'login':
+                    tab="";
+                    break;
+                case 'logout':
+                    tab="";
+                    break;
+                case '':
+                    tab="";
+                    break;
+                default:
+                    tab=key;
+            }
+             url=systemSetup_url.format(tab);
 
-    .el-tree {
-      background-color: #C3D0F1;
-      color: #333;
-      margin:1px;
-    }
+            switch (key) {
+                case 'login':
+                    tab="";
+                    url="login.html"
+                    break;
+                case 'logout':
+                    tab="";
+                    url="logout.html"
+                    break;
+                case 'business_maintain':
+                    tab="";
+                    url="ui_entity_table.html?header=1"
+                    break;
+                case '':
+                    tab="";
+                    break;
+            }
+             window.open(url,tab) ;// 新窗口打开外链接
+             console.log(key, keyPath);
+        },
+        handleOpen(){
+        },
+        handleClose (){
+        },
+        card_handle(index){
+              var tab="";
+             if (index==0){
+               tab='metadata';
+             }else if(index==2){
+               tab='tenant';
+             }else if(index==3){
+               tab='privilege';
+             }else if(index==1){
+               tab='process';
+             }else{
 
-    .el-main {
-      background-color: #A9AEB3;
-      color: #333;
-      text-align: center;
-      margin:1px;
-      //padding:1px;
-      //line-height:1000px;
-      height:750px;
-      //position: absolute;
-      background-size: cover;
-      background: url("https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=77251574,414512169&fm=26&gp=0.jpg") no-repeat;
-      background-size: 100% 100%
-    }
-
-    html,body,#app,.el-container{
-      /*设置内部填充为0，几个布局元素之间没有间距*/
-      padding: 0px;
-      /*外部间距也是如此设置*/
-      margin:0px;
-      /*统一设置高度为100%*/
-      height: 100%;
-      } .time {
-        font-size: 13px;
-        color: #999;
-      }
-      .image {
-        width: 100%;
-        height:200px;
-        display: block;
-      }
-
-
-
-    </style>
-</head>
-<body>
-<div id="app1">
-    <el-container>
-        <el-header class='m-header'>
-            <!--            <iframe src="toolbar.html" frameborder="0" width="100%" scrolling="no" style="position:absolate; z-index:3000;"></iframe>-->
-            <el-row style="background-color:#545c64" type="flex" align="middle">
-                <el-col span="1">
-                    <a href="index.html"><img src="https://img.icons8.com/cotton/2x/cloud-database.png" width="50"
-                                              height="50" alt="">
-                    </a>
-                </el-col>
-                <el-col span="4">
-                    <h3 style="color:#AABBCC">元数据魔方 </h3>
-                </el-col>
-                <el-col span="14">
-                    <el-menu
-                            :default-active="activeIndex"
-                            class="el-menu-demo"
-                            mode="horizontal" style="border:0px"
-                            @select="handleSelect"
-                            background-color="#545c64"
-                            text-color="#fff" border="0"
-                            active-text-color="#aae0fb">
-                        <el-submenu index="1">
-                            <template slot="title">元数据管理</template>
-                            <el-menu-item index="metadata">元数据配置</el-menu-item>
-                            <el-menu-item index="chart">元数据模型</el-menu-item>
-                        </el-submenu>
-
-                        <el-submenu index="6">
-                            <template slot="title">业务管理</template>
-                            <el-menu-item index="business_maintain">业务单据维护</el-menu-item>
-                            <el-menu-item index="status">业务状态跟踪</el-menu-item>
-                        </el-submenu>
-                        <el-submenu index="2">
-                            <template slot="title">业务配置工作台</template>
-                            <el-menu-item index="service">服务配置</el-menu-item>
-                            <el-menu-item index="rule">规则配置</el-menu-item>
-                            <el-menu-item index="process">流程配置</el-menu-item>
-                            <el-submenu index="2-4">
-                                <template slot="title">UI页面配置</template>
-                                <el-menu-item index="ui_template">UI模板</el-menu-item>
-                                <el-menu-item index="ui_rule">UI规则</el-menu-item>
-                                <el-menu-item index="ui_service">UI与服务</el-menu-item>
-                            </el-submenu>
-                            <el-menu-item index="2-5">其他</el-menu-item>
-                        </el-submenu>
-
-                        <el-submenu index="3">
-                            <template slot="title">系统管理</template>
-                            <el-menu-item index="users">用户管理
-                            </el-menu-item>
-                            <el-menu-item index="tenant">租户管理
-                            </el-menu-item>
-                            <el-menu-item index="group">部门管理
-                            </el-menu-item>
-                            <el-menu-item index="roles">角色管理
-                            </el-menu-item>
-                            <el-menu-item index="privilege">权限管理
-                            </el-menu-item>
-                            <el-menu-item index="xxx">其他</el-menu-item>
-                        </el-submenu>
-                        </el-menu-item>
-                        <el-menu-item index="4" disabled>消息中心</el-menu-item>
-                        <el-submenu index="5">
-                            <template slot="title">用户中心</template>
-                            <el-menu-item index="login">用户登录</el-menu-item>
-                            <el-menu-item index="logout">用户注销</el-menu-item>
-                        </el-submenu>
-                    </el-menu>
-                </el-col>
-                <el-col span="5">
-                    <div align="right">
-                        <el-input id="search_text" v-model="search_text" prefix-icon="el-icon-search"
-                                  style="width:200px"
-                                  placeholder="search everything"></el-input>
-                        <el-popover
-                                placement="top-start"
-                                title="个人信息:"
-                                width="200"
-                                trigger="hover"
-                                content="">
-                            <el-button slot="reference" icon="el-icon-user-solid"></el-button>
-                            {{user_name}}({{account_number}})
-                        </el-popover>&nbsp;
-                    </div>
-                </el-col>
-            </el-row>
-        </el-header>
-        <el-container>
-            <el-main>
-                <el-row type="flex" justify="center" align="middle">
-                    <el-col :span="5" v-for="(o, index) in 4" :key="o" :offset="index > 0 ? 1 : 0">
-                        <el-card :body-style="{ padding: '5px' }">
-                            <img :src="card_images[index]" class="image">
-                            <div style="padding: 10px">
-                                <span>{{card_title[index]}}</span>
-                                <div class="bottom clearfix">
-                                    <time class="time">{{ currentDate }}</time>
-                                    <el-button type="text" class="button" @click="card_handle(index)">点击进入...
-                                    </el-button>
-                                </div>
-                            </div>
-                        </el-card>
-                    </el-col>
-                </el-row>
-            </el-main>
-            <el-aside width="200px">
-                <el-col :span="24" align="left">
-                    <div align="center">
-                        <ul>
-                            <li>广告</li>
-                            <li>通知</li>
-                            <li>客服</li>
-                        </ul>
-                    </div>
-                </el-col>
-                </el-row>
-            </el-aside>
-        </el-container>
-                <el-footer>
-                </el-footer>
-    </el-container>
-</div>
-
-<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
-<script src="https://unpkg.com/element-ui/lib/index.js"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
-<script src="js/main.js"></script>
-<script src="js/index.js"></script>
-</body>
-</html>
+             };
+             url=systemSetup_url.format(tab);
+             window.open(url,tab) ;// 新窗口打开外链接
+       },
+       handleNodeClick(data) {
+        console.log(data);
+      },
+      async queryFields(url) {
+        let res=await axios.get(url).then(res =>{
+          var dict1={};
+          var data = res.data.data;
+          if (data) {
+            var len = 0;
+            if (data)
+              len = data.length;
+            for (var i=0;i<len;i++){
+             var d=data[i];
+             dict1[d["md_fields_name"]]=d["md_fields_type"];
+           }
+         }
+         gl_field_type=dict1;
+       }
+       );
+      },
+      handleCommand(command) {
+        this.$message('click on item ' + command);
+        if (command=='logout')
+         window.location.href='login.html';
+     }
+        }
+      });
+    app.login();
+ }
+ load_data();
