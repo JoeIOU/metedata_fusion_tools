@@ -66,9 +66,11 @@ function listToTree(list) {
                     entity_id=node.entity_id;
                     if (node.parent_entity_id&&node.parent_entity_id>0) {
                         node1=map[node.parent_entity_id]
-                        //node1.children.push(node);
-                        tree.push(node);
+                        node1.children.push(node);
+                        //tree.push(node);
                         isChild=true;
+                        if(node1.parent_entity_id)//如果父类还有父类，则当前parent_id赋予null，当前节点父类变动时，再进行互动。
+                          _row_id_=null
                         url=generate_url(parent_entity_id,entity_id,template_code,_row_id_,isChild,readOnly)
                         node.url=url;
                     } else {
@@ -77,13 +79,20 @@ function listToTree(list) {
                         node.url=url;
                     }
                 }
-                if(GL_APP)
-                 GL_APP.view_data.data=tree
-                return tree;
+                mmm={}
+                mmm.map=map;
+                mmm.data_tree=tree
+                mmm.data=list
+                if(GL_APP){
+                 GL_APP.view_data.data=list
+                 GL_APP.view_data.data_tree=tree
+                 GL_APP.view_data.map=map
+                 }
+                return mmm;
 }
 
 function generate_url(parent_entity_id,entity_id,template_code,_row_id_,isChild=false,isReadOnly='0'){
-	if(!entity_id || !_row_id_ || !template_code)
+	if(!entity_id || !template_code)
 	  return '';
      page_str='ui_entity_edit.html'
      if(isChild)
@@ -91,8 +100,12 @@ function generate_url(parent_entity_id,entity_id,template_code,_row_id_,isChild=
      url=page_str+"?entity_id={0}&template_code={1}&header=0"
 
 	url=url.format(entity_id,template_code);
-	if(_row_id_&&isChild){
-	  url+="&parent_data_id={0}".format(_row_id_);
+	if(isChild){
+	  url+="&parent_data_id={0}";
+	  if(_row_id_)
+	    url=url.format(_row_id_);
+	  else
+	    url=url.format('null');
 	}else if(_row_id_)
 	  url+="&_row_id_={0}".format(_row_id_);
 	if(isChild&&parent_entity_id)
@@ -203,7 +216,9 @@ function load(entity_tree){
               view_data:{
                sel:[],
                columns:[],
-               data:[]
+               data:[],
+               map:null,
+               data_tree:[]
               }
             },
             mounted() {
@@ -226,6 +241,7 @@ function load(entity_tree){
                    }
                   };
                   setInterval(reinitIframe,200);
+                  this.iframeInit();
             },
             methods: {
 
@@ -250,7 +266,43 @@ function load(entity_tree){
 						});
 						return;
 					}
-				}
+				},
+                iframeInit() {
+                    // 接受子级返回数据
+                    window.addEventListener(
+                      'message',
+                      (e) => {
+                        console.log(e.data)
+                        var data = e.data;
+                        switch (data.cmd) {
+                          case 'onSelectChange':
+                            // 处理业务逻辑
+                            map=app.view_data.map
+                            if(map&&data&&data.params&&data.params.data){
+                              entity_id= data.params.data.entity_id;
+                              row_id= data.params.data.row_id;
+                              node=map[entity_id];
+                              if(node&&node.children&&node.children.length>0){
+                                children=node.children
+                                for(i in children){
+                                  child=children[i]
+                                  url=child.url
+                                  if(url&&row_id){
+                                     url=replaceUrlParamVal(url,'parent_data_id',row_id);
+                                     if(url)
+                                      child.url=url;
+                                  }
+                                }
+                              }
+//                            msg='receive Message from Parent,message:{0}'.format(JSON.stringify(data))
+//                            app.$message(msg);
+                            }
+                            break;
+                        }
+                      },
+                      false
+                    )
+                }
             }
         });
         app.lang=language();
@@ -264,10 +316,29 @@ function load(entity_tree){
 	    if(!entity_id)
 	      entity_id='null'
         document.title = doc_title.format(entity_id);
-        app.view_data.data=entity_tree;
-        if(entity_tree&&entity_tree.length>0)
-           app.title=entity_tree[0].ui_template_name
+        if(entity_tree){
+          app.view_data.data=entity_tree.data;
+          app.view_data.map=entity_tree.map;
+          app.view_data.data_tree=entity_tree.data_tree;
+        }
+        if(entity_tree&&entity_tree.data&&entity_tree.data.length>0)
+           app.title=entity_tree.data[0].ui_template_name
         GL_APP=app;
+}
+
+function replaceUrlParamVal(url,paramName, replaceWith) {
+	var oUrl = url;
+	var re = eval('/(' + paramName + '=)([^&]*)/gi');
+	var nUrl = "";
+	var rep_str = paramName + '=' + replaceWith;
+	if (oUrl.indexOf(paramName + "=") < 0) {
+		if (oUrl.indexOf("?") < 0)
+			nUrl = oUrl + "?" + rep_str;
+		else
+			nUrl = oUrl + "&" + rep_str;
+	} else
+		nUrl = oUrl.replace(re, rep_str);
+	return nUrl;
 }
 function next(){
    if (confirm("Next Step?")) {
@@ -275,4 +346,19 @@ function next(){
     return true;
   }
  }
+function messageReceive(){
+    // 接受子级返回数据
+    window.addEventListener(
+      'message',
+      (e) => {
+        console.log(e.data)
+        // alert('iframe页面token失效了')
+        // 外部vue向iframe内部传数据
+        iframe.contentWindow.postMessage(JSON.stringify({
+          token: getToken()
+        }), this.src)
+      },
+      false
+    )
+}
 getUIElements();
