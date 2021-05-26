@@ -138,19 +138,29 @@ def get_md_entities_by_name(tenant_id, md_entity_names):
 
 
 # 元数据属性
-def get_md_fields(tenant_id, md_entity_id, only_active=True):
-    if md_entity_id is None:
-        logger.warning("get_md_fields,md_entity_id is None")
+def get_md_fields(tenant_id, md_entity_ids, md_entity_codes=None, only_active=True):
+    if md_entity_ids is None and md_entity_codes is None:
+        logger.warning("get_md_fields,md_entity_ids or md_entity_codes is None")
+        return None
+    if len(md_entity_ids) == 0 and len(md_entity_codes) == 0:
+        logger.warning("get_md_fields,md_entity_ids or md_entity_codes is None")
         return None
     conn = db_md()
     cursor = conn.cursor()
     # sql = "select distinct * from md_fields where active_flag='Y' and (tenant_id=%s or public_flag='Y') and md_entity_id=%s"
     sql = """select distinct f.* from md_fields f
             inner join md_entities e on e.md_entity_id=f.md_entity_id
-            where  (e.tenant_id=%s or e.public_flag='Y') and e.md_entity_id=%s"""
+            where  (e.tenant_id=%s or e.public_flag='Y')"""
+    args = (tenant_id,)
+    if (md_entity_ids is not None and len(md_entity_ids) > 0):
+        sql += " and e.md_entity_id in %s"
+        args += (md_entity_ids,)
+    if (md_entity_codes is not None and len(md_entity_codes) > 0):
+        sql += " and e.md_entity_code in %s"
+        args += (md_entity_codes,)
     if (only_active):
         sql += " and f.active_flag='Y'"
-    cursor.execute(sql, args=(tenant_id, md_entity_id,))
+    cursor.execute(sql, args=args)
     result = cursor.fetchall()
     result = data_type_convert(result)
     logger.info("md_fields:{}".format(result))
@@ -166,7 +176,7 @@ def get_md_fields_multi_entity(tenant_id, md_entity_ids):
     ls = []
     for item in md_entity_ids:
         if item is not None:
-            re = get_md_fields(tenant_id, item)
+            re = get_md_fields(tenant_id, [item])
             ls.append(re)
     return ls
 
@@ -207,8 +217,8 @@ def get_md_tables_by_name(tenant_id, md_table_names):
 
 
 # 元数据数据表字段映射
-def get_md_columns(tenant_id, md_table_id, only_active=True):
-    if md_table_id is None:
+def get_md_columns(tenant_id, md_table_ids, only_active=True):
+    if md_table_ids is None:
         logger.warning("get_md_columns,md_table_id is None")
         return None
     conn = db_md()
@@ -216,11 +226,11 @@ def get_md_columns(tenant_id, md_table_id, only_active=True):
     # sql = "select distinct * from md_columns where active_flag='Y' and (tenant_id=%s or public_flag='Y') and  md_tables_id =%s"
     sql = """select distinct c.* from md_columns c 
             INNER JOIN md_tables t on t.md_tables_id=c.md_tables_id
-            where (t.tenant_id=%s or t.public_flag='Y') and  t.md_tables_id =%s
+            where (t.tenant_id=%s or t.public_flag='Y') and  t.md_tables_id in %s
           """
     if (only_active):
         sql += " and c.active_flag='Y'"
-    cursor.execute(sql, args=(tenant_id, md_table_id,))
+    cursor.execute(sql, args=(tenant_id, md_table_ids,))
     result = cursor.fetchall()
     result = data_type_convert(result)
     logger.info("md_columns:{}".format(result))
@@ -233,11 +243,7 @@ def get_md_columns_multi_table(tenant_id, md_table_ids):
     if md_table_ids is None:
         logger.warning("get_md_columns_multi_table,md_table_ids is None")
         return None
-    ls = []
-    for item in md_table_ids:
-        if item is not None:
-            re = get_md_columns(tenant_id, item)
-            ls += re
+    ls = get_md_columns(tenant_id, md_table_ids)
     return ls
 
 
@@ -469,12 +475,12 @@ def get_entity_all_fields(tenant_id, entity_ids, filter_fields=None):
         md_entity_id = item.get('md_entity_id')
         if entity_list.count(md_entity_id) <= 0:
             entity_list.append(md_entity_id)
-            fields += get_md_fields(tenant_id, md_entity_id)
         if tables_list.count(tables_id) > 0:
             continue
         else:
             tables_list.append(tables_id)
-            columns += get_md_columns(tenant_id, tables_id)
+    columns = get_md_columns(tenant_id, tables_list)
+    fields = get_md_fields(tenant_id, entity_ids)
     if tables_list is None or len(tables_list) == 0:
         logger.warning("get_entity_all_fields,tables_list is None")
         return None
@@ -735,8 +741,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
     select_parent_field, join_str, parent_data_id = None, None, None
     if parent_entity_id is not None:
         (select_parent_field, join_str, parent_data_id) = join_relation(tenant_id, md_entity_id, parent_entity_id,
-                                                                        key_col_name,
-                                                                        entity_sys_flag)
+                                                                        key_col_name)
     if select_parent_field is not None:
         select_str = select_parent_field
     key = None
@@ -748,7 +753,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
 
     sql = 'SELECT {keys} FROM {table} as t '.format(keys=select_str, table=table_name)
     where_mapping = {}
-    if entity_sys_flag is not None and entity_sys_flag == 'Y':
+    if join_str is None:#不是关联表的方式
         if (parent_data_id is not None and isinstance(parent_data_id, dict) and len(parent_data_id) > 0):
             keys = parent_data_id.keys()
             key = None
@@ -842,7 +847,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
 
 
 # 关联实体关系，进行元数据实体关联关系查询（如：通过父实体ID查询子实体信息）
-def join_relation(tenant_id, md_entity_id, parent_entity_id, key_col_name, sys_flag):
+def join_relation(tenant_id, md_entity_id, parent_entity_id, key_col_name):
     select_field = None
     join_str = None
     parent_data_id = None
@@ -853,7 +858,11 @@ def join_relation(tenant_id, md_entity_id, parent_entity_id, key_col_name, sys_f
             parent_data_id = parent_entity_id.get(key)
             break
 
-        if sys_flag is not None and sys_flag == "Y":  # 系统表，则字段直接查询关联。
+        rres = get_md_entities_rel_tables_columns(tenant_id, parent_key, md_entity_id)
+        md_tables_id = None
+        if (rres is not None and len(rres) > 0):
+            md_tables_id = rres[0].get("md_tables_id")
+        if md_tables_id is None:  # 无关系表，则字段直接查询关联。
             if parent_data_id is not None and key_col_name is not None:
                 # select_field = ""
                 res = get_md_entities_rel_tables_columns_sys(tenant_id, parent_key, md_entity_id)
@@ -866,7 +875,6 @@ def join_relation(tenant_id, md_entity_id, parent_entity_id, key_col_name, sys_f
                         parent_data_id = dict1
                         select_field = " t.{} as $parent_data_id ".format(parent_rel_col)
         else:
-            rres = get_md_entities_rel_tables_columns(tenant_id, parent_key, md_entity_id)
             if (rres is not None and len(rres) > 0):
                 item = rres[0]
                 schema_code = item.get("schema_code")
