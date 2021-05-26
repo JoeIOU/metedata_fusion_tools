@@ -936,7 +936,11 @@ function renderTable(result) {
 				},
 				onchange(field_name, row, index,val=-1.0123456789) {
 				    if (val!=-1.0123456789)
-				     row[field_name]=val;
+				       if(val&&val.value){
+				         row[field_name]=val.value;
+				         row[field_name+"_title"]=val.label;
+				       }else
+				         row[field_name]=val;
 					app.cascadeSelector(row,field_name);
 					row.isEdit = true;
 					edit_gl = true;
