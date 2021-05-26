@@ -509,14 +509,16 @@ function queryMetadata(url) {
 					len = data.length;
 				var i = 0;
 				var row = data[0];
-				width1=null;
-				rowCount=Object.keys(row).length
-				if(row&&rowCount>0){
-				  width1=Math.round(1200/rowCount)
-				  if(width1<150)
-				   width1=150
-				  else if(width1>500)
-				   width1=500
+				width1=150;
+				if(row){
+                    rowCount=Object.keys(row).length
+                    if(row&&rowCount>0){
+                      width1=Math.round(1200/rowCount)
+                      if(width1<150)
+                       width1=150
+                      else if(width1>500)
+                       width1=500
+                    }
 				}
 				for (var key in row) {
 					var type1 = null;
@@ -720,6 +722,9 @@ function renderTable(result) {
 				multipleSelection: [],
 				show_summary:false
 			},
+			mounted(){
+                this.addEventListener()
+			},
 			methods: {
 				//每页下拉显示数据
 				handleSizeChange: function(size) {
@@ -795,8 +800,30 @@ function renderTable(result) {
                 handleCurrentSelectChange(val) {
                    if(val&&gl_app.master_user.sel!=val){
                       gl_app.master_user.sel = val;
-                      gl_app.itemkey=Math.random();
+                      row_id=null;
+                      for (i in gl_app.master_user.columns){
+                        col=gl_app.master_user.columns[i]
+                        if(col&&col.is_key=='Y')
+                          row_id=val[col.field]
+                      }
+                      if(row_id){
+                        d={'row_id':row_id,'entity_id':GL_ENTITY_ID}
+                        sendMessage2Parent('onSelectChange',d)
+                       }
+                      //gl_app.itemkey=Math.random();
                     }
+                },
+                addEventListener(){
+                    // 接受父页面发来的信息
+                    window.addEventListener("message", function(event){
+                      var data = event.data;
+                      switch (data.cmd) {
+                        case 'parentMessage':
+                            // 处理业务逻辑
+                            app.$message('receive Message from Parent,message:{0}'.format(data));
+                            break;
+                        }
+                    });
                 },
 				handleSelectionChange(val) {
 					len=0
@@ -1563,5 +1590,15 @@ function renderToolbar() {
 	}
 
 }
+function sendMessage2Parent(cmd,data){
+        // 向父vue页面发送信息
+        window.parent.postMessage({
+            cmd: cmd,
+            params: {
+              success: true,
+              data: data
+            }
+        }, '*');
+ }
 
 renderToolbar();
