@@ -8,9 +8,12 @@ from flask_httpauth import HTTPBasicAuth
 from common import authorization as au
 from service import utils_serv as utl
 from ui import ui_metadata as ui
+from flask import Blueprint
+
+app = Blueprint('app', __name__)
 
 logger = config.logger
-app = httpserver.getApp()
+# app = httpserver.getApp()
 auth = HTTPBasicAuth()
 domain_root = '/md'
 GLOBAL_VIEW_ID = "$_VIEW_ID"
@@ -1281,6 +1284,3 @@ def query_ui_single_entity():
     finally:
         pass
 
-
-if __name__ == '__main__':
-    httpserver.startWebServer()
