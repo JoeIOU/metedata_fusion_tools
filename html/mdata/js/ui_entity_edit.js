@@ -5,6 +5,7 @@ var GL_APP = null;
 var gl_fields_list=null;
 var gl_linked_entity_list=null;
 var gl_rules_list=null;
+var gl_linked_entity_list=null;
 
 function getEntityFields(entity_ids,ui_data){
     if(!entity_ids)
@@ -42,9 +43,9 @@ function getUIElements(){
 	var parent_entity_id = getUrlKey('parent_entity_id');
 	var parent_id = getUrlKey('parent_id');
 	var _row_id_ = getUrlKey('_row_id_');
+	var is_child = getUrlKey('is_child');
 	if(is_child&&is_child=='1'&&parent_id)
 	  _row_id_=parent_id
-	var is_child = getUrlKey('is_child');
     var url=ui_template_info_url.format(template_code,entity_id)
     load_data(parent_entity_id,entity_id,template_code,_row_id_,is_child=='1');
 	axios.get(url)
@@ -323,6 +324,28 @@ function load(){
           GL_APP.header_title_show=true
         else if(GL_APP)
           GL_APP.header_title_show=false
+}
+function getLookupEntityByParentId(col,code,parent_code,parent_data_id){
+    url = entity_info_url_by_code_and_parentId.format(code,code, parent_code,parent_data_id);
+	axios.get(url)
+		.then(res => {
+			var data = null;
+			var d = res.data.data.data;
+			lookup_type=null;
+			var ddd = data_select_options_mapping(code, lookup_type, d);
+            if(col&&ddd){
+			  col.lookup_entity_list = ddd;
+			  gl_app.itemkey1 = Math.random();
+			 }
+			var res_data=res.data;
+            if (res_data && res_data.status >= 300) {
+                gl_app.$message.warning({
+                    type: 'warning',
+                    message: messageI18n(res_data.message)
+                });
+                return;
+            }
+		});
 }
 function next(){
    if (confirm("Next Step?")) {
