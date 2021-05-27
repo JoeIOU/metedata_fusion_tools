@@ -1142,10 +1142,10 @@ def rule_validate(http_request, validateOnly=0):
             else:
                 d_set = data.get("data")
             rule_data = d_set
-        # else:
-        #     rules = data.get("rules")
-        #     n_rules = data.get("n_rules")
-        #     rule_data = data.get("data")
+        else:
+            rules = data.get("rules")
+            n_rules = data.get("n_rules")
+            rule_data = data.get("data")
         rules_list = vr.get_rules(tenant_id, md_entity_id, rules, n_rules, validateOnly)
         size = 0
         if rules_list is not None:
