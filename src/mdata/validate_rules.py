@@ -255,15 +255,19 @@ def validate_rules(rules, data):
                     # if d is None:
                     #     d = ""
                     d_input = d
-                    if rule_category == 'Validation':  # 校验规则
-                        res = rule.match(reg, d_input)
-                    else:
-                        res = rule.search(reg, d_input)
-                    if res is not None:
+                    if d_input is None:
                         result = True
-                        output = res.group()
+                        output = ''
                     else:
-                        is_pass = False
+                        if rule_category == 'Validation':  # 校验规则
+                            res = rule.match(reg, d_input)
+                        else:
+                            res = rule.search(reg, d_input)
+                        if res is not None:
+                            result = True
+                            output = res.group()
+                        else:
+                            is_pass = False
                     logger.info("validate_rules,rule=[{}],data:[{}],result:[{}]".format(reg, d, result))
                 # 2.规则按公式计算
                 elif type is not None and type.lower() == 'formula':
