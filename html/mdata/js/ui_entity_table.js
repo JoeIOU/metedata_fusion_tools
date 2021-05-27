@@ -492,6 +492,11 @@ function queryMetadata(url) {
 	if(parent_data_id&&parent_entity_id){
         url+="&$PARENT_ENTITY_ID={0}".format(parent_entity_id)
         url+="&$parent_data_id={0}".format(parent_data_id)
+        if (gl_app){
+         gl_app.parent_entity_id=parent_entity_id
+         gl_app.parent_data_id=parent_data_id
+        }
+
     }
 	axios.get(url)
 		.then(res => {
@@ -720,7 +725,9 @@ function renderTable(result) {
 				file: {},
 				fileList: [],
 				multipleSelection: [],
-				show_summary:false
+				show_summary:false,
+				parent_entity_id:null,
+				parent_data_id:null
 			},
 			mounted(){
                 this.addEventListener()
@@ -1221,6 +1228,10 @@ function renderTable(result) {
 							"$_ENTITY_ID": GL_ENTITY_ID,
 							"data": new_dict
 						};
+						if(app.parent_data_id&&app.parent_entity_id){
+						  data_add_field['$PARENT_ENTITY_ID']=app.parent_entity_id
+						  data_add_field['$parent_data_id']=app.parent_data_id
+						}
 					} else if (sel_data && sel_data.isEdit) {
 						var new_dict = sel_data;
 						var new_list = [];
