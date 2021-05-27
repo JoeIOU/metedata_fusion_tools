@@ -990,8 +990,8 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list, parent_entity_di
                                                                              data_list_new))
         re = exec_output_status(type=DB_EXEC_TYPE_INSERT, status=sStatus, rows=irows, data=data, message=message)
         conn.commit()
-        if not b_flag:  # 凡是非系统表，存在实体关系的，写入关系表。
-            insert_entity_relation(user_id, tenant_id, md_entity_id, ids, parent_entity_dict)
+        # if not b_flag:  # 凡是非系统表，存在实体关系的，写入关系表。
+        insert_entity_relation(user_id, tenant_id, md_entity_id, ids, parent_entity_dict)
         # 插入到元数据实体表或者数据视图表，就要增加权限码；以及创建默认的实体字段，即填写不为空的字段（包括主键ID）。
         if table_name is not None and (table_name.lower() == 'md_entities' or table_name.lower() == 'data_views'):
             entity_type = const.ENTITY_TYPE_ENTITY
