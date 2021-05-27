@@ -55,6 +55,15 @@
     .iframe {
       position: fixed;
     }
+	.el-form-item__content{
+	 line-height:20px !important;
+	 margin-left: 100px !important;
+	 margin-top: 10px;
+	}
+	.el-form-item__label{
+	 line-height:30px !important;
+	 margin-top: 10px;
+	}
     </style>
 </head>
 <body>
@@ -63,19 +72,253 @@
     </header>
     <main>
 
-        <iframe class="mmtx_iframe_class" src="ui_entity_edit.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30005&template_code=ui_template_001&header=1&readOnly=0"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>
-        <p>
-       <el-row v-for="(v, i) in view_data.data">
-                    <el-container>
-                        <el-header style="height:30px">
-                            <span v-if="lang&&lang=='zh'&&v.md_entity_name&&v.md_entity_name.length>0">{{v.md_entity_name}}</span>
-                            <span v-else-if="lang&&v.md_entity_name_en&&v.md_entity_name_en.length>0">{{v.md_entity_name_en}}</span>
-                            <span v-else>{{v.md_entity_code}}</span>
-                      </el-header>
-                      <el-main>
-                          <iframe class="mmtx_iframe_class" :src="v.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>
-                      </el-main>
-                    </el-container>
+<!--        <iframe class="mmtx_iframe_class" src="ui_entity_edit.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30005&template_code=ui_template_001&header=1&readOnly=0"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
+<!--        <p>-->
+       <el-row v-for="(w, j) in template_view_data.data">
+
+        <el-container>
+            <el-header style="height:30px">
+                <span v-if="lang&&lang=='zh'&&w.md_entity_name&&w.md_entity_name.length>0">{{w.md_entity_name}}</span>
+                <span v-else-if="lang&&w.md_entity_name_en&&w.md_entity_name_en.length>0">{{w.md_entity_name_en}}</span>
+                <span v-else>{{w.md_entity_code}}</span>
+          </el-header>
+          <el-main>
+           <span v-if="w&&(w.parent_entity_id==null||w.parent_entity_id=='')">
+
+<!--               a-->
+						<el-form :model="view_data.sel"  :key="itemkey_form">
+							<el-row>
+								<el-col v-for="(v, i) in view_data.columns" :key="v.field" :span="12" style="height:50px" v-if="!view_data.sel.isNew||v.visible">
+									<span v-if="v.type=='datetime' || v.type=='timestamp'">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-date-picker size="mini" style="width:250px" :id="v.field+view_data.sel['$_clmn_id_']"
+															v-model="view_data.sel[v.field]" @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+															type="datetime" format="yyyy-MM-dd HH:mm:ss"
+															value-format="yyyy-MM-dd HH:mm:ss"
+															placeholder="选择日期和时间" :disabled="v.readonly">
+											</el-date-picker>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.type=='date'">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-date-picker size="mini" style="width:250px" :id="v.field+view_data.sel['$_clmn_id_']"
+															v-model="view_data.sel[v.field]" @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+															type="date" :disabled="v.readonly"
+															value-format="yyyy-MM-dd"
+															placeholder="选择日期">
+											</el-date-picker>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.lookup_entity && v.lookup_flag=='Y'&&v.lookup_entity=='lookup_classify'&&v.lookup_type&&v.lookup_type.trim().length>0">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-select size="mini" :id="v.field+view_data.sel['$_clmn_id_']" v-model="view_data.sel[v.field]" multiple collapse-tags clearable :key="itemkey1"
+													   @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">
+												<el-option
+														   v-for="item in v.lookup_entity_list"
+														   :key="item.key"
+														   :label="item.label"
+														   :value="item.value"
+														   :disabled="item.disabled">
+												</el-option>
+											</el-select>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.lookup_entity&&v.lookup_entity=='lookup_classify'&&v.lookup_type&&v.lookup_type.trim().length>0">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-select size="mini" :id="v.field+view_data.sel['$_clmn_id_']" v-model="view_data.sel[v.field]" clearable :key="itemkey1"
+													   @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])" filterable style="width:250px" :disabled="v.readonly">
+												<el-option
+														   v-for="item in v.lookup_entity_list"
+														   :key="item.key"
+														   :label="item.label"
+														   :value="item.value"
+														   :disabled="item.disabled">
+												</el-option>
+											</el-select>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.lookup_entity&&v.component&&v.component=='cascade'">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<entity-cascade  size="mini" :id="v.field+view_data.sel['$_clmn_id_']" :value="view_data.sel[v.field]" width="250" placeholder=""
+															:disabled="v.readonly" :multi_select="v.lookup_flag&&v.lookup_flag=='Y'" :entity="v.lookup_entity" :parent_entity_code="v.parent_entity_code" :parent_data_id="view_data.sel['$parent_data_id-'+v.field]"
+															@change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'],$event)">
+                      						</entity-cascade>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.lookup_entity">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<entity-select  size="mini" :id="v.field+view_data.sel['$_clmn_id_']" :value="view_data.sel[v.field]" width="250" placeholder=""
+															:disabled="v.readonly" :multi_select="v.lookup_flag&&v.lookup_flag=='Y'" :entity="v.lookup_entity" :parent_entity_code="v.parent_entity_code" :parent_data_id="view_data.sel['$parent_data_id-'+v.field]"
+															@change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'],$event)">
+                      						</entity-select>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.is_key=='N'&&(v.type=='bigint' ||v.type=='int')">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+                                            <currency-input class="input_mini" v-model="view_data.sel[v.field]" :id="v.field+view_data.sel['$_clmn_id_']"
+                                                            @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+                                                            :decimal="0" :maxlength="v.length" style="width:250px;" symbol="" :disabled="v.readonly"></currency-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.is_key=='N'&&(v.type=='float' ||v.type=='numeric'||v.type=='decimal'||v.type=='number'||v.type=='money')">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+                                            <currency-input class="input_mini" v-model="view_data.sel[v.field]" :id="v.field+view_data.sel['$_clmn_id_']"
+                                                            @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+                                                            :decimal="v.decimal" :maxlength="v.length" style="width:250px;" symbol="" :disabled="v.readonly"></currency-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.is_key=='Y'&&(v.type=='bigint' ||v.type=='int')">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-input v-model="view_data.sel[v.field]" :rows="1" size="mini" @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+													  placeholder="Input Number" :id="v.field+view_data.sel['$_clmn_id_']"
+													  style="width:250px" oninput="value=value.replace(/[^0-9]/g,'')" :maxlength="v.length" :disabled="v.readonly">
+											</el-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.type=='char' ||v.type=='boolean'">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-input type="text" :rows="1" size="mini" placeholder="Input Something" :id="v.field+view_data.sel['$_clmn_id_']" @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+													  v-model="view_data.sel[v.field]" style="width:250px" :maxlength="v.length"
+													  :disabled="v.readonly"></el-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else-if="v.type=='blob' ||v.type=='clob'">
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-upload :id="v.field+view_data.sel['$_clmn_id_']"
+													   action=""
+													   :file-list="fileList"
+													   @on-change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+													   :http-request="getFile" :disabled="v.readonly">
+												<el-button size="small" type="primary">上传</el-button>
+											</el-upload>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+									<span v-else>
+										<el-form-item :label="v.title" :prop="v.field" :label-width="formLabelWidth">
+											<span v-if="v.is_null=='N'">
+												<font color="red">*</font>
+											</span>
+											<span v-else>
+												&nbsp;
+											</span>
+											<el-input type="textarea" :rows="1" size="mini" placeholder="Input Something" :id="v.field+view_data.sel['$_clmn_id_']" @change="onchange(v.field,view_data.sel,view_data.sel['$_clmn_id_'])"
+													  v-model="view_data.sel[v.field]" style="width:250px" :maxlength="v.length" :disabled="v.readonly"></el-input>
+											<el-button size="mini" style="margin:auto 0px;border:0;padding:0" v-show="v.message_key!=null"
+												icon="el-icon-question" circle  @click="tip_show(v.message_key)">
+											</el-button>
+										</el-form-item>
+									</span>
+								</el-col>
+							</el-row>
+						</el-form>
+<!--               a-->
+
+
+           </span>
+           <span v-else>
+                          <iframe class="mmtx_iframe_class" :src="w.url"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>
+           </span>
+          </el-main>
+        </el-container>
         </el-row>
 
 		<el-row>
@@ -84,7 +327,7 @@
         </main>
       <footer>
 <!--                <el-button @click="cancel_action(view_data.sel,-1)">取 消</el-button>-->
-                <el-button type="primary" @click="submit_data(view_data.sel,view_data.sel.$_clmn_id_)"><span v-if="lang&&lang=='zh'">保存</span><span v-else>Save</span></el-button>
+                <el-button type="primary" @click="submit_update_data(view_data.sel,view_data.sel['$_clmn_id_'])"><span v-if="lang&&lang=='zh'">保存</span><span v-else>Save</span></el-button>
                 <el-button type="primary" @click="next"><span v-if="lang&&lang=='zh'">下一步</span><span v-else>Next</span></el-button>
       </footer>
     </div>
