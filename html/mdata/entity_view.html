@@ -68,23 +68,17 @@
 </head>
 <body>
     <div id="app" align="center">
-        <header  class="top_menu"><h3>&nbsp;{{title}}</h3>
-    </header>
+	<header  class="top_menu"><h3>&nbsp;{{title}}</h3></header>
     <main>
-
-<!--        <iframe class="mmtx_iframe_class" src="ui_entity_edit.html?entity_id=30017&parent_entity_id=30015&parent_data_id=30005&template_code=ui_template_001&header=1&readOnly=0"  frameborder="0" scrolling="no" style="width:100%;border:0;"></iframe>-->
-<!--        <p>-->
        <el-row v-for="(w, j) in template_view_data.data">
-
         <el-container>
-            <el-header style="height:30px">
+		  <el-header style="height:30px">
                 <span v-if="lang&&lang=='zh'&&w.md_entity_name&&w.md_entity_name.length>0">{{w.md_entity_name}}</span>
                 <span v-else-if="lang&&w.md_entity_name_en&&w.md_entity_name_en.length>0">{{w.md_entity_name_en}}</span>
                 <span v-else>{{w.md_entity_code}}</span>
           </el-header>
           <el-main>
            <span v-if="w&&(w.parent_entity_id==null||w.parent_entity_id=='')">
-
 <!--               a-->
 						<el-form :model="view_data.sel"  :key="itemkey_form">
 							<el-row>
