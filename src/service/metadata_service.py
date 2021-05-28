@@ -2,7 +2,7 @@
 from flask import request, session, Response, g, jsonify
 import json
 from mdata import metadata as md, metadata_initialize as mdi, validate_rules as vr
-from httpserver import httpserver
+# from httpserver import httpserver
 from config.config import cfg as config
 from flask_httpauth import HTTPBasicAuth
 from common import authorization as au
@@ -1284,3 +1284,6 @@ def query_ui_single_entity():
     finally:
         pass
 
+
+# if __name__ == '__main__':
+#     httpserver.startWebServer()
