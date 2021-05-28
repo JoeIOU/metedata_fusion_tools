@@ -1,4 +1,3 @@
-# ####main_service.py
 from service.metadata_service import app
 from service.view_service import app_view
 from httpserver import httpserver
@@ -13,4 +12,5 @@ app1.register_blueprint(app_view)
 #     return "Hello World!"
 
 if __name__ == "__main__":
+    # app1.run()
     httpserver.startWebServer()
