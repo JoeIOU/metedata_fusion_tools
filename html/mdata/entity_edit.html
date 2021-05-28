@@ -149,7 +149,7 @@
 									   layout="slot,sizes,prev, pager, next"
 									   :total="master_user.data.length">
 							<span style="font-weight:normal">Total:
-							 <span v-if="master_user.data.length<=1000">{{master_user.data.length}}</span>
+							 <span v-if="master_user.data.length<=5000">{{master_user.data.length}}</span>
 						     <span v-else>5000+</span>
 							&nbsp;</span>
 						</el-pagination>
