@@ -15,7 +15,7 @@ sql_in = """
             SELECT
             'input' AS io_type,
             d.data_view_id AS view_id,
-            d.md_entity_id,
+            d.md_entity_id AS main_entity_id,
             i.md_entity_id,
             i.md_fields_id,
             i.view_input_id AS param_id,
@@ -30,6 +30,7 @@ sql_in = """
         AND d.tenant_id = f.tenant_id
         WHERE
             d.active_flag = 'Y'
+        AND i.active_flag = 'Y'    
         AND d.tenant_id = %s
         AND d.data_view_id = %s
         """
@@ -37,7 +38,7 @@ sql_out = """
             SELECT
                 'output' AS io_type,
                 d.data_view_id AS view_id,
-                d.md_entity_id,
+                d.md_entity_id AS main_entity_id,
                 i.md_entity_id,
                 i.md_fields_id,
                 i.view_output_id,
@@ -51,6 +52,7 @@ sql_out = """
             AND d.tenant_id = f.tenant_id
             WHERE
                 d.active_flag = 'Y'
+            AND i.active_flag = 'Y'   
             AND d.tenant_id = %s
             AND d.data_view_id = %s 
             """
@@ -63,8 +65,9 @@ def query_view_format(user_id, data_view_id):
     tenant_id = user.get("tenant_id")
 
     if tenant_id is None:
-        logger.warning('query_view,the tenant_id of the user[{}] is None.'.format(user))
-        return None, None
+        message = 'query_view,the tenant_id of the user[{}] is None.'.format(user)
+        logger.warning(message)
+        return None, None, message
     created_sql = None
     input_params_list = None
     cursor.execute(sql_in,
@@ -77,21 +80,27 @@ def query_view_format(user_id, data_view_id):
     logger.info('query_view input param:\n{}'.format(result_in))
     logger.info('query_view output param:\n{}'.format(result_out))
 
-    if not (result_in is not None and len(result_out) > 0):
-        logger.warning('query_view output param is none.')
-        return None
+    if not (result_out is not None and len(result_out) > 0):
+        message = 'query_view output param is none,view_id=[{}].'.format(data_view_id)
+        logger.warning(message)
+        return None, None, message
     if result_out is not None and len(result_out) > 0:
-        main_entity_id = result_out[0].get("md_entity_id")
+        main_entity_id = result_out[0].get("main_entity_id")
     else:
-        main_entity_id = result_in[0].get("md_entity_id")
+        main_entity_id = result_in[0].get("main_entity_id")
     entity_selected_list = find_entity_list(result_in, result_out)
     entity_ids = []
     for x in entity_selected_list:
         entity_ids.append(x.get('md_entity_id'))
-    entities_rels = md.get_md_entities_rel(tenant_id, entity_ids, entity_ids)
+    entities_rels = None
+    if (entity_ids is not None and len(entity_ids) > 1):
+        entities_rels = md.get_md_entities_rel(tenant_id, entity_ids, entity_ids)
+    if entities_rels is None or len(entities_rels) == 0:
+        message = 'query_view_format,entities_rels of the data_view[{}] is None,at least one entity relation.'.format(
+            data_view_id)
+        logger.warning(message)
+        return None, None, message
     entity_table_mapping = md.get_entity_table_mapping(tenant_id, entity_ids)
-    if entities_rels is None or len(entities_rels) <= 0:
-        return None
     all_entity_fields = md.get_entity_all_fields(tenant_id, entity_ids)
     # 数据权限
     dp_list = dp.query_data_privilege_info(tenant_id, user_id, data_view_id, const.ENTITY_TYPE_VIEW)
@@ -99,40 +108,42 @@ def query_view_format(user_id, data_view_id):
     if dp_list is not None and len(dp_list) > 0:
         logger.info("the user[{}] have some privilege,list={}".format(user_id, dp_list))
     else:
-        logger.warning("the user[{}] have no privilege of the view,view id=[{}]".format(user_id, data_view_id))
-        return None, None
+        message = "the user[{}] have no privilege of the view,view id=[{}]".format(user_id, data_view_id)
+        logger.warning(message)
+        return None, None, message
     table_list = []
-    for itm001 in entities_rels:
-        tab_id = itm001.get("md_tables_id")
+    for item0 in entity_table_mapping:
+        tab_id = item0.get("md_tables_id")
         if tab_id is not None and table_list.count(tab_id) <= 0:
             table_list.append(tab_id)
     rl_tables_fields = None
     if table_list is not None and len(table_list) > 0:
         rl_tables_fields = md.get_table_all_columns(tenant_id, table_list)
-    for item0 in entities_rels:
-        if item0.get("md_tables_id") is None:
-            for itm in all_entity_fields:
-                if item0.get("from_field_id") == itm.get("md_fields_id"):
-                    item0['md_tables_name'] = itm.get('md_tables_name')
-                    item0['from_columns_name'] = itm.get('md_columns_name')
-                    break
-            for itm1 in all_entity_fields:
-                if item0.get("to_field_id") == itm1.get("md_fields_id"):
-                    item0['to_columns_id'] = itm1.get('md_columns_id')
-                    item0['to_md_tables_name'] = itm1.get('md_tables_name')
-                    item0['to_columns_name'] = itm1.get('md_columns_name')
-                    break
-        else:
-            for r_item in rl_tables_fields:
-                if item0.get('from_columns_id') == r_item.get('md_columns_id'):
-                    item0['md_tables_name'] = r_item.get('md_tables_name')
-                    item0['from_columns_name'] = r_item.get('md_columns_name')
-                    break
-            for r_item1 in rl_tables_fields:
-                if item0.get('to_columns_id') == r_item1.get('md_columns_id'):
-                    item0['to_md_tables_name'] = r_item1.get('md_tables_name')
-                    item0['to_columns_name'] = r_item1.get('md_columns_name')
-                    break
+    if (entities_rels is not None):
+        for item0 in entities_rels:
+            if item0.get("md_tables_id") is None:
+                for itm in all_entity_fields:
+                    if item0.get("from_field_id") == itm.get("md_fields_id"):
+                        item0['md_tables_name'] = itm.get('md_tables_name')
+                        item0['from_columns_name'] = itm.get('md_columns_name')
+                        break
+                for itm1 in all_entity_fields:
+                    if item0.get("to_field_id") == itm1.get("md_fields_id"):
+                        item0['to_columns_id'] = itm1.get('md_columns_id')
+                        item0['to_md_tables_name'] = itm1.get('md_tables_name')
+                        item0['to_columns_name'] = itm1.get('md_columns_name')
+                        break
+            else:
+                for r_item in rl_tables_fields:
+                    if item0.get('from_columns_id') == r_item.get('md_columns_id'):
+                        item0['md_tables_name'] = r_item.get('md_tables_name')
+                        item0['from_columns_name'] = r_item.get('md_columns_name')
+                        break
+                for r_item1 in rl_tables_fields:
+                    if item0.get('to_columns_id') == r_item1.get('md_columns_id'):
+                        item0['to_md_tables_name'] = r_item1.get('md_tables_name')
+                        item0['to_columns_name'] = r_item1.get('md_columns_name')
+                        break
 
     entities_rels_new = entity_sort(main_entity_id, entities_rels)
     logger.info('all_entity_fields:{}'.format(all_entity_fields))
@@ -142,10 +153,12 @@ def query_view_format(user_id, data_view_id):
                                                            result_out, dp_list)
 
     logger.info('created_sql:{}'.format(created_sql))
-    return created_sql, input_params_list
+    return created_sql, input_params_list, result_in
 
 
 def entity_sort(main_entity_id, list):
+    if list is None:
+        return None
     new_list = []
     tmp_list = list.copy()
     for item in list:
@@ -156,13 +169,23 @@ def entity_sort(main_entity_id, list):
     if len(new_list) <= 0:
         for item in list:
             if item.get('to_entity_id') == main_entity_id:
-                new_list.append(item)
-                tmp_list.remove(item)
-                break
+                tmp = item.get('from_entity_id')
+                is_slave = False
+                for itm in list:
+                    tmp1 = itm.get('to_entity_id')
+                    if (tmp is not None and tmp == tmp1):
+                        is_slave = True
+                        break
+                if (not is_slave):
+                    new_list.append(item)
+                    tmp_list.remove(item)
+                    break
+
     i = 0
     if tmp_list is not None and len(tmp_list) > 0:
         while i < 10:
             li = tmp_list.copy()
+            getOne = False
             i += 1
             if li is not None and len(li) > 0:
                 for im in li:
@@ -171,6 +194,12 @@ def entity_sort(main_entity_id, list):
                         if remain_item == item.get('from_entity_id'):
                             new_list.append(im)
                             tmp_list.remove(im)
+                            getOne = True
+                            break
+                        if remain_item == item.get('to_entity_id'):
+                            new_list.append(im)
+                            tmp_list.remove(im)
+                            getOne = True
                             break
             else:
                 break
@@ -178,14 +207,25 @@ def entity_sort(main_entity_id, list):
             li = tmp_list.copy()
             if li is not None and len(li) > 0:
                 for im in li:
-                    remain_item = im.get('from_entity_id')
+                    remain_item = im.get('to_entity_id')
                     for item in new_list:
+                        if remain_item == item.get('from_entity_id'):
+                            new_list.append(im)
+                            tmp_list.remove(im)
+                            getOne = True
+                            break
                         if remain_item == item.get('to_entity_id'):
                             new_list.append(im)
                             tmp_list.remove(im)
+                            getOne = True
                             break
             else:
                 break
+            if (tmp_list is not None and len(tmp_list) > 0 and not getOne):
+                im = tmp_list[0]
+                new_list.append(im)
+                tmp_list.remove(im)
+
     return new_list
 
 
@@ -505,14 +545,22 @@ def get_data_view(tenant_id, view_ids):
 
 
 def query_view(user_id, view_id=0, input_param=None):
-    sql, input_params_list = query_view_format(user_id, view_id)
+    sql, input_params_list, message = query_view_format(user_id, view_id)
     if sql is None or len(sql) <= 0:
-        logger.warning('query view,format sql is NULL,view_id={}'.format(view_id))
-        return None
+        if (message is None):
+            message = 'query view,format sql is NULL,view_id={}'.format(view_id)
+        logger.warning(message)
+        output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=500, rows=0, data=None,
+                                       message=message)
+        return output
     if input_param is not None and not isinstance(input_param, dict):
-        logger.warning('query view,format input_param is not dict ,view_id={}'.format(view_id))
-        return None
-
+        if (message is None):
+            message = 'query view,format input_param is not dict ,view_id={}'.format(view_id)
+        logger.warning(message)
+        output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=500, rows=0, data=None,
+                                       message=message)
+        return output
+    params_list = message
     ls_param_new = {}
     if input_params_list is not None and isinstance(input_params_list, list):
         for param in input_params_list:
@@ -538,17 +586,45 @@ def query_view(user_id, view_id=0, input_param=None):
             val = ls_param_new.get(key)
         if val is None:
             key_ls.append(key)
+    page_sql = ''
+    if (input_param is not None):
+        try:
+            # 分页查询
+            current_page = input_param.get('current_page')
+            page_size = input_param.get('page_size')
+            if (page_size is None or current_page is None):
+                page_sql = ''
+            else:
+                if (page_size is not None):
+                    page_size = int(page_size)
+                if (current_page is not None):
+                    current_page = int(current_page)
+                page_sql = " LIMIT {} OFFSET {}".format(page_size, (current_page - 1) * page_size)
+        except:
+            pass
+
     if len(key_ls) > 0:
-        logger.warning('query view,format input_param is not match the metedata ,params={}'.format(key_ls))
-        return None
+        message = 'query view,format input_param is not match the metedata ,params={}'.format(key_ls)
+        logger.warning(message)
+        output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=500, rows=0, data=None,
+                                       message=message)
+        return output
 
     where_list = []
-    where_list.append(ls_param_new)
-    sql_new = "select * from ({sql_format})aaa  LIMIT 5000".format(sql_format=sql)
+    if (ls_param_new is not None and len(ls_param_new.keys()) > 0):
+        where_list.append(ls_param_new)
+
+    sql_new = "select * from ({sql_format} {page_sql})aaa  LIMIT 5000".format(sql_format=sql, page_sql=page_sql)
     logger.info('query view sql:{}'.format(sql_new))
     status = md.DB_EXEC_STATUS_SUCCESS
     message = "query success"
     try:
+        if (params_list is not None):
+            len1 = len(params_list)
+            len2 = len(where_list)
+            if (len1 > len2):
+                addParams(where_list, len1 - len2)
+                message+=",少了输入查询参数{}个,默认输入空值。".format(len1 - len2)
         (re, irows) = md.sql_query(sql_new, where_list)
         output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=status, rows=irows, data=re, message=message)
         return output
@@ -560,6 +636,14 @@ def query_view(user_id, view_id=0, input_param=None):
         output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=status, rows=irows, data=None,
                                        message=message)
         return output
+
+
+def addParams(where_list, icount):
+    if (where_list is not None) and icount > 0:
+        dd = {}
+        for i in range(icount):
+            dd['temp_fields' + str(i)] = ''
+        where_list.append(dd)
 
 
 if __name__ == '__main__':
