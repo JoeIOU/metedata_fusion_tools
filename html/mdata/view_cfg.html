@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Entity Setup</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+
+      .el-container {
+        margin-top: 10px;
+        margin-bottom: 0px;
+        //height:730px;
+        width:100%;
+        align: center;
+      }
+      .el-header {
+        background-color: #C3D0E1;
+        color: #333;
+        text-align: left;
+        height: 30px;
+        line-height: 30px;
+        padding:2px;
+      }
+      .el-footer {
+        background-color: #B3C0D1;
+        color: #333;
+        text-align: center;
+        line-height: 30px;
+        position: fixed;
+      }
+
+      .el-main {
+        background-color: #E9EEF3;
+        color: #333;
+        text-align: center;
+        overflow-y:hidden;
+        //line-height: 1400px;
+        //height:100%;
+        padding:0px;
+      }
+    .layout-container {
+      height: 50%;
+    }
+    .iframe {
+      position: fixed;
+    }
+	.el-form-item__content{
+	 line-height:20px !important;
+	 margin-left: 100px !important;
+	 margin-top: 10px;
+	}
+	.el-form-item__label{
+	 line-height:30px !important;
+	 margin-top: 10px;
+	}
+    </style>
+</head>
+<body>
+<div id="app1"  align="center">
+        <el-container>
+		  <el-header style="height:45px">
+            <el-row  align="left" style="text-align:left">
+                <el-col span="24">
+                    <div class="grid-content bg-purple-light">
+                        <span class="demonstration">实体选择: </span>
+                        <el-select v-model="select1" filterable placeholder="请选择实体" @change="handleClick">
+                            <el-option
+                                    v-for="item in options"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="{ value: item.value, label: item.label }">
+                            </el-option>
+                        </el-select>
+                        <!-- <el-button type="primary" @click="setup(select_value)">Entity Config</el-button> -->
+<!--                        <el-button type="primary" icon='el-icon-plus' @click="entity_add">新增</el-button>-->
+<!--                        <el-button type="primary" icon='el-icon-delete' @click="entity_del">删除</el-button>-->
+                        <el-button type="primary" icon='el-icon-circle-check' @click="entity_author">授权</el-button>
+                    </div>
+                </el-col>
+            </el-row>
+          </el-header>
+        </el-container>
+        <el-container>
+		  <el-header style="height:30px">
+                <span v-if="lang&&lang=='zh'">数据视图配置</span>
+                <span v-else>Data View Config:</span>
+          </el-header>
+          <el-main>
+            <iframe class="mmtx_iframe_class" :src="iframe_url"  frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>
+          </el-main>
+        </el-container>
+        <el-container>
+		  <el-header style="height:30px">
+                <span v-if="lang&&lang=='zh'">数据视图输入条件</span>
+                <span v-else>Data View Config:</span>
+          </el-header>
+          <el-main>
+            <iframe class="mmtx_iframe_class" :src="iframe_url2"  frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>
+          </el-main>
+        </el-container>
+        <el-container>
+		  <el-header style="height:30px">
+                <span v-if="lang&&lang=='zh'">数据视图输出条件</span>
+                <span v-else>Data View Config:</span>
+          </el-header>
+          <el-main>
+            <iframe class="mmtx_iframe_class" :src="iframe_url3"  frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>
+          </el-main>
+        </el-container>
+</div>
+<!-- import Vue before Element -->
+<!--<script src="https://unpkg.com/vue/dist/vue.js"></script>-->
+<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/view_cfg.js"></script>
+</body>
+
+</html>
