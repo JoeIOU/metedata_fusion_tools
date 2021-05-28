@@ -114,43 +114,6 @@ def get_userinfo():
     return Response(json.dumps(re), mimetype='application/json')
 
 
-# 视图查询
-@app.route(domain_root + '/services/queryView', methods=['POST', 'GET'])
-@auth.login_required
-def query_view():
-    re = None
-    data = None
-    try:
-        data = utl.request_parse(request)
-        view_id = data.get(GLOBAL_VIEW_ID)
-        if view_id is None:
-            logger.warning('query View, param[$_VIEW_ID] should not be None')
-            re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
-                                       message='query View,$_VIEW_ID is None')
-            return re
-        if data is not None:
-            for key in data.keys():
-                if key == GLOBAL_VIEW_ID:
-                    data.pop(GLOBAL_VIEW_ID)
-                    break
-        user = utl.get_login_user()
-        tenant_id = user.get("tenant_id")
-        re = utl.sql_execute_method(tenant_id, view_id, utl.SERVICE_METHOD_VIEW, "queryView", data_list=None,
-                                    where_list=[data])
-
-        logger.info('view result:{}'.format(re))
-        return Response(json.dumps(re), mimetype='application/json')
-    except Exception as ex:
-        msg = "query View error.input:{},message:{}".format(data, ex)
-        logger.error(msg)
-        re = md.exec_output_status(type=utl.SERVICE_METHOD_GET, status=md.DB_EXEC_STATUS_FAIL, rows=0, data=None,
-                                   message=msg)
-        return Response(json.dumps(re), mimetype='application/json')
-        # raise ex
-    finally:
-        pass
-
-
 # 实体元数据对象配置信息查询
 @app.route(domain_root + '/services/findEntitySetup', methods=['POST', 'GET'])
 @auth.login_required
@@ -1224,6 +1187,7 @@ def query_ui_entities():
     finally:
         pass
 
+
 # UI模板和属性查询
 @app.route(domain_root + '/services/queryUIElements', methods=['POST', "GET"])
 @auth.login_required
@@ -1283,7 +1247,6 @@ def query_ui_single_entity():
         return Response(json.dumps(re), mimetype='application/json')
     finally:
         pass
-
 
 # if __name__ == '__main__':
 #     httpserver.startWebServer()
