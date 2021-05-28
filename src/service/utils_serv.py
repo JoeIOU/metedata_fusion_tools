@@ -97,7 +97,7 @@ def have_privilege(md_entity_id, method):
         privllege_entity_id = item.get("md_entity_id")
         privilege_type = item.get("privilege_type")
         if str(privllege_entity_id) == str(md_entity_id):
-            if method == SERVICE_METHOD_GET:
+            if method == SERVICE_METHOD_GET or method == SERVICE_METHOD_VIEW:
                 if privilege_type == const.PRIVILEGE_TYPE_READ:
                     b_privilege = True
                     break
