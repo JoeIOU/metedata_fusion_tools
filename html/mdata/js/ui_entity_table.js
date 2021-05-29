@@ -54,10 +54,10 @@ function getUIElements(){
       return null;
 	var parent_entity_id = getUrlKey('parent_entity_id');
 	var parent_id = getUrlKey('parent_id');
+	var is_child = getUrlKey('is_child');
 	var _row_id_ = getUrlKey('_row_id_');
 	if(is_child&&is_child=='1'&&parent_id)
 	  _row_id_=parent_id
-	var is_child = getUrlKey('is_child');
     var url=ui_template_info_url.format(template_code,entity_id)
 	axios.get(url)
 		.then(res => {
@@ -711,6 +711,7 @@ function renderTable(result) {
 				currentPage: 1, //默认显示页面为1
 				pagesize: 10, //    每页的数据条数
 				readOnly:false,
+				table_height:450,
 				lang:language(),
 				loading_text:'Please Wait,Data Loading...',
 				action_lbl:'Action',
@@ -1470,6 +1471,10 @@ function renderToolbar() {
 				 gl_app.ruleEntity(GL_ENTITY_ID);
 	            var template_code = getUrlKey('template_code');
 				url = entity_info_url.format(GL_ENTITY_ID,template_code);
+	            var _row_id_ = getUrlKey('_row_id_');
+	            //var is_child = getUrlKey('is_child');
+	            if(_row_id_)
+	              url+='&$_row_id_={0}'.format(_row_id_)
 				queryMetadata(url);
 				let res = app.queryFields(url_fields.format(GL_ENTITY_ID));
 				if (gl_app) {
