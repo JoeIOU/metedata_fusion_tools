@@ -109,6 +109,93 @@
             <iframe class="mmtx_iframe_class" :src="iframe_url3"  frameborder="0" scrolling="no" style="width:100%;border:0"></iframe>
           </el-main>
         </el-container>
+
+        <el-dialog title="元数据实体授权" :visible.sync="authorFormVisible" width="1024px">
+            <el-form :model="author_data" ref="formSubmit01">
+                <el-row>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="entity_id" prop="entity_id" label-width="160px">
+                            <el-input size="mini" placeholder="Input Something"
+                                      v-model="author_data.md_entity_id" style="width:250px"
+                                      show-word-limit="true" disabled></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="entity_name" prop="entity_name" label-width="160px">
+                            <el-input size="mini" placeholder="Input Something"
+                                      v-model="author_data.md_entity_name" style="width:250px"
+                                      show-word-limit="true" disabled></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="群组选择" label-width="160px">
+                            <el-select size="mini" v-model="author_data.data_group_id" placeholder="请选择群组" filterable
+                                       collapse-tags style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in group_options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="数据权限范围" label-width="160px">
+                            <el-select size="mini" v-model="author_data.data_privilege_id" placeholder="请选择数据权限"
+                                       @change=""
+                                       filterable collapse-tags style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in data_privilege_options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                    <span style="float: left">{{ item.label }}</span>
+                                    <span style="float: right; color: #8492a6; font-size: 13px">{{ item.key }}</span>
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="角色选择" label-width="160px">
+                            <el-select size="mini" v-model="author_data.role_id" placeholder="请选择角色" filterable
+                                       collapse-tags @change=""
+                                       style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in role_options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="height:50px">
+                        <el-form-item label="操作权限" label-width="160px">
+                            <el-select size="mini" v-model="author_data.authorization_id" placeholder="请选择操作权限"
+                                       filterable collapse-tags @change="handleAuthChange"
+                                       style="margin-left: 0px;width:250px" multiple>
+                                <el-option
+                                        v-for="item in authorize_options"
+                                        :key="item.key"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="authorFormVisible =false">取 消</el-button>
+                <el-button type="primary" @click="submit_auth">确 定</el-button>
+            </div>
+        </el-dialog>
 </div>
 <!-- import Vue before Element -->
 <!--<script src="https://unpkg.com/vue/dist/vue.js"></script>-->
