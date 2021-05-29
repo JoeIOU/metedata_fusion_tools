@@ -584,7 +584,7 @@ function generate_url(parent_entity_id,entity_id,template_code,_row_id_,isChild=
      url=page_str+"?entity_id={0}&template_code={1}&header=0"
 
 	url=url.format(entity_id,template_code);
-	if(isChild){
+	if(isChild&&parent_entity_id){
 	  url+="&parent_data_id={0}";
 	  if(_row_id_)
 	    url=url.format(_row_id_);
