@@ -753,7 +753,7 @@ def query_execute(user_id, tenant_id, md_entity_id, where_dict, parent_entity_id
 
     sql = 'SELECT {keys} FROM {table} as t '.format(keys=select_str, table=table_name)
     where_mapping = {}
-    if join_str is None:#不是关联表的方式
+    if join_str is None:  # 不是关联表的方式
         if (parent_data_id is not None and isinstance(parent_data_id, dict) and len(parent_data_id) > 0):
             keys = parent_data_id.keys()
             key = None
@@ -937,7 +937,8 @@ def insert_execute(user_id, tenant_id, md_entity_id, data_list, parent_entity_di
             sys_flag = None
             for field in all_fields:
                 field_name = field.get('md_fields_name')
-                table_name = field.get('md_tables_name')
+                if (table_name is None):
+                    table_name = field.get('md_tables_name')
                 sys_flag = field.get('sys_flag')
                 v = None
                 exist_fields = False
