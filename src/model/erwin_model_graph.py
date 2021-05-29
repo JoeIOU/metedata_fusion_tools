@@ -61,7 +61,8 @@ def generate_key_list(schema, sckeys, table_name, table_comment):
     global all_key_list
     key_list = []
     for key in sckeys:
-        key_name = key.Properties('Name').Value
+        # key_name = key.Properties('Name').Value
+        key_name = key.Properties('Physical_Name').Value
         key_ref = key.Properties('Attribute_Ref').Value
         key_list.append(key_name)
         key_dict = {}
@@ -74,7 +75,7 @@ def generate_key_list(schema, sckeys, table_name, table_comment):
     return key_list
 
 
-def generate_relationship(file_name):
+def generate_relationship(tenant_id,file_name):
     global all_rel_ref_list, all_key_list
     read_erwin_file(file_name, True)
     if all_rel_ref_list is None or all_key_list is None:
@@ -166,7 +167,8 @@ def generate_Tables(scObj):
     table_name = ""
     tables_dict = {}
     try:
-        table_name = scObj.Properties('Name').Value
+        # table_name = scObj.Properties('Name').Value
+        table_name = scObj.Properties('Physical_Name').Value
     except Exception as ex:
         logger.warning("generate table name failed,obj={}".format(scObj))
         return (schema, table_name, None)
@@ -282,12 +284,18 @@ def convert_numberic(type):
             if type.count(")") > 0:
                 i_e = type.index(")")
                 s = type[i_d + 1:i_e]
-                scale = int(s.strip())
+                try:
+                    scale = int(s.strip())
+                except:
+                    scale = 0
         else:
             if type.count(")") > 0:
                 i_e = type.index(")")
                 s = type[icount + 1:i_e]
-                precision = int(s.strip())
+                try:
+                    precision = int(s.strip())
+                except:
+                    precision = 0
 
     return new_type, precision, scale
 
@@ -301,7 +309,7 @@ def reverse_tables_columns(user_id, tenant_id, database_name, schema, file_name)
 
 ##2.初始化实体关系，反向从数据库的外键关系（前提：entity和fields等元数据已经生成）
 def reverse_constraint(user_id, tenant_id, schema, file_name):
-    const_list = generate_relationship(file_name)
+    const_list = generate_relationship(tenant_id,file_name)
     re = mdr.intialize_entity_rel_from_schema(user_id, tenant_id, schema, const_list, True)
     return re
 
@@ -313,7 +321,7 @@ if __name__ == '__main__':
     schema = "common"
     database_name = "mysql"
     # 数据库类类型mysql/oracle/pb
-    db_type='mysql'
+    db_type = 'mysql'
 
     # ##### 1.初始化表结构从erWin文件(注意文件路径写法d:/downloads/eSpace_File/xxx.erwin)。
     file_name = "d:/downloads/eSpace_File/123-new.erwin"
@@ -321,7 +329,7 @@ if __name__ == '__main__':
     # logger.info("all tables in[{}],re={}".format(schema, re))
 
     # ####4.元数据对象生成Neo4J图数据库信息。
-    entity_code_list = ["xx_Lifecycle","xx_Rel"]
+    entity_code_list = ["xx_Lifecycle", "xx_Rel"]
     entity_catagory = 'XXX'  # 分类，增加一大类标签。
     # entity_code_list = None 为None，则初始化全部实体。
     # re = mdi.ini_entity_model_graph(tenant_id, entity_code_list, entity_catagory, schema)
