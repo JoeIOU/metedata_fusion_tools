@@ -113,6 +113,79 @@
 			"response": []
 		},
 		{
+			"name": "findUIEntity",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "test1",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzUxMiIsImlhdCI6MTYxNTg2MzgxOSwiZXhwIjoxNjE1ODk5ODE5fQ.eyJ1c2VyX2lkIjoxMDAxfQ.WuPBxuATkbaWYK95GmqjNBgLXWRRdop9EaZsSdSqzxhk9Zr1khOv_LopkqBW_ZO3UN07yu0yANIZWvhliWhM8w",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_ENTITY_ID\":30015,\"where\":[{\"md_entity_id\":1373928231974211584},{\"md_entity_id\":1348892817107324928}]}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/findUIEntity?ui_template_code=ui_template_001&$_ENTITY_ID=30015",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"findUIEntity"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1346641783622340609",
+							"disabled": true
+						},
+						{
+							"key": "ui_template_code",
+							"value": "ui_template_001"
+						},
+						{
+							"key": "$_ENTITY_ID",
+							"value": "30015"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "findEntity-byParentID",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -1683,7 +1756,7 @@
 					"basic": [
 						{
 							"key": "username",
-							"value": "test1",
+							"value": "admin",
 							"type": "string"
 						},
 						{
@@ -1705,7 +1778,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8888/md/services/queryView?$_VIEW_ID=50001",
+					"raw": "http://127.0.0.1:8888/md/services/queryView?$_VIEW_ID=50002&dept_name=%Test%",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -1722,8 +1795,63 @@
 					"query": [
 						{
 							"key": "$_VIEW_ID",
-							"value": "50001"
+							"value": "50002"
+						},
+						{
+							"key": "dept_name",
+							"value": "%Test%"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "viewList",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "12",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"$_VIEW_ID\":50001,\"name002\": [\"abc\", \"bb\"], \"name2\": \"dfd33\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8888/md/services/queryViewList",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8888",
+					"path": [
+						"md",
+						"services",
+						"queryViewList"
 					]
 				}
 			},
