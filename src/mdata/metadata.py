@@ -644,7 +644,10 @@ def sql_query(sql, values):
                 else:
                     continue
         # cursor.execute(sql, tuple(ls))
-        cursor.executemany(sql, tuple(ls))
+        if ls is None or len(ls) <= 0:
+            cursor.executemany(sql, (None,))
+        else:
+            cursor.executemany(sql, tuple(ls))
         # 打印
         sql = cursor._cursor._executed
         logger.info('sql_query:%s,values:%s' % (sql, ls))
