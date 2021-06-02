@@ -58,7 +58,7 @@ sql_out = """
             """
 
 
-def query_view_format(user_id, data_view_id):
+def query_view_format(user_id, data_view_id, input_param):
     conn = db_md()
     cursor = conn.cursor()
     user = ur.get_user_tenant(user_id)
@@ -150,7 +150,7 @@ def query_view_format(user_id, data_view_id):
     created_sql, input_params_list = query_view_sql_create(main_entity_id, entities_rels_new, entity_table_mapping,
                                                            all_entity_fields,
                                                            result_in,
-                                                           result_out, dp_list)
+                                                           result_out, dp_list, input_param)
 
     logger.info('created_sql:{}'.format(created_sql))
     return created_sql, input_params_list, result_in
@@ -230,8 +230,7 @@ def entity_sort(main_entity_id, list):
 
 
 def query_view_sql_create(main_entity_id, entities_rels, entity_table_mapping, entity_fields_columns_list,
-                          input_params,
-                          output_params, dp_list):
+                          input_params, output_params, dp_list, input_param_dict):
     re = None
     from_format_sql = ' from {table} as {alias}'
     if entity_table_mapping is None or main_entity_id is None:
@@ -269,7 +268,8 @@ def query_view_sql_create(main_entity_id, entities_rels, entity_table_mapping, e
                 rel_table_flag = item.get('md_tables_id')
                 break
     where_sql, input_params_list = where_format(tenant_id, main_entity_id, input_params, entity_table_mapping,
-                                                entity_fields_columns_list, rel_table_flag, main_table_alias)
+                                                entity_fields_columns_list, rel_table_flag, main_table_alias,
+                                                input_param_dict)
     privi_sql = privi_sql_format(entity_table_mapping, dp_list)
     selected_sql = select_sql_format(entity_table_mapping, entity_fields_columns_list, output_params)
     join_sql = join_sql_format(tenant_id, main_entity_id, entities_rels, entity_table_mapping,
@@ -449,13 +449,21 @@ def privi_sql_format(entity_table_mapping, dp_list):
 
 # where 条件生成
 def where_format(tenant_id, main_entity_id, input_params, entity_table_mapping, entity_fields_columns_list,
-                 rel_table_flag, main_table_alias):
+                 rel_table_flag, main_table_alias, input_param_dict):
     where_format_sql = ' where {where}'
     where_sql = ''
     selected_cols = []
     input_params_list = []
     for in_item in input_params:
         alias_selected = ''
+        if (input_param_dict is None or not isinstance(input_param_dict, dict)):  # 外面输入参数不存在或不是dict类型，就忽略参数。
+            continue
+        else:
+            v_p = in_item.get('view_param_name')
+            if (v_p is not None):
+                vv = input_param_dict.get(v_p)
+                if (vv is None):  # 外面输入参数跟参数表对不上，就忽略参数。
+                    continue
         for item in entity_table_mapping:
             alias_selected = ''
             if item.get('md_entity_id') == in_item.get('md_entity_id'):
@@ -545,7 +553,8 @@ def get_data_view(tenant_id, view_ids):
 
 
 def query_view(user_id, view_id=0, input_param=None):
-    sql, input_params_list, message = query_view_format(user_id, view_id)
+    sql, input_params_list, message = query_view_format(user_id, view_id, input_param)
+    params_list = message
     if sql is None or len(sql) <= 0:
         if (message is None):
             message = 'query view,format sql is NULL,view_id={}'.format(view_id)
@@ -560,7 +569,6 @@ def query_view(user_id, view_id=0, input_param=None):
         output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=500, rows=0, data=None,
                                        message=message)
         return output
-    params_list = message
     ls_param_new = {}
     if input_params_list is not None and isinstance(input_params_list, list):
         for param in input_params_list:
@@ -619,19 +627,14 @@ def query_view(user_id, view_id=0, input_param=None):
     status = md.DB_EXEC_STATUS_SUCCESS
     message = "query success"
     try:
-        if (params_list is not None):
-            len1 = len(params_list)
-            len2 = len(where_list)
-            if (len1 > len2):
-                addParams(where_list, len1 - len2)
-                message+=",少了输入查询参数{}个,默认输入空值。".format(len1 - len2)
         (re, irows) = md.sql_query(sql_new, where_list)
         output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=status, rows=irows, data=re, message=message)
         return output
     except Exception as e:
-        logger.error('sql_query error,sql:[%s],message:%s' % (sql, e))
+        msg = 'sql_query error,sql:[%s],message:%s' % (sql, e)
+        logger.error(msg)
         status = md.DB_EXEC_STATUS_FAIL
-        message = "query failed"
+        message = msg
         irows = 0
         output = md.exec_output_status(type=md.DB_EXEC_TYPE_QUERY, status=status, rows=irows, data=None,
                                        message=message)
