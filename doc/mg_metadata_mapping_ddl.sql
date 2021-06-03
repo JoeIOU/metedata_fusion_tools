@@ -75,7 +75,7 @@ CREATE TABLE `md_columns_mapping` (
   `last_update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`columns_mapping_id`),
   UNIQUE KEY `columns_mapping_id` (`columns_mapping_id`),
-  KEY `md_columns_mapping_fk1` (`tables_mapping_id`),
+  KEY `md_columns_mapping_fk1` (`tables_mapping_id`), 
   CONSTRAINT `md_columns_mapping_fk1` FOREIGN KEY (`tables_mapping_id`) REFERENCES `mg_tables_mapping` (`tables_mapping_id`),
   KEY `md_columns_mapping_fk0` (`md_tables_id`),
   CONSTRAINT `md_columns_mapping_fk0` FOREIGN KEY (`md_tables_id`) REFERENCES `md_tables` (`md_tables_id`)
