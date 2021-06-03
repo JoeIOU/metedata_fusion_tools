@@ -39,8 +39,7 @@ CREATE TABLE `mg_tables_mapping` (
 -- ----------------------------
 -- Table structure for mg_columns_mapping
 -- ----------------------------
-DROP TABLE IF EXISTS `mg_columns_mapping`;
-CREATE TABLE `md_columns_mapping` (
+CREATE TABLE `mg_columns_mapping` (
   `columns_mapping_id` bigint(20) NOT NULL COMMENT '数据字段mappingID',
   `tables_mapping_id` bigint(20) NOT NULL COMMENT '数据表mappingID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
