@@ -84,7 +84,11 @@ function load_data(){
                     break;
                 case 'business_maintain':
                     tab="";
-                    url="entity_edit.html?header=1"
+                    url="ui_entity_table.html?header=1"
+                    break;
+                case 'business_view':
+                    tab="";
+                    url="entity_view.html?template_code=ui_template_001&_row_id_=30005&readOnly=0"
                     break;
                 case '':
                     tab="";
