@@ -43,6 +43,7 @@ CREATE TABLE `mg_columns_mapping` (
   `columns_mapping_id` bigint(20) NOT NULL COMMENT '数据字段mappingID',
   `tables_mapping_id` bigint(20) NOT NULL COMMENT '数据表mappingID',
   `tenant_id` bigint(20) NOT NULL COMMENT '租户ID',
+  `mapping_type` char(1) NOT NULL DEFAULT '0' COMMENT '数据字段mapping类型，0：拷贝，1:转换',
   `columns_mapping_name` varchar(200) NOT NULL COMMENT '数据字段mapping名称',
   `columns_transform_logic` varchar(4000)  COMMENT '字段转换逻辑描述',
   `columns_mapping_desc` varchar(4000)  COMMENT '字段mapping描述',
