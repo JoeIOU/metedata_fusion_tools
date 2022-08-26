@@ -2,6 +2,7 @@
 from flask import Flask, g
 from flask_httpauth import HTTPBasicAuth
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+# from itsdangerous import TimedSerializer as Serializer
 from itsdangerous import BadSignature, SignatureExpired
 from flask_cors import CORS
 import re
