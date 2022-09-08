@@ -81,7 +81,7 @@ axios.interceptors.request.use(config => {
 	var expire_time = localStorage.getItem('expire_time');
 	var x = new Date()
 	var utc_timestamp = x.getTime() + x.getTimezoneOffset() * 60 * 1000;
-	if (!AUTH_TOKEN || !expire_time || utc_timestamp > expire_time) {
+	if (!AUTH_TOKEN || !expire_time || utc_timestamp.toString() > expire_time) {
 		cur_url = escape(window.location.href);
 		window.location.replace("login.html?" + 'url=' + cur_url);
 		return config
@@ -93,11 +93,11 @@ axios.interceptors.request.use(config => {
 	return config
 });
 
-function login_redirect(config) {
-	cur_url = escape(window.location.href);
-	window.location.replace("login.html?" + 'url=' + cur_url);
-	return config
-}
+//function login_redirect(config) {
+//	cur_url = escape(window.location.href);
+//	window.location.replace("login.html?" + 'url=' + cur_url);
+//	return config
+//}
 //替换指定传入参数的值,paramName为参数,replaceWith为新值
 function replaceParamVal(paramName, replaceWith) {
 	var oUrl = this.location.href.toString();
