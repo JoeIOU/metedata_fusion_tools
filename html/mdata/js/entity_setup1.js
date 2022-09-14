@@ -199,9 +199,9 @@ function queryMetadata(url, id) {
 					}
 					if (key === 'md_fields_name' || key === 'md_fields_name_cn' || key === 'md_fields_name_en' || key === 'md_fields_type' || key === 'md_entity_name_en' || key === 'md_entity_desc' || key === 'md_fields_desc' ||
 						key === 'md_tables_name' || key === 'md_tables_desc' || key === 'md_columns_name' || key === 'md_columns_desc' || key === 'lookup_entity')
-						width1 = 130
+						width1 = 120
 					else
-						width1 = 100;
+						width1 = 80;
 					var dict0 = {
 						field: key,
 						title: title_str,

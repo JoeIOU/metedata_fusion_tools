@@ -24,9 +24,9 @@
 	</head>
 	<body  style="margin:0px">
     <el-container>
-        <el-header class="my_header">
-			<iframe src="toolbar.html"  class="m-header"></iframe>
-		</el-header>
+<!--        <el-header class="my_header">-->
+<!--			<iframe src="toolbar.html"  class="m-header"></iframe>-->
+<!--		</el-header>-->
 		<le-main>
 		<div id="app">
 			<el-row>
@@ -35,8 +35,8 @@
 						<el-tabs v-model="main_tab" type="card" @tab-click="handleClick">
 							<el-tab-pane label="元数据管理" name="metadata" style="width:100%;height:100%" checked>
 								<el-tabs v-model="activity_metadata" type="card">
-									<el-tab-pane label="元数据实体管理" name="entity_metadata" lazy="true" style="width:100%;height:700px" checked>
-										<iframe src="entity_setup.html" style="width:100%;height:710px;border:0"></iframe>
+									<el-tab-pane label="元数据实体管理" name="entity_metadata" lazy="true" style="width:100%;height:725px" checked>
+										<iframe src="entity_setup.html" style="width:100%;height:720px;border:0"></iframe>
 									</el-tab-pane>
 									<el-tab-pane label="元数据实体关系管理" name="entity_relation" lazy="true" style="width:100%;height:600px">
 										<iframe src="ui_entity_table.html?entity_code=md_entities_rel&header=0" style="width:100%;height:100%;border:0"></iframe>

@@ -59,18 +59,18 @@
 							</el-input>
 							<font color="red">*</font>实体英文名称:
 							<el-input type="textarea" size="mini" :rows="1" placeholder="Input Something"
-									  v-model="master_user.sel['md_entity_name_en']" style="width:190px"
+									  v-model="master_user.sel['md_entity_name_en']" style="width:170px"
 									  maxlength="256" id="md_entity_name_en100001"
 									  @change="onchange('md_entity_name_en',master_user.sel,100001)" :disabled="isReadonly">
 							</el-input>
 							实体描述:
 							<el-input type="textarea" size="mini" :rows="1" placeholder="Input Something"
-									  v-model="master_user.sel['md_entity_desc']" style="width:220px"
+									  v-model="master_user.sel['md_entity_desc']" style="width:180px"
 									  maxlength="256" id="md_entity_desc100001"
 									  @change="onchange('md_entity_desc',master_user.sel,100001)" :disabled="isReadonly">
 							</el-input>
                             <font color="red">*</font>租户共享标识:
-                            <el-select size="mini" id="public_flag100001" v-model="master_user.sel['entity_public_flag']" style="width:120px" disabled>
+                            <el-select size="mini" id="public_flag100001" v-model="master_user.sel['entity_public_flag']" style="width:80px" disabled>
                                 <el-option
                                            key="Y"
                                            label="Yes"
@@ -221,19 +221,19 @@
 										</span>
 										<span v-else-if="v.field=='md_fields_name'&&(scope.row.md_fields_id==null||scope.row.md_fields_id=='')">
 											<el-input size="mini" :rows="1"
-													  v-model="scope.row[v.field]" maxlength="200" :id="v.field+scope.row['$$_id_']"
+													  v-model="scope.row[v.field]" maxlength="150" :id="v.field+scope.row['$$_id_']"
 													  onkeyup="value=value.replace(/[^\w\.\/]/ig,'')"
 													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])"></el-input>
 										</span>
 										<span v-else-if="v.field=='md_fields_name_en'">
 											<el-input size="mini" :rows="1"
-													  v-model="scope.row[v.field]" maxlength="200" :id="v.field+scope.row['$$_id_']"
+													  v-model="scope.row[v.field]" maxlength="180" :id="v.field+scope.row['$$_id_']"
 													  onkeyup="value=value.replace(/[\u4e00-\u9fa5]/g,'')"
 													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])" :disabled="v.readonly"></el-input>
 										</span>
 										<span v-else>
 											<el-input size="mini" :rows="1"
-													  v-model="scope.row[v.field]" maxlength="500" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
+													  v-model="scope.row[v.field]" maxlength="180" :disabled="v.readonly" :id="v.field+scope.row['$$_id_']"
 													  @change="onchange(v.field,scope.row,scope.row['$$_id_'])">
 											</el-input>
 										</span>
