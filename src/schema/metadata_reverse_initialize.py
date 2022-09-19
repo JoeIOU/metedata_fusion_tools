@@ -25,10 +25,7 @@ if __name__ == '__main__':
     #       "6":"元数据对象生成Neo4J图数据库信息",
     #       "7":"权限码单独补充初始化"}
     step = {
-        # "2": "从mysql/oracle/pg数据库反向工程，初始化表和字段元数据",
-        # "3": "从数据表和字段元数据，初始化生成实体和属性元数据",
-        "4": "mySql/oracle/pg的外键关系转成元数据实体关系",
-          # "7":"权限码单独补充初始化"
+        "6":"元数据对象生成Neo4J图数据库信息"
     }
 
     # ##### 1.初始化表结构从erWin文件(注意文件路径写法d:/downloads/eSpace_File/xxx.erwin)。
@@ -81,7 +78,7 @@ if __name__ == '__main__':
 
     # ####4.元数据对象生成Neo4J图数据库信息。
     if step.get("6") is not None:
-        entity_code_list = ["xx_Lifecycle", "xx_Rel"]
+        entity_code_list = None#["xx_Lifecycle", "xx_Rel"]
         entity_catagory = 'XXX'  # 分类，增加一大类标签。
         # entity_code_list = None 为None，则初始化全部实体。
         re = mdi.ini_entity_model_graph(tenant_id, entity_code_list, entity_catagory, schema)

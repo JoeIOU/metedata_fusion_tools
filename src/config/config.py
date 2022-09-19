@@ -63,6 +63,16 @@ __C.__LOGIN = {"dev": {"url": "https://login-b.dm.com/login/login.do", "user": "
                "pro": {"url": "https://login.dm.com/login/login.do", "user": "user1",
                        "password": ""}}
 
+# 默认Noe4j Login登录设置
+__C.__LOGIN_NEO4J = {"dev": {"url": "http://localhost:7474/db/data", "user": "neo4j",
+                             "password": "123456"},
+                     "sit": {"url": "http://localhost:7474/db/data", "user": "neo4j",
+                             "password": "123456"},
+                     "uat": {"url": "http://localhost:7474/db/data", "user": "neo4j",
+                             "password": ""},
+                     "pro": {"url": "http://localhost:7474/db/data", "user": "neo4j",
+                             "password": ""}}
+
 # APP ID和Token配置
 __C.__AP_ID = {"dev": "ap_00000123", "pro": "ap_00000123"}
 # 数据库配置
@@ -103,6 +113,8 @@ def dict_inv_set(inv):
     # 默认登录信息
     # __C.LOGIN = __C.__LOGIN["pro" if __C.ENV == "pro" else "dev"]
     # __C.SOA_URL = __C.__SOA_URL["pro" if __C.ENV == "pro" else "dev"]
+
+    __C.LOGIN_NEO4J = __C.__LOGIN_NEO4J[getEnv()]
 
 
 dict_inv_set(__C.ENV)

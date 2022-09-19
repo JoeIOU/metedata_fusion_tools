@@ -130,10 +130,10 @@ def search_shortest_path():
     except KeyError:
         return []
     else:
-        cql = "MATCH (p1 {name:'%s'}),(p2{name:'%s'}),p=shortestpath((p1)%s-[*..10]-%s(p2))RETURN p" % (
+        cql = "MATCH (p1 {name:'%s'}),(p2{name:'%s'}),p=shortestpath((p1)%s-[r*..10]-%s(p2))RETURN r,p" % (
             q, to, sfrom, sto)
         result = graph().run(cql)
-        nodes, relationships = relationship_mapping(result)
+        nodes, relationships = relationship_mapping1(result)
         data = combine_data(nodes, relationships)
         logger.info("search_shortest_path,graph data:{}".format(data))
         return Response(dumps(data), mimetype="application/json")
@@ -144,12 +144,53 @@ def query_graph_rel(medel_name, sfrom, sto):
         sfrom = ""
     if sto is None:
         sto = ""
-    cql = "MATCH p=(n{name:'%s'})%s-[r]-%s(m) RETURN p LIMIT 100" % (medel_name, sfrom, sto)
+    cql = "MATCH p=(n{name:'%s'})%s-[r]-%s(m) RETURN r,p LIMIT 100" % (medel_name, sfrom, sto)
     result = graph().run(cql)
-    return relationship_mapping(result)
+    return relationship_mapping1(result)
 
 
-def relationship_mapping(path):
+# def relationship_mapping(path):
+#     if path is None:
+#         return None, None
+#     nodes = []
+#     relationships = []
+#     id_list = []
+#     user = utl.get_login_user()
+#     tenant_id = user.get("tenant_id")
+#     # user_id = user.get("user_id")
+#     not_privilege_list = []
+#     if path is not None:
+#         for res in path:
+#             for paths in res:
+#                 logger.info("path:{}".format(paths))
+#                 for node in paths.nodes:
+#                     # 权限判断
+#                     bool = have_entity_privilege(tenant_id, node)
+#                     if (not bool):
+#                         not_privilege_list.append(node.get('entity_id'))
+#                         continue
+#                     d_start, is_exist = node2dict(node, id_list)
+#                     if not is_exist and d_start is not None:
+#                         nodes.append(d_start)
+#                 relationship_list = paths.relationships
+#                 for relationship in relationship_list:
+#                     from_enty_id = relationship['from_entity_id']
+#                     to_enty_id = relationship['to_entity_id']
+#                     is_true = False
+#                     for no_priv_entity_id in not_privilege_list:
+#                         if (from_enty_id == no_priv_entity_id or to_enty_id == no_priv_entity_id):
+#                             is_true = True
+#                             break
+#                     if is_true:
+#                         continue
+#                     d_rel = relationship2dict(relationship)
+#                     if d_rel is not None:
+#                         relationships.append(d_rel)
+#         logger.info("relation_info:{},{}".format(nodes, relationships))
+#     return nodes, relationships
+
+
+def relationship_mapping1(path):
     if path is None:
         return None, None
     nodes = []
@@ -160,32 +201,43 @@ def relationship_mapping(path):
     # user_id = user.get("user_id")
     not_privilege_list = []
     if path is not None:
-        for res in path:
-            for paths in res:
+        # for res in path:
+        if path is not None:
+            for paths in path:
                 logger.info("path:{}".format(paths))
-                for node in paths.nodes:
-                    # 权限判断
-                    bool = have_entity_privilege(tenant_id, node)
-                    if (not bool):
-                        not_privilege_list.append(node.get('entity_id'))
-                        continue
-                    d_start, is_exist = node2dict(node, id_list)
-                    if not is_exist and d_start is not None:
-                        nodes.append(d_start)
-                relationship_list = paths.relationships
-                for relationship in relationship_list:
-                    from_enty_id = relationship['from_entity_id']
-                    to_enty_id = relationship['to_entity_id']
-                    is_true = False
-                    for no_priv_entity_id in not_privilege_list:
-                        if (from_enty_id == no_priv_entity_id or to_enty_id == no_priv_entity_id):
-                            is_true = True
-                            break
-                    if is_true:
-                        continue
-                    d_rel = relationship2dict(relationship)
-                    if d_rel is not None:
-                        relationships.append(d_rel)
+                if paths['p'] is not None:
+                    for node in paths['p'].nodes:
+                        # 权限判断
+                        bool = have_entity_privilege(tenant_id, node)
+                        if (not bool):
+                            not_privilege_list.append(node.get('entity_id'))
+                            continue
+                        d_start, is_exist = node2dict(node, id_list)
+                        if not is_exist and d_start is not None:
+                            nodes.append(d_start)
+                if paths['r'] is not None:
+                    relat = paths['r']
+                    rel1 = []
+                    if isinstance(relat, dict):
+                        ls = []
+                        ls.append(relat)
+                        rel1 = ls
+                    elif isinstance(relat, list):
+                        rel1 = relat
+                    if rel1 is not None:
+                        for relationship in rel1:
+                            from_enty_id = relationship['from_entity_id']
+                            to_enty_id = relationship['to_entity_id']
+                            is_true = False
+                            for no_priv_entity_id in not_privilege_list:
+                                if (from_enty_id == no_priv_entity_id or to_enty_id == no_priv_entity_id):
+                                    is_true = True
+                                    break
+                            if is_true:
+                                continue
+                            d_rel = relationship2dict(relationship)
+                            if d_rel is not None:
+                                relationships.append(d_rel)
         logger.info("relation_info:{},{}".format(nodes, relationships))
     return nodes, relationships
 
@@ -254,7 +306,7 @@ def gen_new_id(old_id, name):
     if id is not None and len(id) > 2:
         id = id[len(id) - 2:]
     s = name
-    id = s + "(" + id + ")"
+    id = s + "(*" + id + ")"
     return id
 
 
