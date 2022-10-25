@@ -185,4 +185,5 @@ if __name__ == "__main__":
     data = query_all_node_by_name(graph(), "cfg")
     # logger.info("query_all_node_like_label,result:{}".format(data))
 
+    # delete_all()
     pass
