@@ -59,10 +59,10 @@ def serialize_cast(cast):
         'relation_id': cast[2],
         'relation_type': cast[3],
         'relation_desc': cast[4],
-        'from_entity_name': cast[5],
-        'from_fields_name': cast[6],
-        'to_entity_name': cast[7],
-        'to_fields_name': cast[8]
+        'from_entity_name': cast[6],
+        'from_fields_name': cast[7],
+        'to_entity_name': cast[9],
+        'to_fields_name': cast[10]
     }
 
 

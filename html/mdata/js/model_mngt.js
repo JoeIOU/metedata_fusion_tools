@@ -192,7 +192,7 @@ function data_load() {
 					},
 					{
 						field: "father_field",
-						title: "父实体关系属性"
+						title: "父实体属性"
 					},
 					{
 						field: "child_name",
@@ -200,7 +200,7 @@ function data_load() {
 					},
 					{
 						field: "child_field",
-						title: "子实体关系属性"
+						title: "子实体属性"
 					},
 					{
 						field: "rel_desc",
